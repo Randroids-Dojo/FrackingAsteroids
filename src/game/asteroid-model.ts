@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { VOXEL_SIZE } from './ship-constants'
 
 /** Asteroid voxel colors (hex values). */
 export const ASTEROID_COLORS = {
@@ -9,11 +8,14 @@ export const ASTEROID_COLORS = {
   crystal: 0x88ccff,
 } as const
 
+/** Voxel size for large asteroids — bigger than ship voxels for imposing scale. */
+const ASTEROID_VOXEL = 2.0
+
 function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: number): void {
-  const geo = new THREE.BoxGeometry(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE)
+  const geo = new THREE.BoxGeometry(ASTEROID_VOXEL, ASTEROID_VOXEL, ASTEROID_VOXEL)
   const mat = new THREE.MeshStandardMaterial({ color, flatShading: true })
   const mesh = new THREE.Mesh(geo, mat)
-  mesh.position.set(x * VOXEL_SIZE, y * VOXEL_SIZE, z * VOXEL_SIZE)
+  mesh.position.set(x * ASTEROID_VOXEL, y * ASTEROID_VOXEL, z * ASTEROID_VOXEL)
   group.add(mesh)
 }
 
