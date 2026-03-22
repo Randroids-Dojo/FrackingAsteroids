@@ -33,6 +33,17 @@ export const GameStateSchema = z.object({
 })
 export type GameState = z.infer<typeof GameStateSchema>
 
+export const SAVE_SLOT_IDS = ['save-1', 'save-2', 'save-3'] as const
+export type SaveSlotId = (typeof SAVE_SLOT_IDS)[number]
+
+export const SaveSlotSummarySchema = z.object({
+  slotId: z.enum(SAVE_SLOT_IDS),
+  score: z.number().int().min(0),
+  wave: z.number().int().min(1),
+  timestamp: z.number(),
+})
+export type SaveSlotSummary = z.infer<typeof SaveSlotSummarySchema>
+
 export const FeedbackSchema = z.object({
   message: z.string().min(1).max(2000),
 })

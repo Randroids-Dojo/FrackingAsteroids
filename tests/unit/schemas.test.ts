@@ -7,6 +7,8 @@ import {
   ShipSchema,
   UpgradesSchema,
   CargoSchema,
+  SaveSlotSummarySchema,
+  SAVE_SLOT_IDS,
 } from '../../src/lib/schemas'
 
 describe('ShipSchema', () => {
@@ -98,6 +100,70 @@ describe('FeedbackSchema', () => {
   it('rejects empty message', () => {
     const result = FeedbackSchema.safeParse({ message: '' })
     assert.equal(result.success, false)
+  })
+})
+
+describe('SAVE_SLOT_IDS', () => {
+  it('contains exactly 3 slot IDs', () => {
+    assert.equal(SAVE_SLOT_IDS.length, 3)
+  })
+
+  it('has expected slot IDs', () => {
+    assert.deepEqual([...SAVE_SLOT_IDS], ['save-1', 'save-2', 'save-3'])
+  })
+})
+
+describe('SaveSlotSummarySchema', () => {
+  it('accepts valid save slot summary', () => {
+    const result = SaveSlotSummarySchema.safeParse({
+      slotId: 'save-1',
+      score: 100,
+      wave: 3,
+      timestamp: Date.now(),
+    })
+    assert.equal(result.success, true)
+  })
+
+  it('rejects invalid slot ID', () => {
+    const result = SaveSlotSummarySchema.safeParse({
+      slotId: 'save-4',
+      score: 0,
+      wave: 1,
+      timestamp: Date.now(),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects negative score', () => {
+    const result = SaveSlotSummarySchema.safeParse({
+      slotId: 'save-1',
+      score: -1,
+      wave: 1,
+      timestamp: Date.now(),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects wave 0', () => {
+    const result = SaveSlotSummarySchema.safeParse({
+      slotId: 'save-2',
+      score: 0,
+      wave: 0,
+      timestamp: Date.now(),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('accepts all valid slot IDs', () => {
+    for (const slotId of SAVE_SLOT_IDS) {
+      const result = SaveSlotSummarySchema.safeParse({
+        slotId,
+        score: 0,
+        wave: 1,
+        timestamp: Date.now(),
+      })
+      assert.equal(result.success, true, `Expected ${slotId} to be valid`)
+    }
   })
 })
 
