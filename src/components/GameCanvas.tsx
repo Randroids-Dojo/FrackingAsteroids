@@ -25,10 +25,14 @@ export function GameCanvas({ paused }: GameCanvasProps) {
 
     // Dynamic import to avoid SSR issues with Three.js
     let disposed = false
-    import('@/game/scene').then(({ createGameScene }) => {
-      if (disposed) return
-      sceneRef.current = createGameScene(el, getPaused)
-    })
+    import('@/game/scene')
+      .then(({ createGameScene }) => {
+        if (disposed) return
+        sceneRef.current = createGameScene(el, getPaused)
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to load game scene:', err)
+      })
 
     return () => {
       disposed = true

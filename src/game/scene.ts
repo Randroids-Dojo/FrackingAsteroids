@@ -1,13 +1,8 @@
 import * as THREE from 'three'
-import type { Ship } from '@/lib/schemas'
-import { defaultGameState } from '@/lib/schemas'
 import { createShipModel } from './ship-model'
 import { createInputState, createInputHandler } from './input'
 import { updateShip } from './ship-controller'
 
-/**
- * Camera height and follow smoothing.
- */
 const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
@@ -62,8 +57,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   scene.add(shipModel)
 
   // --- Game State ---
-  const gameState = defaultGameState()
-  const ship: Ship = gameState.ship
+  const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
 
   // --- Input ---
   const inputState = createInputState()
@@ -91,16 +85,16 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     prevTime = now
 
     if (!getPaused()) {
-      // Update ship physics
       updateShip(ship, inputState, dt)
 
       // Sync Three.js model to game state
       shipModel.position.set(ship.x, ship.y, 0)
       shipModel.rotation.z = ship.rotation
 
-      // Camera follows ship with lerp
-      camera.position.x += (ship.x - camera.position.x) * CAMERA_LERP
-      camera.position.y += (ship.y - camera.position.y) * CAMERA_LERP
+      // Camera follows ship (frame-rate independent lerp)
+      const lerpFactor = 1 - Math.pow(1 - CAMERA_LERP, dt * 60)
+      camera.position.x += (ship.x - camera.position.x) * lerpFactor
+      camera.position.y += (ship.y - camera.position.y) * lerpFactor
 
       // Stars follow camera (parallax)
       stars.position.x = camera.position.x * 0.5
@@ -116,6 +110,25 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     cancelAnimationFrame(animId)
     inputHandler.detach()
     window.removeEventListener('resize', onResize)
+
+    // Dispose all Three.js geometries and materials
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) {
+        obj.geometry.dispose()
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach((m) => m.dispose())
+        } else {
+          obj.material.dispose()
+        }
+      }
+      if (obj instanceof THREE.Points) {
+        obj.geometry.dispose()
+        if (obj.material instanceof THREE.Material) {
+          obj.material.dispose()
+        }
+      }
+    })
+
     renderer.dispose()
     if (renderer.domElement.parentElement) {
       renderer.domElement.parentElement.removeChild(renderer.domElement)

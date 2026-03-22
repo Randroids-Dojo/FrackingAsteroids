@@ -4,7 +4,6 @@
 export const SHIP_ACCELERATION = 120
 export const SHIP_MAX_SPEED = 200
 export const SHIP_FRICTION = 0.97
-export const SHIP_ROTATION_SPEED = 5
 
 /**
  * Ship voxel colors (hex values).

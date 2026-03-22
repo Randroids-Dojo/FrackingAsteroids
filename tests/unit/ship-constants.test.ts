@@ -4,7 +4,6 @@ import {
   SHIP_ACCELERATION,
   SHIP_MAX_SPEED,
   SHIP_FRICTION,
-  SHIP_ROTATION_SPEED,
   SHIP_COLORS,
   VOXEL_SIZE,
 } from '../../src/game/ship-constants'
@@ -23,11 +22,6 @@ describe('ship physics constants', () => {
   it('SHIP_FRICTION is between 0 and 1', () => {
     assert.ok(typeof SHIP_FRICTION === 'number')
     assert.ok(SHIP_FRICTION > 0 && SHIP_FRICTION < 1)
-  })
-
-  it('SHIP_ROTATION_SPEED is a positive number', () => {
-    assert.ok(typeof SHIP_ROTATION_SPEED === 'number')
-    assert.ok(SHIP_ROTATION_SPEED > 0)
   })
 
   it('max speed exceeds acceleration (ship can reach useful speed)', () => {

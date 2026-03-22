@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { updateShip } from '../../src/game/ship-controller'
 import { createInputState } from '../../src/game/input'
-import { SHIP_MAX_SPEED, SHIP_ACCELERATION, SHIP_FRICTION } from '../../src/game/ship-constants'
+import { SHIP_MAX_SPEED } from '../../src/game/ship-constants'
 
 function makeShip() {
   return { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -90,17 +90,5 @@ describe('updateShip', () => {
     }
     // atan2(1, 0) = PI/2 — facing right
     assert.ok(Math.abs(ship.rotation - Math.atan2(1, 0)) < 0.001, 'should face right')
-  })
-
-  it('exports SHIP_ACCELERATION as a positive number', () => {
-    assert.ok(SHIP_ACCELERATION > 0)
-  })
-
-  it('exports SHIP_MAX_SPEED as a positive number', () => {
-    assert.ok(SHIP_MAX_SPEED > 0)
-  })
-
-  it('exports SHIP_FRICTION between 0 and 1', () => {
-    assert.ok(SHIP_FRICTION > 0 && SHIP_FRICTION < 1)
   })
 })

@@ -9,12 +9,11 @@ export {
   SHIP_ACCELERATION,
   SHIP_MAX_SPEED,
   SHIP_FRICTION,
-  SHIP_ROTATION_SPEED,
   SHIP_COLORS,
   VOXEL_SIZE,
 } from './ship-constants'
 export { createShipModel } from './ship-model'
-export { createInputState, createInputHandler, inputToDirection, KEY_MAP } from './input'
+export { createInputState, createInputHandler, inputToDirection } from './input'
 export type { InputState } from './input'
 export { updateShip } from './ship-controller'
 export { createGameScene } from './scene'
