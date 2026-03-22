@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-space-bg: #0a0a1a;
+  --color-hud-green: #00ff88;
+  --color-hud-blue: #00aaff;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-space-bg);
+  color: white;
+  font-family: var(--font-mono), monospace;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#game-canvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
