@@ -1,7 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { updateShip } from '../../src/game/ship-controller'
+import { updateShip, aimToRotation } from '../../src/game/ship-controller'
 import { createInputState } from '../../src/game/input'
+import type { AimState } from '../../src/game/input'
 import { SHIP_MAX_SPEED } from '../../src/game/ship-constants'
 
 function makeShip() {
@@ -80,7 +81,7 @@ describe('updateShip', () => {
     assert.equal(ship.velocityY, 0)
   })
 
-  it('updates rotation when moving', () => {
+  it('falls back to movement direction when no aim rotation', () => {
     const ship = makeShip()
     const input = createInputState()
     input.right = true
@@ -90,5 +91,80 @@ describe('updateShip', () => {
     }
     // atan2(1, 0) = PI/2 — facing right
     assert.ok(Math.abs(ship.rotation - Math.atan2(1, 0)) < 0.001, 'should face right')
+  })
+
+  it('uses aim rotation when provided', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.right = true
+    const aimAngle = 1.234
+    for (let i = 0; i < 10; i++) {
+      updateShip(ship, input, 1 / 60, aimAngle)
+    }
+    assert.equal(ship.rotation, aimAngle, 'should face aim direction, not movement direction')
+  })
+
+  it('falls back to movement direction when aimRotation is null', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.up = true
+    for (let i = 0; i < 10; i++) {
+      updateShip(ship, input, 1 / 60, null)
+    }
+    // atan2(0, 1) = 0 — facing up
+    assert.ok(Math.abs(ship.rotation) < 0.001, 'should face up (rotation ~0)')
+  })
+
+  it('falls back to movement direction when aimRotation is undefined', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.up = true
+    for (let i = 0; i < 10; i++) {
+      updateShip(ship, input, 1 / 60, undefined)
+    }
+    assert.ok(Math.abs(ship.rotation) < 0.001, 'should face up (rotation ~0)')
+  })
+})
+
+describe('aimToRotation', () => {
+  const identityScreenToWorld = (sx: number, sy: number) => ({ x: sx, y: -sy })
+
+  it('returns null when aim is not active', () => {
+    const ship = makeShip()
+    const aim: AimState = { active: false, screenX: 100, screenY: 100 }
+    const result = aimToRotation(ship, aim, identityScreenToWorld)
+    assert.equal(result, null)
+  })
+
+  it('returns angle toward aim target', () => {
+    const ship = makeShip()
+    // Aim to the right (screen x=100, y=0 → world x=100, y=0)
+    const aim: AimState = { active: true, screenX: 100, screenY: 0 }
+    const result = aimToRotation(ship, aim, identityScreenToWorld)
+    assert.ok(result !== null, 'result should not be null')
+    // atan2(100, 0) = PI/2 — aiming right
+    const angle: number = result
+    assert.ok(Math.abs(angle - Math.PI / 2) < 0.001)
+  })
+
+  it('returns null when cursor is on top of ship', () => {
+    const ship = makeShip()
+    const aim: AimState = { active: true, screenX: 0.1, screenY: -0.1 }
+    const result = aimToRotation(ship, aim, identityScreenToWorld)
+    assert.equal(result, null)
+  })
+
+  it('accounts for ship position', () => {
+    const ship = makeShip()
+    ship.x = 50
+    ship.y = 50
+    // Aim at world (100, -100) relative to ship at (50, 50)
+    // dx = 100-50=50, dy = -100-50=-150
+    const aim: AimState = { active: true, screenX: 100, screenY: 100 }
+    const result = aimToRotation(ship, aim, identityScreenToWorld)
+    assert.ok(result !== null, 'result should not be null')
+    const expected = Math.atan2(50, -150)
+    const angle: number = result
+    assert.ok(Math.abs(angle - expected) < 0.001)
   })
 })

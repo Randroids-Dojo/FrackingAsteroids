@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
-import { createInputState, createInputHandler } from './input'
-import { updateShip } from './ship-controller'
+import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
+import { updateShip, aimToRotation } from './ship-controller'
+import { createVirtualJoystick } from './virtual-joystick'
 
 const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
@@ -64,6 +65,32 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   const inputHandler = createInputHandler(inputState)
   inputHandler.attach()
 
+  // --- Aim (mouse/touch tracking) ---
+  const aimState = createAimState()
+  const aimHandler = createAimHandler(aimState, container)
+  aimHandler.attach()
+
+  // --- Virtual Joystick (mobile touch movement) ---
+  const joystick = createVirtualJoystick(inputState, container)
+  joystick.attach()
+
+  // --- Screen-to-world coordinate conversion ---
+  const raycaster = new THREE.Raycaster()
+  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
+  const ndcVec = new THREE.Vector2()
+  const worldIntersect = new THREE.Vector3()
+
+  function screenToWorld(screenX: number, screenY: number): { x: number; y: number } {
+    const w = renderer.domElement.clientWidth
+    const h = renderer.domElement.clientHeight
+    // Convert screen pixels to NDC (-1 to 1)
+    ndcVec.x = (screenX / w) * 2 - 1
+    ndcVec.y = -(screenY / h) * 2 + 1
+    raycaster.setFromCamera(ndcVec, camera)
+    raycaster.ray.intersectPlane(groundPlane, worldIntersect)
+    return { x: worldIntersect.x, y: worldIntersect.y }
+  }
+
   // --- Resize ---
   function onResize(): void {
     const w = container.clientWidth
@@ -85,7 +112,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     prevTime = now
 
     if (!getPaused()) {
-      updateShip(ship, inputState, dt)
+      // Compute aim rotation (mouse/touch → world → angle)
+      const rotation = aimToRotation(ship, aimState, screenToWorld)
+
+      updateShip(ship, inputState, dt, rotation)
 
       // Sync Three.js model to game state
       shipModel.position.set(ship.x, ship.y, 0)
@@ -109,6 +139,8 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   function dispose(): void {
     cancelAnimationFrame(animId)
     inputHandler.detach()
+    aimHandler.detach()
+    joystick.detach()
     window.removeEventListener('resize', onResize)
 
     // Dispose all Three.js geometries and materials

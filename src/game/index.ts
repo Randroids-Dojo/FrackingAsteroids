@@ -13,8 +13,16 @@ export {
   VOXEL_SIZE,
 } from './ship-constants'
 export { createShipModel } from './ship-model'
-export { createInputState, createInputHandler, inputToDirection } from './input'
-export type { InputState } from './input'
-export { updateShip } from './ship-controller'
+export {
+  createInputState,
+  createInputHandler,
+  createAimState,
+  createAimHandler,
+  inputToDirection,
+} from './input'
+export type { InputState, AimState } from './input'
+export { updateShip, aimToRotation } from './ship-controller'
+export { createVirtualJoystick } from './virtual-joystick'
+export type { VirtualJoystick } from './virtual-joystick'
 export { createGameScene } from './scene'
 export type { GameScene } from './scene'

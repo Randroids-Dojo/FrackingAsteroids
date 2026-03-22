@@ -96,14 +96,20 @@ None — the game is an endless progression loop. Ship is never destroyed (no he
 ### Controls
 
 **Desktop:**
-- WASD or Arrow Keys — move ship
-- Mouse aim + click — fire blaster
+- WASD or Arrow Keys — move ship (twin-stick: movement independent of aim)
+- Mouse cursor — aim ship (ship rotates to face cursor)
+- Mouse click — fire blaster toward cursor
 - Space — pause (reveals Feedback FAB)
 
 **Mobile:**
-- Left thumb virtual joystick — move
-- Right thumb tap — fire toward tap position
+- Left thumb virtual joystick — move (fixed position, left half of screen)
+- Right thumb tap — fire toward tap position (ship aims at tap)
 - Pause button in HUD — pause (reveals Feedback FAB)
+
+**Design Notes:**
+- Ship rotation is decoupled from movement direction — the ship always faces the aim target (mouse cursor on desktop, last tap on mobile)
+- When no aim target is active (e.g. mouse hasn't entered canvas), ship faces movement direction as fallback
+- Virtual joystick uses a fixed dead zone of 10px to prevent drift
 
 ## 4. World & Setting
 
