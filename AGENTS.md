@@ -145,6 +145,15 @@ Auto-deploy to Vercel via Git integration on push to `main`.
 - Read `Docs/GDD.md` before starting work on game features
 - Propose GDD changes before implementing
 
+## 3D / Voxel Art Guidelines
+
+- Ship model uses `VOXEL_SIZE` from `src/game/ship-constants.ts` (currently 0.5)
+- Asteroids and other large objects should use their own larger voxel size constant — **not** the ship's `VOXEL_SIZE` — to appear properly scaled at the camera's height (~150 units)
+- A voxel size of **2.0** makes ~10-voxel-wide objects clearly visible on screen
+- The camera looks down the Z-axis (`position.z = 150`, FOV 50°), so the visible area is roughly 140×100 units — size models accordingly
+- Voxel models are built with `THREE.Group` containing `THREE.Mesh` children (BoxGeometry + MeshStandardMaterial with `flatShading: true`)
+- Use dedicated color palettes per object type (see `ASTEROID_COLORS` in `asteroid-model.ts`)
+
 ## Pre-Push Checklist
 
 ```bash
