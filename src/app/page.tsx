@@ -9,7 +9,7 @@ export default function Home() {
   const { paused, scrap, cargo, upgrades, togglePause } = useGameState()
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-space-900">
+    <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
       <GameCanvas paused={paused} />
       <HUD scrap={scrap} cargo={cargo} upgrades={upgrades} onPause={togglePause} />
       {paused && <FeedbackFab />}
