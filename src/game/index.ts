@@ -13,6 +13,7 @@ export {
   VOXEL_SIZE,
 } from './ship-constants'
 export { createShipModel } from './ship-model'
+export { createLargeAsteroidModel, ASTEROID_COLORS } from './asteroid-model'
 export { createInputState, createInputHandler, inputToDirection } from './input'
 export type { InputState } from './input'
 export { updateShip } from './ship-controller'
