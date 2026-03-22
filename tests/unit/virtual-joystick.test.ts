@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach } from 'node:test'
+import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { createInputState } from '../../src/game/input'
 import { createVirtualJoystick } from '../../src/game/virtual-joystick'
@@ -37,7 +37,6 @@ function createMockContainer(): MockContainer {
       type: string,
       touches: Array<{ identifier: number; clientX: number; clientY: number }>,
     ) {
-      let prevented = false
       const event = {
         changedTouches: {
           length: touches.length,
@@ -50,18 +49,14 @@ function createMockContainer(): MockContainer {
         touches: {
           length: touches.length,
         },
-        preventDefault() {
-          prevented = true
-        },
+        preventDefault() {},
       }
-      // Index changedTouches
       for (let i = 0; i < touches.length; i++) {
         ;(event.changedTouches as Record<number, unknown>)[i] = touches[i]
       }
       for (const fn of listeners[type] ?? []) {
         fn(event)
       }
-      return prevented
     },
   }
 }
@@ -71,10 +66,6 @@ describe('createVirtualJoystick', () => {
 
   beforeEach(() => {
     container = createMockContainer()
-  })
-
-  afterEach(() => {
-    // cleanup
   })
 
   it('registers touch listeners on attach', () => {

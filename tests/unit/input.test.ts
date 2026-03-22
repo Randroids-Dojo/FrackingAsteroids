@@ -236,15 +236,13 @@ describe('createAimHandler', () => {
     }
   }
 
-  it('registers mouse and touch listeners on attach', () => {
+  it('registers mouse listeners on attach', () => {
     const aim = createAimState()
     const canvas = createMockCanvas()
     const handler = createAimHandler(aim, canvas)
     handler.attach()
     assert.ok(canvasListeners['mousemove']?.length === 1)
     assert.ok(canvasListeners['mouseleave']?.length === 1)
-    assert.ok(canvasListeners['touchmove']?.length === 1)
-    assert.ok(canvasListeners['touchend']?.length === 1)
     handler.detach()
   })
 
@@ -256,8 +254,6 @@ describe('createAimHandler', () => {
     handler.detach()
     assert.equal(canvasListeners['mousemove']?.length ?? 0, 0)
     assert.equal(canvasListeners['mouseleave']?.length ?? 0, 0)
-    assert.equal(canvasListeners['touchmove']?.length ?? 0, 0)
-    assert.equal(canvasListeners['touchend']?.length ?? 0, 0)
   })
 
   it('tracks mouse position relative to canvas', () => {
@@ -281,34 +277,6 @@ describe('createAimHandler', () => {
     fireCanvasEvent('mousemove', { clientX: 110, clientY: 120 })
     assert.equal(aim.active, true)
     fireCanvasEvent('mouseleave', {})
-    assert.equal(aim.active, false)
-    handler.detach()
-  })
-
-  it('tracks touch position', () => {
-    const aim = createAimState()
-    const canvas = createMockCanvas()
-    const handler = createAimHandler(aim, canvas)
-    handler.attach()
-    fireCanvasEvent('touchmove', {
-      touches: { 0: { clientX: 210, clientY: 220 }, length: 1 },
-    })
-    assert.equal(aim.active, true)
-    assert.equal(aim.screenX, 200) // 210 - 10
-    assert.equal(aim.screenY, 200) // 220 - 20
-    handler.detach()
-  })
-
-  it('deactivates on touch end', () => {
-    const aim = createAimState()
-    const canvas = createMockCanvas()
-    const handler = createAimHandler(aim, canvas)
-    handler.attach()
-    fireCanvasEvent('touchmove', {
-      touches: { 0: { clientX: 210, clientY: 220 }, length: 1 },
-    })
-    assert.equal(aim.active, true)
-    fireCanvasEvent('touchend', {})
     assert.equal(aim.active, false)
     handler.detach()
   })

@@ -10,8 +10,8 @@ export interface InputState {
 }
 
 /**
- * Aim state tracks where the player is pointing (mouse cursor or touch).
- * Uses world coordinates so the ship can rotate toward the target.
+ * Aim state tracks where the player is pointing (mouse cursor).
+ * Stored in screen-space; converted to world-space by the scene.
  */
 export interface AimState {
   /** Whether an aim target is currently active */
@@ -78,7 +78,9 @@ export function createInputHandler(state: InputState): {
 }
 
 /**
- * Creates mouse/touch aim handler that tracks cursor position over the canvas.
+ * Creates a mouse aim handler that tracks cursor position over the canvas.
+ * Mouse-only — mobile aiming is handled separately via tap-to-fire to
+ * avoid conflicts with the virtual joystick touch events.
  */
 export function createAimHandler(
   aimState: AimState,
@@ -98,32 +100,14 @@ export function createAimHandler(
     aimState.active = false
   }
 
-  function onTouchMove(e: TouchEvent): void {
-    if (e.touches.length > 0) {
-      const touch = e.touches[0]
-      const rect = canvas.getBoundingClientRect()
-      aimState.active = true
-      aimState.screenX = touch.clientX - rect.left
-      aimState.screenY = touch.clientY - rect.top
-    }
-  }
-
-  function onTouchEnd(): void {
-    aimState.active = false
-  }
-
   return {
     attach() {
       canvas.addEventListener('mousemove', onMouseMove)
       canvas.addEventListener('mouseleave', onMouseLeave)
-      canvas.addEventListener('touchmove', onTouchMove, { passive: true })
-      canvas.addEventListener('touchend', onTouchEnd)
     },
     detach() {
       canvas.removeEventListener('mousemove', onMouseMove)
       canvas.removeEventListener('mouseleave', onMouseLeave)
-      canvas.removeEventListener('touchmove', onTouchMove)
-      canvas.removeEventListener('touchend', onTouchEnd)
       aimState.active = false
     },
   }

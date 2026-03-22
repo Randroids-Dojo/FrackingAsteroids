@@ -87,7 +87,8 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     ndcVec.x = (screenX / w) * 2 - 1
     ndcVec.y = -(screenY / h) * 2 + 1
     raycaster.setFromCamera(ndcVec, camera)
-    raycaster.ray.intersectPlane(groundPlane, worldIntersect)
+    const hit = raycaster.ray.intersectPlane(groundPlane, worldIntersect)
+    if (!hit) return { x: camera.position.x, y: camera.position.y }
     return { x: worldIntersect.x, y: worldIntersect.y }
   }
 
