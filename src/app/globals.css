@@ -15,7 +15,6 @@ body {
   overflow: hidden;
   background: var(--color-space-bg);
   color: white;
-  font-family: var(--font-mono), monospace;
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
@@ -25,4 +24,49 @@ body {
   width: 100vw;
   height: 100vh;
   display: block;
+}
+
+/* Feedback FAB */
+.feedback-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(30, 41, 59, 0.95);
+  color: rgba(148, 163, 184, 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+
+.feedback-fab:hover {
+  border-color: #38bdf8;
+  color: #e2e8f0;
+}
+
+/* Feedback panel */
+.feedback-panel {
+  width: 320px;
+  max-width: calc(100vw - 3rem);
+}
+
+.feedback-panel textarea {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: white;
+  resize: none;
+}
+
+.feedback-panel textarea:focus {
+  border-color: rgba(56, 189, 248, 0.5);
+  outline: none;
+}
+
+@media (max-width: 480px) {
+  .feedback-panel {
+    width: calc(100vw - 3rem);
+  }
 }

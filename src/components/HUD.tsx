@@ -1,19 +1,16 @@
-"use client";
+'use client'
 
-import type { Cargo, Upgrades } from "@/lib/schemas";
+import type { Cargo, Upgrades } from '@/lib/schemas'
 
 interface HUDProps {
-  scrap: number;
-  cargo: Cargo;
-  upgrades: Upgrades;
-  onPause: () => void;
+  scrap: number
+  cargo: Cargo
+  upgrades: Upgrades
+  onPause: () => void
 }
 
 export function HUD({ scrap, cargo, upgrades, onPause }: HUDProps) {
-  const cargoPercent =
-    cargo.capacity > 0
-      ? Math.round((cargo.fragments / cargo.capacity) * 100)
-      : 0;
+  const cargoPercent = cargo.capacity > 0 ? Math.round((cargo.fragments / cargo.capacity) * 100) : 0
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -41,5 +38,5 @@ export function HUD({ scrap, cargo, upgrades, onPause }: HUDProps) {
         </button>
       </div>
     </div>
-  );
+  )
 }

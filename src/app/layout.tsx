@@ -1,27 +1,25 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next'
+import './globals.css'
+import { UpdateBanner } from '@/components/UpdateBanner'
 
 export const metadata: Metadata = {
-  title: "FrackingAsteroids",
-  description:
-    "Blast asteroids, collect fragments, scrap resources, upgrade your ship.",
-};
+  title: 'FrackingAsteroids',
+  description: 'Blast asteroids, collect fragments, scrap resources, upgrade your ship.',
+}
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
+  viewportFit: 'cover',
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-mono antialiased">{children}</body>
+      <body>
+        <UpdateBanner />
+        {children}
+      </body>
     </html>
-  );
+  )
 }

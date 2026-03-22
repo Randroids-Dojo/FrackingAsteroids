@@ -1,28 +1,28 @@
-"use client";
+'use client'
 
-import { useState } from "react";
+import { useState } from 'react'
 
 export function FeedbackFab() {
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!message.trim()) return;
+    e.preventDefault()
+    if (!message.trim()) return
 
     try {
-      await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: message.trim() }),
-      });
-      setSubmitted(true);
-      setMessage("");
+      })
+      setSubmitted(true)
+      setMessage('')
       setTimeout(() => {
-        setSubmitted(false);
-        setOpen(false);
-      }, 2000);
+        setSubmitted(false)
+        setOpen(false)
+      }, 2000)
     } catch {
       // silently ignore
     }
@@ -37,20 +37,16 @@ export function FeedbackFab() {
       >
         ?
       </button>
-    );
+    )
   }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 max-w-[calc(100vw-3rem)] bg-space-800 border border-hud-green/30 rounded-lg shadow-2xl p-4">
       {submitted ? (
-        <p className="text-hud-green font-mono text-sm text-center">
-          Thanks for your feedback!
-        </p>
+        <p className="text-hud-green font-mono text-sm text-center">Thanks for your feedback!</p>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label className="text-hud-green font-mono text-sm font-bold">
-            Feedback
-          </label>
+          <label className="text-hud-green font-mono text-sm font-bold">Feedback</label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -75,5 +71,5 @@ export function FeedbackFab() {
         </form>
       )}
     </div>
-  );
+  )
 }
