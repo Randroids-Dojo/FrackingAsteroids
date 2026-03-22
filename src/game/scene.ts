@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
+import { createLargeAsteroidModel } from './asteroid-model'
 import { createInputState, createInputHandler } from './input'
 import { updateShip } from './ship-controller'
 
@@ -55,6 +56,11 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   // --- Ship ---
   const shipModel = createShipModel()
   scene.add(shipModel)
+
+  // --- Asteroid ---
+  const asteroidModel = createLargeAsteroidModel()
+  asteroidModel.position.set(30, 30, 0)
+  scene.add(asteroidModel)
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
