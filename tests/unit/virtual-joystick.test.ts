@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test'
+import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { createInputState } from '../../src/game/input'
 import { createVirtualJoystick } from '../../src/game/virtual-joystick'
@@ -6,7 +6,60 @@ import { createVirtualJoystick } from '../../src/game/virtual-joystick'
 type Listener = (...args: unknown[]) => void
 type ListenerOptions = { passive?: boolean }
 
-interface MockContainer {
+interface MockElement {
+  style: Record<string, string>
+  children: MockElement[]
+  parentElement: MockElement | null
+  appendChild(child: MockElement): void
+  removeChild(child: MockElement): void
+}
+
+function createMockStyle(): Record<string, string> {
+  const props: Record<string, string> = {}
+  return new Proxy(props, {
+    set(target, key, value: string) {
+      if (key === 'cssText') {
+        // Parse "key:value;key:value;" into individual properties
+        for (const part of value.split(';')) {
+          const colon = part.indexOf(':')
+          if (colon < 0) continue
+          const k = part.slice(0, colon).trim()
+          const v = part.slice(colon + 1).trim()
+          // Convert kebab-case to camelCase
+          const camel = k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
+          target[camel] = v
+        }
+        target['cssText'] = value
+        return true
+      }
+      target[key as string] = value
+      return true
+    },
+    get(target, key) {
+      return target[key as string]
+    },
+  })
+}
+
+function createMockElement(): MockElement {
+  const el: MockElement = {
+    style: createMockStyle(),
+    children: [],
+    parentElement: null,
+    appendChild(child: MockElement) {
+      el.children.push(child)
+      child.parentElement = el
+    },
+    removeChild(child: MockElement) {
+      const idx = el.children.indexOf(child)
+      if (idx >= 0) el.children.splice(idx, 1)
+      child.parentElement = null
+    },
+  }
+  return el
+}
+
+interface MockContainer extends MockElement {
   listeners: Record<string, Listener[]>
   addEventListener(type: string, fn: Listener, opts?: ListenerOptions): void
   removeEventListener(type: string, fn: Listener): void
@@ -19,7 +72,9 @@ interface MockContainer {
 
 function createMockContainer(): MockContainer {
   const listeners: Record<string, Listener[]> = {}
+  const base = createMockElement()
   return {
+    ...base,
     listeners,
     addEventListener(type: string, fn: Listener) {
       if (!listeners[type]) listeners[type] = []
@@ -66,6 +121,19 @@ describe('createVirtualJoystick', () => {
 
   beforeEach(() => {
     container = createMockContainer()
+
+    // Mock document.createElement for the overlay DOM elements
+    const g = globalThis as Record<string, unknown>
+    g.document = {
+      createElement() {
+        return createMockElement()
+      },
+    }
+  })
+
+  afterEach(() => {
+    const g = globalThis as Record<string, unknown>
+    delete g.document
   })
 
   it('registers touch listeners on attach', () => {
@@ -90,13 +158,50 @@ describe('createVirtualJoystick', () => {
     assert.equal(container.listeners['touchcancel']?.length ?? 0, 0)
   })
 
+  it('appends overlay to container on creation', () => {
+    const state = createInputState()
+    createVirtualJoystick(state, container as unknown as HTMLElement)
+    assert.equal(container.children.length, 1, 'should append base element')
+    assert.equal(container.children[0].children.length, 1, 'base should contain knob')
+  })
+
+  it('removes overlay on detach', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    assert.equal(container.children.length, 1)
+    joystick.attach()
+    joystick.detach()
+    assert.equal(container.children.length, 0, 'overlay should be removed')
+  })
+
+  it('shows overlay on left-half touch start', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    const base = container.children[0]
+    assert.equal(base.style.display, 'none')
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    assert.equal(base.style.display, 'block')
+    joystick.detach()
+  })
+
+  it('hides overlay on touch end', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    const base = container.children[0]
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    assert.equal(base.style.display, 'block')
+    container.fireTouch('touchend', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    assert.equal(base.style.display, 'none')
+    joystick.detach()
+  })
+
   it('activates on left-half touch start', () => {
     const state = createInputState()
     const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
     joystick.attach()
-    // Touch at x=100 (left half of 800px container)
     container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
-    // No direction yet (at origin)
     assert.equal(state.up, false)
     assert.equal(state.down, false)
     joystick.detach()
@@ -106,9 +211,7 @@ describe('createVirtualJoystick', () => {
     const state = createInputState()
     const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
     joystick.attach()
-    // Touch at x=500 (right half of 800px container)
     container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
-    // Now try move - should not affect input
     container.fireTouch('touchmove', [{ identifier: 1, clientX: 500, clientY: 200 }])
     assert.equal(state.up, false)
     joystick.detach()
@@ -119,7 +222,6 @@ describe('createVirtualJoystick', () => {
     const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
     joystick.attach()
     container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
-    // Drag upward (screen Y decreases)
     container.fireTouch('touchmove', [{ identifier: 1, clientX: 100, clientY: 240 }])
     assert.equal(state.up, true)
     assert.equal(state.down, false)
@@ -164,7 +266,6 @@ describe('createVirtualJoystick', () => {
     const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
     joystick.attach()
     container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
-    // Drag up-right
     container.fireTouch('touchmove', [{ identifier: 1, clientX: 160, clientY: 240 }])
     assert.equal(state.up, true)
     assert.equal(state.right, true)
@@ -178,7 +279,6 @@ describe('createVirtualJoystick', () => {
     const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
     joystick.attach()
     container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
-    // Move only 5px (within 10px dead zone)
     container.fireTouch('touchmove', [{ identifier: 1, clientX: 105, clientY: 300 }])
     assert.equal(state.right, false)
     assert.equal(state.left, false)

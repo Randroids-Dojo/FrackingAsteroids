@@ -2,17 +2,71 @@ import type { InputState } from './input'
 
 const JOYSTICK_DEAD_ZONE = 10
 const JOYSTICK_MAX_RADIUS = 50
+const BASE_RADIUS = 60
+const KNOB_RADIUS = 24
 
 export interface VirtualJoystick {
   attach: () => void
   detach: () => void
 }
 
+function createOverlay(container: HTMLElement): {
+  base: HTMLElement
+  knob: HTMLElement
+  show: (x: number, y: number) => void
+  move: (dx: number, dy: number) => void
+  hide: () => void
+  destroy: () => void
+} {
+  const base = document.createElement('div')
+  base.style.cssText =
+    `position:absolute;width:${BASE_RADIUS * 2}px;height:${BASE_RADIUS * 2}px;` +
+    `border-radius:50%;border:2px solid rgba(255,255,255,0.25);` +
+    `background:rgba(255,255,255,0.06);pointer-events:none;` +
+    `display:none;transform:translate(-50%,-50%);z-index:10;`
+
+  const knob = document.createElement('div')
+  knob.style.cssText =
+    `position:absolute;width:${KNOB_RADIUS * 2}px;height:${KNOB_RADIUS * 2}px;` +
+    `border-radius:50%;background:rgba(255,255,255,0.35);` +
+    `left:50%;top:50%;transform:translate(-50%,-50%);`
+
+  base.appendChild(knob)
+  container.appendChild(base)
+
+  return {
+    base,
+    knob,
+    show(x: number, y: number) {
+      base.style.display = 'block'
+      base.style.left = `${x}px`
+      base.style.top = `${y}px`
+      knob.style.left = '50%'
+      knob.style.top = '50%'
+    },
+    move(dx: number, dy: number) {
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      const clamped = Math.min(dist, JOYSTICK_MAX_RADIUS)
+      const scale = dist > 0 ? clamped / dist : 0
+      const offsetX = dx * scale
+      const offsetY = dy * scale
+      knob.style.left = `calc(50% + ${offsetX}px)`
+      knob.style.top = `calc(50% + ${offsetY}px)`
+    },
+    hide() {
+      base.style.display = 'none'
+    },
+    destroy() {
+      if (base.parentElement) base.parentElement.removeChild(base)
+    },
+  }
+}
+
 /**
- * Creates a virtual joystick that writes to an InputState.
- * Active only on touch devices — the left half of the container acts as
- * the joystick area. A touch-start anchors the joystick center, then
- * dragging sets the direction.
+ * Creates a virtual joystick that writes to an InputState and renders
+ * a visible base + knob overlay. Active only on touch devices — the
+ * left half of the container acts as the joystick area. A touch-start
+ * anchors the joystick center, then dragging sets the direction.
  */
 export function createVirtualJoystick(
   inputState: InputState,
@@ -22,6 +76,8 @@ export function createVirtualJoystick(
   let originX = 0
   let originY = 0
 
+  const overlay = createOverlay(container)
+
   function isLeftHalf(touch: Touch): boolean {
     const rect = container.getBoundingClientRect()
     return touch.clientX - rect.left < rect.width / 2
@@ -30,6 +86,8 @@ export function createVirtualJoystick(
   function updateDirection(touch: Touch): void {
     const dx = touch.clientX - originX
     const dy = touch.clientY - originY
+
+    overlay.move(dx, dy)
 
     const dist = Math.sqrt(dx * dx + dy * dy)
     if (dist < JOYSTICK_DEAD_ZONE) {
@@ -59,6 +117,10 @@ export function createVirtualJoystick(
         activeId = touch.identifier
         originX = touch.clientX
         originY = touch.clientY
+
+        const rect = container.getBoundingClientRect()
+        overlay.show(touch.clientX - rect.left, touch.clientY - rect.top)
+
         e.preventDefault()
         return
       }
@@ -77,16 +139,21 @@ export function createVirtualJoystick(
     }
   }
 
+  function resetAndHide(): void {
+    activeId = null
+    inputState.up = false
+    inputState.down = false
+    inputState.left = false
+    inputState.right = false
+    overlay.hide()
+  }
+
   function onTouchEnd(e: TouchEvent): void {
     if (activeId === null) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
       if (touch.identifier === activeId) {
-        activeId = null
-        inputState.up = false
-        inputState.down = false
-        inputState.left = false
-        inputState.right = false
+        resetAndHide()
         return
       }
     }
@@ -109,6 +176,7 @@ export function createVirtualJoystick(
       inputState.down = false
       inputState.left = false
       inputState.right = false
+      overlay.destroy()
     },
   }
 }
