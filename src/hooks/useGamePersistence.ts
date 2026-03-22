@@ -2,59 +2,63 @@
 
 import { useRef, useCallback } from 'react'
 import type { GameState } from '@/lib/schemas'
+import type { SaveSlotId } from '@/lib/schemas'
+import { saveSlotSummary } from '@/components/StartScreen'
 
 const AUTOSAVE_INTERVAL = 30_000
-const STORAGE_KEY = 'fracking-asteroids-game-id'
+const ACTIVE_SLOT_KEY = 'fracking-asteroids-active-slot'
 
-export function getGameId(): string | null {
+export function getActiveSlot(): SaveSlotId | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem(STORAGE_KEY)
+  return localStorage.getItem(ACTIVE_SLOT_KEY) as SaveSlotId | null
 }
 
-export function getOrCreateGameId(): string {
-  const existing = getGameId()
-  if (existing) return existing
-  const id = `game-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  localStorage.setItem(STORAGE_KEY, id)
-  return id
+export function setActiveSlot(slotId: SaveSlotId): void {
+  localStorage.setItem(ACTIVE_SLOT_KEY, slotId)
 }
 
-export function resetGameId(): void {
+export function clearActiveSlot(): void {
   if (typeof window === 'undefined') return
-  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(ACTIVE_SLOT_KEY)
 }
 
-export function useGamePersistence(gameId: string | null) {
+export function useGamePersistence(slotId: SaveSlotId | null) {
   const _lastSave = useRef<number>(0)
   void _lastSave
   void AUTOSAVE_INTERVAL
 
   const save = useCallback(
     async (state: GameState) => {
-      if (!gameId) return
+      if (!slotId) return
       try {
-        await fetch(`/api/game/${gameId}`, {
+        await fetch(`/api/game/${slotId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(state),
+        })
+        saveSlotSummary({
+          slotId,
+          score: state.score,
+          wave: state.wave,
+          timestamp: state.timestamp,
         })
       } catch {
         // silently ignore save failures
       }
     },
-    [gameId],
+    [slotId],
   )
 
   const load = useCallback(async (): Promise<GameState | null> => {
-    if (!gameId) return null
+    if (!slotId) return null
     try {
-      const res = await fetch(`/api/game/${gameId}`)
+      const res = await fetch(`/api/game/${slotId}`)
       if (!res.ok) return null
       return (await res.json()) as GameState
     } catch {
       return null
     }
-  }, [gameId])
+  }, [slotId])
 
   return { save, load }
 }

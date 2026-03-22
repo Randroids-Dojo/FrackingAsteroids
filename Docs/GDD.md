@@ -176,6 +176,20 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - "Buy" button grayed out if insufficient scrap
 - Visual preview of upgrade effect
 
+### Start Screen
+
+- Full-screen menu shown on app launch (before gameplay)
+- Title "FRACKING ASTEROIDS" with tagline
+- **New Game** button — opens save slot picker (3 slots)
+  - If selected slot has saved data, confirm overwrite before starting
+  - Creates fresh default game state in chosen slot
+- **Load Game** button — opens save slot picker (3 slots)
+  - Only populated slots are selectable
+  - Disabled entirely if no saves exist
+- Each save slot shows: wave number, score, and last-save timestamp
+- Save slot summaries stored in localStorage for instant display
+- Decorative starfield background with space theme
+
 ### Pause Overlay
 
 - Darkened game canvas
