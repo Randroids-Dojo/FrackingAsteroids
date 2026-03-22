@@ -89,8 +89,26 @@ describe('updateShip', () => {
     for (let i = 0; i < 10; i++) {
       updateShip(ship, input, 1 / 60)
     }
-    // atan2(1, 0) = PI/2 — facing right
-    assert.ok(Math.abs(ship.rotation - Math.atan2(1, 0)) < 0.001, 'should face right')
+    // Ship faces +Y at rotation=0; rotation.z is CCW in Three.js.
+    // Moving right (dx=1) → atan2(-1, 0) = -PI/2 (CW 90°) → faces right
+    assert.ok(Math.abs(ship.rotation - Math.atan2(-1, 0)) < 0.001, 'should face right')
+  })
+
+  it('faces up-left when moving up-left (not up-right)', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.up = true
+    input.left = true
+    for (let i = 0; i < 10; i++) {
+      updateShip(ship, input, 1 / 60)
+    }
+    // dx=-0.707, dy=0.707 → atan2(0.707, 0.707) = PI/4 (CCW 45° → faces up-left)
+    const expected = Math.atan2(1, 1) // PI/4
+    assert.ok(
+      Math.abs(ship.rotation - expected) < 0.001,
+      `rotation ${ship.rotation} should be ~PI/4`,
+    )
+    assert.ok(ship.rotation > 0, 'rotation should be positive (CCW) for up-left')
   })
 
   it('uses aim rotation when provided', () => {
@@ -142,9 +160,9 @@ describe('aimToRotation', () => {
     const aim: AimState = { active: true, screenX: 100, screenY: 0 }
     const result = aimToRotation(ship, aim, identityScreenToWorld)
     assert.ok(result !== null, 'result should not be null')
-    // atan2(100, 0) = PI/2 — aiming right
+    // dx=100, dy=0 → atan2(-100, 0) = -PI/2 (CW 90° → faces right)
     const angle: number = result
-    assert.ok(Math.abs(angle - Math.PI / 2) < 0.001)
+    assert.ok(Math.abs(angle - -Math.PI / 2) < 0.001)
   })
 
   it('returns null when cursor is on top of ship', () => {
@@ -159,11 +177,11 @@ describe('aimToRotation', () => {
     ship.x = 50
     ship.y = 50
     // Aim at world (100, -100) relative to ship at (50, 50)
-    // dx = 100-50=50, dy = -100-50=-150
+    // dx = 100-50=50, dy = -100-50=-150 → atan2(-50, -150)
     const aim: AimState = { active: true, screenX: 100, screenY: 100 }
     const result = aimToRotation(ship, aim, identityScreenToWorld)
     assert.ok(result !== null, 'result should not be null')
-    const expected = Math.atan2(50, -150)
+    const expected = Math.atan2(-50, -150)
     const angle: number = result
     assert.ok(Math.abs(angle - expected) < 0.001)
   })

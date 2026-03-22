@@ -26,7 +26,10 @@ export function aimToRotation(
   // Don't update if cursor is basically on top of the ship
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return null
 
-  return Math.atan2(dx, dy)
+  // Ship model faces +Y; Three.js rotation.z is CCW, so the forward
+  // vector after rotation θ is [-sin(θ), cos(θ)].  Solving for θ
+  // gives atan2(-dx, dy).
+  return Math.atan2(-dx, dy)
 }
 
 /**
@@ -82,7 +85,7 @@ export function updateShip(
   } else if (dx !== 0 || dy !== 0) {
     const currentSpeed = Math.sqrt(ship.velocityX ** 2 + ship.velocityY ** 2)
     if (currentSpeed > 1) {
-      ship.rotation = Math.atan2(dx, dy)
+      ship.rotation = Math.atan2(-dx, dy)
     }
   }
 }
