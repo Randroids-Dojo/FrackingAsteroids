@@ -153,6 +153,18 @@ npm run lint:fix
 npm run build
 ```
 
+## Input & Event Handling
+
+- **No duplicate event listeners on shared elements** — before adding mouse/touch handlers to a container, check whether other systems (e.g. virtual joystick, aim handler) already listen on the same element for the same event types. Two systems fighting over `touchmove` on the same element is a bug.
+- **Separate mouse and touch concerns** — desktop uses mouse events for aiming; mobile uses touch events for the virtual joystick and tap-to-fire. Don't mix them in a single handler — they have different semantics and will conflict on multi-touch.
+- **Handle nullable returns from Three.js** — methods like `raycaster.ray.intersectPlane()` can return `null`. Always handle the null case even when it seems unlikely with the current camera setup.
+
+## Code Quality
+
+- **Docstrings must match the actual data** — if a field stores screen-space pixels, don't document it as "world coordinates." Misleading docs are worse than no docs.
+- **No dead code in tests** — no empty `afterEach` blocks, no unused variables. Tests are code too; keep them clean.
+- **Self-review before committing** — re-read every changed file for: conflicting event handlers on shared elements, misleading comments/docs, unhandled nullable returns, and dead code. These are the most common issues.
+
 ## No Broken Windows
 
 Fix broken tools, tests, or builds immediately. Never leave the codebase in a worse state than you found it.
