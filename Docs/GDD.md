@@ -235,6 +235,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 
 - Space: `#0a0a1a` to `#111133` gradient
 - Asteroids: `#8B6914`, `#6B6B6B`, `#FFD700`
+- Mining laser: `#FFAA00` (amber bolt), `#FFDD44` (bright core)
 - HUD: `#00FF88` (green), `#00AAFF` (blue), `#FF4444` (red), `#FFAA00` (amber)
 
 ### Audio (Future)
@@ -244,9 +245,15 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 
 ## 8. Milestones
 
-- [ ] **M1: Skeleton** — Project setup, build pipeline, deploy to Vercel
-- [ ] **M2: Flight** — Ship rendering and movement (desktop + mobile)
+- [x] **M1: Skeleton** — Project setup, build pipeline, deploy to Vercel
+- [x] **M2: Flight** — Ship rendering and movement (desktop + mobile)
 - [ ] **M3: Combat** — Blaster firing, asteroid spawning, collision detection
+  - [x] Mining laser system (fire, cooldown, tier-based spread)
+  - [x] Projectile rendering and lifecycle (amber voxel bolts)
+  - [x] Desktop (mouse click) and mobile (right-half tap) fire input
+  - [ ] Asteroid spawning and wave system
+  - [ ] Projectile–asteroid collision detection
+  - [ ] Asteroid damage, destruction, and fragment spawning
 - [ ] **M4: Economy** — Fragment collection, scrap conversion, cargo system
 - [ ] **M5: Upgrades** — Upgrade panel, tier progression, stat scaling
 - [ ] **M6: Persistence** — KV save/load, auto-save, game state recovery

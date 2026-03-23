@@ -166,6 +166,47 @@ describe('fireBlaster', () => {
     assert.ok(speed > 0, 'should still fire')
   })
 
+  it('fires from ship position when ship is not at origin', () => {
+    const blaster = createBlasterState()
+    const ship = makeShip()
+    ship.x = 50
+    ship.y = 30
+    const projectiles = fireBlaster(blaster, ship, 150, 30, 1)
+    assert.equal(projectiles.length, 1)
+    assert.equal(projectiles[0].x, 50)
+    assert.equal(projectiles[0].y, 30)
+    assert.ok(projectiles[0].velocityX > 0, 'should fire toward target')
+  })
+
+  it('fires toward diagonal target', () => {
+    const blaster = createBlasterState()
+    const ship = makeShip()
+    const projectiles = fireBlaster(blaster, ship, 100, 100, 1)
+    assert.equal(projectiles.length, 1)
+    assert.ok(projectiles[0].velocityX > 0, 'should have positive X velocity')
+    assert.ok(projectiles[0].velocityY > 0, 'should have positive Y velocity')
+    // 45° diagonal: vx and vy should be equal
+    assert.ok(Math.abs(projectiles[0].velocityX - projectiles[0].velocityY) < 0.01)
+  })
+
+  it('tier 2 has 1.25x speed multiplier', () => {
+    const blaster = createBlasterState()
+    const ship = makeShip()
+    const projectiles = fireBlaster(blaster, ship, 100, 0, 2)
+    const p = projectiles[0]
+    const speed = Math.sqrt(p.velocityX ** 2 + p.velocityY ** 2)
+    assert.ok(Math.abs(speed - BASE_PROJECTILE_SPEED * 1.25) < 0.01)
+  })
+
+  it('tier 4 does 2 damage', () => {
+    const blaster = createBlasterState()
+    const ship = makeShip()
+    const projectiles = fireBlaster(blaster, ship, 100, 0, 4)
+    for (const p of projectiles) {
+      assert.equal(p.damage, 2)
+    }
+  })
+
   it('generates unique projectile IDs', () => {
     const blaster = createBlasterState()
     const ship = makeShip()
@@ -220,6 +261,28 @@ describe('updateProjectiles', () => {
     const elapsed = new Map<string, number>()
     const result = updateProjectiles([], 0.1, elapsed)
     assert.equal(result.length, 0)
+  })
+
+  it('accumulates age across multiple frames', () => {
+    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const elapsed = new Map<string, number>()
+
+    // Frame 1
+    updateProjectiles(projectiles, 0.5, elapsed)
+    const age1 = elapsed.get('p1')
+    assert.ok(age1 !== undefined)
+    assert.ok(Math.abs(age1 - 0.5) < 0.001)
+
+    // Frame 2 — age should accumulate
+    updateProjectiles(projectiles, 0.5, elapsed)
+    const age2 = elapsed.get('p1')
+    assert.ok(age2 !== undefined)
+    assert.ok(Math.abs(age2 - 1.0) < 0.001)
+
+    // Frame 3 — should expire (1.0 + 0.6 = 1.6 > 1.5 lifetime)
+    const result = updateProjectiles(projectiles, 0.6, elapsed)
+    assert.equal(result.length, 0)
+    assert.equal(elapsed.has('p1'), false)
   })
 
   it('handles multiple projectiles with mixed lifetimes', () => {
