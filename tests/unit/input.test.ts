@@ -2,6 +2,8 @@ import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   createInputState,
+  createAimState,
+  createAimHandler,
   inputToDirection,
   createInputHandler,
   KEY_MAP,
@@ -189,6 +191,105 @@ describe('createInputHandler', () => {
     fireEvent('keyup', 'Enter')
     assert.equal(state.up, false)
     handler.detach()
+  })
+})
+
+describe('createAimState', () => {
+  it('returns inactive aim state', () => {
+    const aim = createAimState()
+    assert.equal(aim.active, false)
+    assert.equal(aim.screenX, 0)
+    assert.equal(aim.screenY, 0)
+  })
+})
+
+describe('createAimHandler', () => {
+  type Listener = (e: unknown) => void
+  const canvasListeners: Record<string, Listener[]> = {}
+
+  function createMockCanvas() {
+    return {
+      addEventListener(type: string, fn: Listener) {
+        if (!canvasListeners[type]) canvasListeners[type] = []
+        canvasListeners[type].push(fn)
+      },
+      removeEventListener(type: string, fn: Listener) {
+        if (canvasListeners[type]) {
+          canvasListeners[type] = canvasListeners[type].filter((f) => f !== fn)
+        }
+      },
+      getBoundingClientRect() {
+        return { left: 10, top: 20, width: 800, height: 600 }
+      },
+    } as unknown as HTMLElement
+  }
+
+  beforeEach(() => {
+    for (const key of Object.keys(canvasListeners)) {
+      delete canvasListeners[key]
+    }
+  })
+
+  function fireCanvasEvent(type: string, detail: Record<string, unknown>): void {
+    for (const fn of canvasListeners[type] ?? []) {
+      fn(detail)
+    }
+  }
+
+  it('registers mouse listeners on attach', () => {
+    const aim = createAimState()
+    const canvas = createMockCanvas()
+    const handler = createAimHandler(aim, canvas)
+    handler.attach()
+    assert.ok(canvasListeners['mousemove']?.length === 1)
+    assert.ok(canvasListeners['mouseleave']?.length === 1)
+    handler.detach()
+  })
+
+  it('removes listeners on detach', () => {
+    const aim = createAimState()
+    const canvas = createMockCanvas()
+    const handler = createAimHandler(aim, canvas)
+    handler.attach()
+    handler.detach()
+    assert.equal(canvasListeners['mousemove']?.length ?? 0, 0)
+    assert.equal(canvasListeners['mouseleave']?.length ?? 0, 0)
+  })
+
+  it('tracks mouse position relative to canvas', () => {
+    const aim = createAimState()
+    const canvas = createMockCanvas()
+    const handler = createAimHandler(aim, canvas)
+    handler.attach()
+    // Canvas is at left:10, top:20
+    fireCanvasEvent('mousemove', { clientX: 110, clientY: 120 })
+    assert.equal(aim.active, true)
+    assert.equal(aim.screenX, 100) // 110 - 10
+    assert.equal(aim.screenY, 100) // 120 - 20
+    handler.detach()
+  })
+
+  it('deactivates on mouse leave', () => {
+    const aim = createAimState()
+    const canvas = createMockCanvas()
+    const handler = createAimHandler(aim, canvas)
+    handler.attach()
+    fireCanvasEvent('mousemove', { clientX: 110, clientY: 120 })
+    assert.equal(aim.active, true)
+    fireCanvasEvent('mouseleave', {})
+    assert.equal(aim.active, false)
+    handler.detach()
+  })
+
+  it('deactivates on detach', () => {
+    const aim = createAimState()
+    const canvas = createMockCanvas()
+    const handler = createAimHandler(aim, canvas)
+    handler.attach()
+    fireCanvasEvent('mousemove', { clientX: 110, clientY: 120 })
+    assert.equal(aim.active, true)
+    handler.detach()
+    assert.equal(aim.active, false)
   })
 })
 

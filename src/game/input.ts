@@ -9,8 +9,25 @@ export interface InputState {
   right: boolean
 }
 
+/**
+ * Aim state tracks where the player is pointing (mouse cursor).
+ * Stored in screen-space; converted to world-space by the scene.
+ */
+export interface AimState {
+  /** Whether an aim target is currently active */
+  active: boolean
+  /** Screen-space X of the aim target (pixels from left of canvas) */
+  screenX: number
+  /** Screen-space Y of the aim target (pixels from top of canvas) */
+  screenY: number
+}
+
 export function createInputState(): InputState {
   return { up: false, down: false, left: false, right: false }
+}
+
+export function createAimState(): AimState {
+  return { active: false, screenX: 0, screenY: 0 }
 }
 
 export const KEY_MAP: Record<string, keyof InputState> = {
@@ -56,6 +73,42 @@ export function createInputHandler(state: InputState): {
       state.down = false
       state.left = false
       state.right = false
+    },
+  }
+}
+
+/**
+ * Creates a mouse aim handler that tracks cursor position over the canvas.
+ * Mouse-only — mobile aiming is handled separately via tap-to-fire to
+ * avoid conflicts with the virtual joystick touch events.
+ */
+export function createAimHandler(
+  aimState: AimState,
+  canvas: HTMLElement,
+): {
+  attach: () => void
+  detach: () => void
+} {
+  function onMouseMove(e: MouseEvent): void {
+    const rect = canvas.getBoundingClientRect()
+    aimState.active = true
+    aimState.screenX = e.clientX - rect.left
+    aimState.screenY = e.clientY - rect.top
+  }
+
+  function onMouseLeave(): void {
+    aimState.active = false
+  }
+
+  return {
+    attach() {
+      canvas.addEventListener('mousemove', onMouseMove)
+      canvas.addEventListener('mouseleave', onMouseLeave)
+    },
+    detach() {
+      canvas.removeEventListener('mousemove', onMouseMove)
+      canvas.removeEventListener('mouseleave', onMouseLeave)
+      aimState.active = false
     },
   }
 }
