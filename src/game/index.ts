@@ -54,6 +54,13 @@ export { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from 
 export type { ProjectileHit } from './collision'
 export { createExplosion, updateExplosion, disposeExplosion, EXPLOSION_DURATION } from './explosion'
 export type { Explosion } from './explosion'
+export {
+  breakChunks,
+  updateDebrisChunk,
+  disposeDebrisChunk,
+  HITS_PER_BREAK,
+} from './asteroid-debris'
+export type { DebrisChunk } from './asteroid-debris'
 export { computeHealthMeterState } from './asteroid-health-meter'
 export type { HealthMeterState } from './asteroid-health-meter'
 export { createGameScene } from './scene'
