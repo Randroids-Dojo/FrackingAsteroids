@@ -166,6 +166,9 @@ npm run build
 
 - **No duplicate event listeners on shared elements** — before adding mouse/touch handlers to a container, check whether other systems (e.g. virtual joystick, aim handler) already listen on the same element for the same event types. Two systems fighting over `touchmove` on the same element is a bug.
 - **Separate mouse and touch concerns** — desktop uses mouse events for aiming; mobile uses touch events for the virtual joystick and tap-to-fire. Don't mix them in a single handler — they have different semantics and will conflict on multi-touch.
+- **Always `preventDefault()` on handled touch events** — the browser synthesizes mouse events (`mousemove`, `mousedown`) from unhandled touches. If a touch handler processes an event but doesn't call `e.preventDefault()`, the synthetic mouse event will leak into mouse-only systems (e.g. aim handler), causing unintended side effects like the ship rotating toward a tap. Every `touchstart`/`touchmove` handler that consumes the event must call `e.preventDefault()`.
+- **Ship rotation is joystick-only on mobile** — the left-side virtual joystick is the sole control for ship facing direction on mobile. Right-side taps fire in the ship's current facing direction. No touch event on the right side should influence `aimState` or ship rotation. If adding new touch interactions, verify they don't feed into the aim/rotation pipeline.
+- **No speed gates on input-driven rotation** — when the player is actively providing directional input (joystick or keyboard), the ship must rotate to face that direction immediately, regardless of current velocity. Never require a minimum speed before allowing rotation — it makes controls feel broken.
 - **Handle nullable returns from Three.js** — methods like `raycaster.ray.intersectPlane()` can return `null`. Always handle the null case even when it seems unlikely with the current camera setup.
 
 ## Code Quality

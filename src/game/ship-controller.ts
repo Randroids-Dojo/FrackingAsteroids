@@ -79,13 +79,10 @@ export function updateShip(
   ship.x += ship.velocityX * dt
   ship.y += ship.velocityY * dt
 
-  // Update rotation: prefer aim target, fall back to movement direction
+  // Update rotation: prefer aim target, fall back to input direction
   if (aimRotation != null) {
     ship.rotation = aimRotation
   } else if (dx !== 0 || dy !== 0) {
-    const currentSpeed = Math.sqrt(ship.velocityX ** 2 + ship.velocityY ** 2)
-    if (currentSpeed > 1) {
-      ship.rotation = Math.atan2(-dx, dy)
-    }
+    ship.rotation = Math.atan2(-dx, dy)
   }
 }

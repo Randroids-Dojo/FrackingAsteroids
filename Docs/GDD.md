@@ -53,14 +53,25 @@ None — the game is an endless progression loop. Ship is never destroyed (no he
 
 ### Ship Systems
 
-#### Blaster
+#### Blaster (Mining Laser)
+
+The blaster is a short-range mining tool, not a long-range weapon. Projectiles are amber-colored
+energy pulses that chip away at asteroids. Short range forces the player to fly close to their
+claim, reinforcing the mining fantasy.
+
 | Tier | Fire Rate | Projectile Speed | Damage | Spread |
 |------|-----------|-------------------|--------|--------|
-| 1    | 1/sec     | Base              | 1      | None   |
-| 2    | 2/sec     | +25%              | 1      | None   |
-| 3    | 3/sec     | +50%              | 2      | None   |
-| 4    | 4/sec     | +75%              | 2      | Dual   |
-| 5    | 5/sec     | +100%             | 3      | Triple |
+| 1    | 1/sec     | 200 u/s (base)    | 1      | None   |
+| 2    | 2/sec     | 250 u/s (+25%)    | 1      | None   |
+| 3    | 3/sec     | 300 u/s (+50%)    | 2      | None   |
+| 4    | 4/sec     | 350 u/s (+75%)    | 2      | Dual (±8°) |
+| 5    | 5/sec     | 400 u/s (+100%)   | 3      | Triple (0°, ±10°) |
+
+**Projectile Constants:**
+- Base speed: 200 units/sec (matches ship max speed — feels like a tool, not a weapon)
+- Lifetime: 1.5 seconds (~300 unit max range, but effective mining range is much shorter)
+- Visual: 2–3 voxel elongated amber pulse (color `0xFFAA00`)
+- Collision: circle-circle radius check against asteroids
 
 #### Collector
 | Tier | Range   | Pull Speed | Auto-Collect |
@@ -103,7 +114,7 @@ None — the game is an endless progression loop. Ship is never destroyed (no he
 
 **Mobile:**
 - Left thumb virtual joystick — move (fixed position, left half of screen)
-- Right thumb tap — fire toward tap position (ship aims at tap)
+- Right thumb tap — fire in the direction the ship is facing (right half of screen)
 - Pause button in HUD — pause (reveals Feedback FAB)
 
 **Design Notes:**
@@ -172,6 +183,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - **Scrap counter** — top-left, shows current scrap amount
 - **Cargo bar** — top-left below scrap, shows fragments/capacity
 - **Upgrade indicators** — top-right, shows current tier for each system
+- **Recharge meter** — small horizontal bar below ship, shows blaster cooldown progress. Amber while charging, turns green at 90%+, hidden when fully charged. Scales with blaster tier fire rate.
 - **Wave counter** — top-center
 - **Pause button** — top-right corner (mobile: larger touch target)
 
@@ -217,13 +229,14 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - Ship: ~8x8x4 voxel block ship with engine glow
 - Asteroids: irregular voxel clusters, procedurally varied
 - Fragments: small 1-2 voxel glowing cubes
-- Projectiles: bright elongated voxel bolts
+- Projectiles: bright amber elongated voxel pulses (mining laser bolts)
 - Background: particle-based star field
 
 ### Color Palette
 
 - Space: `#0a0a1a` to `#111133` gradient
 - Asteroids: `#8B6914`, `#6B6B6B`, `#FFD700`
+- Mining laser: `#FFAA00` (amber bolt), `#FFDD44` (bright core)
 - HUD: `#00FF88` (green), `#00AAFF` (blue), `#FF4444` (red), `#FFAA00` (amber)
 
 ### Audio (Future)
@@ -233,9 +246,16 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 
 ## 8. Milestones
 
-- [ ] **M1: Skeleton** — Project setup, build pipeline, deploy to Vercel
-- [ ] **M2: Flight** — Ship rendering and movement (desktop + mobile)
+- [x] **M1: Skeleton** — Project setup, build pipeline, deploy to Vercel
+- [x] **M2: Flight** — Ship rendering and movement (desktop + mobile)
 - [ ] **M3: Combat** — Blaster firing, asteroid spawning, collision detection
+  - [x] Mining laser system (fire, cooldown, tier-based spread)
+  - [x] Projectile rendering and lifecycle (amber voxel bolts)
+  - [x] Desktop (mouse click) and mobile (right-half tap) fire input
+  - [x] Recharge meter (cooldown bar below ship)
+  - [ ] Asteroid spawning and wave system
+  - [ ] Projectile–asteroid collision detection
+  - [ ] Asteroid damage, destruction, and fragment spawning
 - [ ] **M4: Economy** — Fragment collection, scrap conversion, cargo system
 - [ ] **M5: Upgrades** — Upgrade panel, tier progression, stat scaling
 - [ ] **M6: Persistence** — KV save/load, auto-save, game state recovery
