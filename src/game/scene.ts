@@ -5,7 +5,7 @@ import { createProjectileModel } from './projectile-model'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { updateShip, aimToRotation } from './ship-controller'
 import { createVirtualJoystick } from './virtual-joystick'
-import { createFireButton } from './fire-button'
+import { createFireButton, createCollectButton } from './fire-button'
 import {
   createBlasterState,
   updateBlasterCooldown,
@@ -29,6 +29,7 @@ import {
   updateMetalChunk,
   bounceMetalOffShip,
   bounceMetalOffAsteroid,
+  attractMetalToShip,
   disposeMetalChunk,
   METAL_SPAWN_CHANCE,
 } from './metal-chunk'
@@ -207,6 +208,19 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   })
   fireButton.attach()
 
+  // --- Mobile Collect Button ---
+  let collecting = false
+  const collectButton = createCollectButton(
+    container,
+    () => {
+      collecting = true
+    },
+    () => {
+      collecting = false
+    },
+  )
+  collectButton.attach()
+
   // Swallow right-half touches that miss the fire button so the browser
   // doesn't synthesize mouse events that rotate the ship or break the joystick.
   function onTouchStartSwallow(e: TouchEvent): void {
@@ -384,8 +398,21 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       }
 
       // --- Update Metal Chunks ---
-      for (const metal of metalChunks) {
+      for (let i = metalChunks.length - 1; i >= 0; i--) {
+        const metal = metalChunks[i]
         updateMetalChunk(metal, dt)
+
+        // Attract toward ship when collector is active
+        if (collecting) {
+          const collected = attractMetalToShip(metal, ship, dt)
+          if (collected) {
+            scene.remove(metal.mesh)
+            disposeMetalChunk(metal)
+            metalChunks.splice(i, 1)
+            continue
+          }
+        }
+
         bounceMetalOffShip(metal, ship)
         for (const a of asteroids) {
           bounceMetalOffAsteroid(metal, a)
@@ -426,6 +453,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     aimHandler.detach()
     joystick.detach()
     fireButton.detach()
+    collectButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
     container.removeEventListener('touchstart', onTouchStartSwallow)
     window.removeEventListener('resize', onResize)

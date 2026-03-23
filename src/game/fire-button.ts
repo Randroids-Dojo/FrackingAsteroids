@@ -1,30 +1,50 @@
 const BUTTON_SIZE = 80
 const BORDER_WIDTH = 3
+const BUTTON_GAP = 24
 
-export interface FireButton {
+export interface ActionButton {
   attach: () => void
   detach: () => void
+  /** Whether the button is currently held down. */
+  isPressed: () => boolean
 }
 
-function createButtonOverlay(container: HTMLElement): {
+interface ButtonStyle {
+  r: number
+  g: number
+  b: number
+}
+
+const STYLE_FIRE: ButtonStyle = { r: 255, g: 170, b: 0 }
+const STYLE_COLLECT: ButtonStyle = { r: 0, g: 170, b: 255 }
+
+function rgba(s: ButtonStyle, a: number): string {
+  return `rgba(${s.r},${s.g},${s.b},${a})`
+}
+
+function createButtonOverlay(
+  container: HTMLElement,
+  style: ButtonStyle,
+  bottomOffset: string,
+  label: string,
+): {
   button: HTMLElement
   setPressed: (pressed: boolean) => void
   destroy: () => void
 } {
   const button = document.createElement('div')
-  button.setAttribute('aria-label', 'Fire')
+  button.setAttribute('aria-label', label)
   button.setAttribute('role', 'button')
   button.style.cssText =
-    `position:absolute;bottom:25%;right:32px;width:${BUTTON_SIZE}px;height:${BUTTON_SIZE}px;` +
-    `border-radius:50%;border:${BORDER_WIDTH}px solid rgba(255,170,0,0.6);` +
-    `background:rgba(255,170,0,0.15);z-index:10;touch-action:none;` +
+    `position:absolute;bottom:${bottomOffset};right:32px;width:${BUTTON_SIZE}px;height:${BUTTON_SIZE}px;` +
+    `border-radius:50%;border:${BORDER_WIDTH}px solid ${rgba(style, 0.6)};` +
+    `background:${rgba(style, 0.15)};z-index:10;touch-action:none;` +
     `display:flex;align-items:center;justify-content:center;`
 
-  // Inner crosshair / fire indicator
   const inner = document.createElement('div')
   inner.style.cssText =
     `width:${BUTTON_SIZE * 0.4}px;height:${BUTTON_SIZE * 0.4}px;` +
-    `border-radius:50%;background:rgba(255,170,0,0.4);pointer-events:none;`
+    `border-radius:50%;background:${rgba(style, 0.4)};pointer-events:none;`
 
   button.appendChild(inner)
   container.appendChild(button)
@@ -33,11 +53,11 @@ function createButtonOverlay(container: HTMLElement): {
     button,
     setPressed(pressed: boolean) {
       if (pressed) {
-        button.style.background = 'rgba(255,170,0,0.4)'
-        inner.style.background = 'rgba(255,170,0,0.7)'
+        button.style.background = rgba(style, 0.4)
+        inner.style.background = rgba(style, 0.7)
       } else {
-        button.style.background = 'rgba(255,170,0,0.15)'
-        inner.style.background = 'rgba(255,170,0,0.4)'
+        button.style.background = rgba(style, 0.15)
+        inner.style.background = rgba(style, 0.4)
       }
     },
     destroy() {
@@ -46,12 +66,15 @@ function createButtonOverlay(container: HTMLElement): {
   }
 }
 
-/**
- * Creates a visible fire button on the bottom-right of the screen for mobile.
- * Calls `onFire` on each touchstart on the button.
- */
-export function createFireButton(container: HTMLElement, onFire: () => void): FireButton {
-  const overlay = createButtonOverlay(container)
+function createActionButton(
+  container: HTMLElement,
+  style: ButtonStyle,
+  bottomOffset: string,
+  label: string,
+  onPress: () => void,
+  onRelease?: () => void,
+): ActionButton {
+  const overlay = createButtonOverlay(container, style, bottomOffset, label)
   let activeId: number | null = null
 
   function onTouchStart(e: TouchEvent): void {
@@ -60,7 +83,7 @@ export function createFireButton(container: HTMLElement, onFire: () => void): Fi
       const touch = e.changedTouches[i]
       activeId = touch.identifier
       overlay.setPressed(true)
-      onFire()
+      onPress()
       e.preventDefault()
       return
     }
@@ -73,6 +96,7 @@ export function createFireButton(container: HTMLElement, onFire: () => void): Fi
       if (touch.identifier === activeId) {
         activeId = null
         overlay.setPressed(false)
+        if (onRelease) onRelease()
         return
       }
     }
@@ -91,5 +115,33 @@ export function createFireButton(container: HTMLElement, onFire: () => void): Fi
       activeId = null
       overlay.destroy()
     },
+    isPressed() {
+      return activeId !== null
+    },
   }
+}
+
+// Fire button position: bottom 25%
+const FIRE_BOTTOM = '25%'
+// Collect button position: fire button + button size + gap
+const COLLECT_BOTTOM = `calc(25% + ${BUTTON_SIZE + BUTTON_GAP}px)`
+
+/**
+ * Creates a visible fire button on the bottom-right of the screen for mobile.
+ * Calls `onFire` on each touchstart.
+ */
+export function createFireButton(container: HTMLElement, onFire: () => void): ActionButton {
+  return createActionButton(container, STYLE_FIRE, FIRE_BOTTOM, 'Fire', onFire)
+}
+
+/**
+ * Creates a collect button above the fire button on the bottom-right.
+ * The collector is active while the button is held down.
+ */
+export function createCollectButton(
+  container: HTMLElement,
+  onPress: () => void,
+  onRelease: () => void,
+): ActionButton {
+  return createActionButton(container, STYLE_COLLECT, COLLECT_BOTTOM, 'Collect', onPress, onRelease)
 }

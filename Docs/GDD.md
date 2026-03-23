@@ -114,7 +114,8 @@ claim, reinforcing the mining fantasy.
 
 **Mobile:**
 - Left thumb virtual joystick — move (fixed position, left half of screen)
-- Fire button — visible circular button on bottom-right, fires in the direction the ship is facing
+- Fire button — visible circular amber button on bottom-right, fires in the direction the ship is facing
+- Collect button — visible circular blue button above fire button, hold to activate metal attractor that pulls nearby metal chunks toward the ship
 - Pause button in HUD — pause (reveals Feedback FAB)
 
 **Design Notes:**
