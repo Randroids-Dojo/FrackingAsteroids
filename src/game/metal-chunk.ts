@@ -22,7 +22,7 @@ const METAL_FRICTION = 0.995
 const METAL_RESTITUTION = 0.7
 
 /** Chance (0–1) that a debris break-off spawns a metal chunk. */
-export const METAL_SPAWN_CHANCE = 0.35
+export const METAL_SPAWN_CHANCE = 0.7
 
 /** Metal colors — silver and gold. */
 const METAL_COLORS = {
