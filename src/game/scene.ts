@@ -118,8 +118,8 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       velocityX: 0,
       velocityY: 0,
       type: 'common',
-      hp: 3,
-      maxHp: 3,
+      hp: 15,
+      maxHp: 15,
       size: 1,
     },
   ]
