@@ -11,6 +11,7 @@ import {
   fireBlaster,
   updateProjectiles,
 } from './blaster'
+import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
 import type { Projectile } from './types'
 
 function disposeMesh(obj: THREE.Object3D): void {
@@ -82,6 +83,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   // --- Ship ---
   const shipModel = createShipModel()
   scene.add(shipModel)
+
+  // --- Recharge Meter (positioned at ship, but not parented to avoid rotation) ---
+  const rechargeMeter = createRechargeMeter()
+  scene.add(rechargeMeter)
 
   // --- Asteroid ---
   const asteroidModel = createLargeAsteroidModel()
@@ -186,6 +191,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
 
       // --- Blaster ---
       updateBlasterCooldown(blasterState, dt)
+      updateRechargeMeter(rechargeMeter, blasterState, blasterTier)
 
       // Fire if player clicked/tapped
       if (fireTarget) {
@@ -239,6 +245,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       // Sync Three.js model to game state
       shipModel.position.set(ship.x, ship.y, 0)
       shipModel.rotation.z = ship.rotation
+      rechargeMeter.position.set(ship.x, ship.y, 0)
 
       // Camera follows ship (frame-rate independent lerp)
       const lerpFactor = 1 - Math.pow(1 - CAMERA_LERP, dt * 60)
