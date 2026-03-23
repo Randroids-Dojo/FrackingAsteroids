@@ -207,6 +207,20 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   })
   fireButton.attach()
 
+  // Swallow right-half touches that miss the fire button so the browser
+  // doesn't synthesize mouse events that rotate the ship or break the joystick.
+  function onTouchStartSwallow(e: TouchEvent): void {
+    const rect = container.getBoundingClientRect()
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i]
+      if (touch.clientX - rect.left >= rect.width / 2) {
+        e.preventDefault()
+        return
+      }
+    }
+  }
+  container.addEventListener('touchstart', onTouchStartSwallow, { passive: false })
+
   // --- Resize ---
   function onResize(): void {
     const w = container.clientWidth
@@ -413,6 +427,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     joystick.detach()
     fireButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
+    container.removeEventListener('touchstart', onTouchStartSwallow)
     window.removeEventListener('resize', onResize)
 
     // Clean up projectile tracking state
