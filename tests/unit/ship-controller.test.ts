@@ -81,6 +81,18 @@ describe('updateShip', () => {
     assert.equal(ship.velocityY, 0)
   })
 
+  it('rotates immediately on first frame of input (no speed needed)', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.right = true
+    // Single frame — ship has zero speed but should still rotate
+    updateShip(ship, input, 1 / 60)
+    assert.ok(
+      Math.abs(ship.rotation - Math.atan2(-1, 0)) < 0.001,
+      'should face right on first frame',
+    )
+  })
+
   it('falls back to movement direction when no aim rotation', () => {
     const ship = makeShip()
     const input = createInputState()
