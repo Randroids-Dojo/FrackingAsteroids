@@ -183,6 +183,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - **Scrap counter** — top-left, shows current scrap amount
 - **Cargo bar** — top-left below scrap, shows fragments/capacity
 - **Upgrade indicators** — top-right, shows current tier for each system
+- **Recharge meter** — small horizontal bar below ship, shows blaster cooldown progress. Amber while charging, turns green at 90%+, hidden when fully charged. Scales with blaster tier fire rate.
 - **Wave counter** — top-center
 - **Pause button** — top-right corner (mobile: larger touch target)
 
@@ -251,6 +252,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
   - [x] Mining laser system (fire, cooldown, tier-based spread)
   - [x] Projectile rendering and lifecycle (amber voxel bolts)
   - [x] Desktop (mouse click) and mobile (right-half tap) fire input
+  - [x] Recharge meter (cooldown bar below ship)
   - [ ] Asteroid spawning and wave system
   - [ ] Projectile–asteroid collision detection
   - [ ] Asteroid damage, destruction, and fragment spawning

@@ -11,6 +11,7 @@ import {
   TRIPLE_SPREAD_ANGLE,
   PROJECTILE_COLOR,
   PROJECTILE_CORE_COLOR,
+  clampTier,
 } from '../../src/game/blaster-constants'
 
 describe('blaster constants', () => {
@@ -72,5 +73,29 @@ describe('blaster constants', () => {
   it('colors are valid hex values', () => {
     assert.equal(PROJECTILE_COLOR, 0xffaa00)
     assert.equal(PROJECTILE_CORE_COLOR, 0xffdd44)
+  })
+})
+
+describe('clampTier', () => {
+  it('passes through valid tiers unchanged', () => {
+    for (let t = 1; t <= 5; t++) {
+      assert.equal(clampTier(t), t)
+    }
+  })
+
+  it('clamps values below 1 to 1', () => {
+    assert.equal(clampTier(0), 1)
+    assert.equal(clampTier(-5), 1)
+  })
+
+  it('clamps values above 5 to 5', () => {
+    assert.equal(clampTier(6), 5)
+    assert.equal(clampTier(100), 5)
+  })
+
+  it('rounds fractional tiers', () => {
+    assert.equal(clampTier(2.3), 2)
+    assert.equal(clampTier(2.7), 3)
+    assert.equal(clampTier(4.5), 5)
   })
 })
