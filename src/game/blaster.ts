@@ -21,9 +21,6 @@ function generateProjectileId(): string {
   return `proj-${nextProjectileId++}`
 }
 
-/**
- * Blaster state tracks the cooldown timer.
- */
 export interface BlasterState {
   cooldownRemaining: number
 }

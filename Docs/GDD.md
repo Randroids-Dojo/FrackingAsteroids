@@ -69,7 +69,7 @@ claim, reinforcing the mining fantasy.
 
 **Projectile Constants:**
 - Base speed: 200 units/sec (matches ship max speed — feels like a tool, not a weapon)
-- Lifetime: 1.5 seconds (~80 unit effective range, roughly half the visible screen)
+- Lifetime: 1.5 seconds (~300 unit max range, but effective mining range is much shorter)
 - Visual: 2–3 voxel elongated amber pulse (color `0xFFAA00`)
 - Collision: circle-circle radius check against asteroids
 

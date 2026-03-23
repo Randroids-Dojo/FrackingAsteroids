@@ -13,6 +13,23 @@ import {
 } from './blaster'
 import type { Projectile } from './types'
 
+function disposeMesh(obj: THREE.Object3D): void {
+  if (obj instanceof THREE.Mesh) {
+    obj.geometry.dispose()
+    if (Array.isArray(obj.material)) {
+      obj.material.forEach((m) => m.dispose())
+    } else {
+      obj.material.dispose()
+    }
+  }
+  if (obj instanceof THREE.Points) {
+    obj.geometry.dispose()
+    if (obj.material instanceof THREE.Material) {
+      obj.material.dispose()
+    }
+  }
+}
+
 const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
@@ -190,28 +207,22 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         fireTarget = null
       }
 
-      // Update projectile positions
-      const prevIds = new Set(projectiles.map((p) => p.id))
+      // Update projectile positions and collect IDs before update
+      const prevCount = projectiles.length
+      const prevIds = prevCount > 0 ? projectiles.map((p) => p.id) : []
       projectiles = updateProjectiles(projectiles, dt, projectileElapsed)
-      const currentIds = new Set(projectiles.map((p) => p.id))
 
-      // Remove expired projectile models
-      for (const id of prevIds) {
-        if (!currentIds.has(id)) {
-          const model = projectileModels.get(id)
-          if (model) {
-            scene.remove(model)
-            model.traverse((obj) => {
-              if (obj instanceof THREE.Mesh) {
-                obj.geometry.dispose()
-                if (Array.isArray(obj.material)) {
-                  obj.material.forEach((m) => m.dispose())
-                } else {
-                  obj.material.dispose()
-                }
-              }
-            })
-            projectileModels.delete(id)
+      // Remove expired projectile models (only if something was removed)
+      if (projectiles.length < prevCount) {
+        const currentIds = new Set(projectiles.map((p) => p.id))
+        for (const id of prevIds) {
+          if (!currentIds.has(id)) {
+            const model = projectileModels.get(id)
+            if (model) {
+              scene.remove(model)
+              model.traverse(disposeMesh)
+              projectileModels.delete(id)
+            }
           }
         }
       }
@@ -252,23 +263,13 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     container.removeEventListener('touchstart', onTouchStartFire)
     window.removeEventListener('resize', onResize)
 
+    // Clean up projectile tracking state
+    projectileModels.clear()
+    projectileElapsed.clear()
+    projectiles = []
+
     // Dispose all Three.js geometries and materials
-    scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh) {
-        obj.geometry.dispose()
-        if (Array.isArray(obj.material)) {
-          obj.material.forEach((m) => m.dispose())
-        } else {
-          obj.material.dispose()
-        }
-      }
-      if (obj instanceof THREE.Points) {
-        obj.geometry.dispose()
-        if (obj.material instanceof THREE.Material) {
-          obj.material.dispose()
-        }
-      }
-    })
+    scene.traverse(disposeMesh)
 
     renderer.dispose()
     if (renderer.domElement.parentElement) {
