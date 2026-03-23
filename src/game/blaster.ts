@@ -8,6 +8,7 @@ import {
   PROJECTILE_LIFETIME,
   DUAL_SPREAD_ANGLE,
   TRIPLE_SPREAD_ANGLE,
+  clampTier,
 } from './blaster-constants'
 
 let nextProjectileId = 0
@@ -55,8 +56,8 @@ export function fireBlaster(
 ): Projectile[] {
   if (blaster.cooldownRemaining > 0) return []
 
-  const clampedTier = Math.max(1, Math.min(5, Math.round(tier)))
-  const tierIndex = clampedTier - 1
+  const clamped = clampTier(tier)
+  const tierIndex = clamped - 1
 
   const fireRate = FIRE_RATES[tierIndex]
   blaster.cooldownRemaining = 1 / fireRate
@@ -79,13 +80,13 @@ export function fireBlaster(
 
   const projectiles: Projectile[] = []
 
-  if (clampedTier >= 5) {
+  if (clamped >= 5) {
     // Triple spread: center + two offset bolts
     for (const offset of [-TRIPLE_SPREAD_ANGLE, 0, TRIPLE_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
       projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage))
     }
-  } else if (clampedTier >= 4) {
+  } else if (clamped >= 4) {
     // Dual spread: two offset bolts
     for (const offset of [-DUAL_SPREAD_ANGLE, DUAL_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
