@@ -149,6 +149,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         // Fire in the direction the ship is currently facing
         const angle = ship.rotation + Math.PI / 2
         fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
+        e.preventDefault()
         return
       }
     }
