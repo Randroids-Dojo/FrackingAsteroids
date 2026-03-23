@@ -15,7 +15,7 @@ function createButtonOverlay(container: HTMLElement): {
   button.setAttribute('aria-label', 'Fire')
   button.setAttribute('role', 'button')
   button.style.cssText =
-    `position:absolute;bottom:48px;right:48px;width:${BUTTON_SIZE}px;height:${BUTTON_SIZE}px;` +
+    `position:absolute;bottom:25%;right:32px;width:${BUTTON_SIZE}px;height:${BUTTON_SIZE}px;` +
     `border-radius:50%;border:${BORDER_WIDTH}px solid rgba(255,170,0,0.6);` +
     `background:rgba(255,170,0,0.15);z-index:10;touch-action:none;` +
     `display:flex;align-items:center;justify-content:center;`
