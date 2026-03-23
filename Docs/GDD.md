@@ -53,14 +53,25 @@ None — the game is an endless progression loop. Ship is never destroyed (no he
 
 ### Ship Systems
 
-#### Blaster
+#### Blaster (Mining Laser)
+
+The blaster is a short-range mining tool, not a long-range weapon. Projectiles are amber-colored
+energy pulses that chip away at asteroids. Short range forces the player to fly close to their
+claim, reinforcing the mining fantasy.
+
 | Tier | Fire Rate | Projectile Speed | Damage | Spread |
 |------|-----------|-------------------|--------|--------|
-| 1    | 1/sec     | Base              | 1      | None   |
-| 2    | 2/sec     | +25%              | 1      | None   |
-| 3    | 3/sec     | +50%              | 2      | None   |
-| 4    | 4/sec     | +75%              | 2      | Dual   |
-| 5    | 5/sec     | +100%             | 3      | Triple |
+| 1    | 1/sec     | 200 u/s (base)    | 1      | None   |
+| 2    | 2/sec     | 250 u/s (+25%)    | 1      | None   |
+| 3    | 3/sec     | 300 u/s (+50%)    | 2      | None   |
+| 4    | 4/sec     | 350 u/s (+75%)    | 2      | Dual (±8°) |
+| 5    | 5/sec     | 400 u/s (+100%)   | 3      | Triple (0°, ±10°) |
+
+**Projectile Constants:**
+- Base speed: 200 units/sec (matches ship max speed — feels like a tool, not a weapon)
+- Lifetime: 1.5 seconds (~80 unit effective range, roughly half the visible screen)
+- Visual: 2–3 voxel elongated amber pulse (color `0xFFAA00`)
+- Collision: circle-circle radius check against asteroids
 
 #### Collector
 | Tier | Range   | Pull Speed | Auto-Collect |
@@ -217,7 +228,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - Ship: ~8x8x4 voxel block ship with engine glow
 - Asteroids: irregular voxel clusters, procedurally varied
 - Fragments: small 1-2 voxel glowing cubes
-- Projectiles: bright elongated voxel bolts
+- Projectiles: bright amber elongated voxel pulses (mining laser bolts)
 - Background: particle-based star field
 
 ### Color Palette

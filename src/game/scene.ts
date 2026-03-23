@@ -1,9 +1,17 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
 import { createLargeAsteroidModel } from './asteroid-model'
+import { createProjectileModel } from './projectile-model'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { updateShip, aimToRotation } from './ship-controller'
 import { createVirtualJoystick } from './virtual-joystick'
+import {
+  createBlasterState,
+  updateBlasterCooldown,
+  fireBlaster,
+  updateProjectiles,
+} from './blaster'
+import type { Projectile } from './types'
 
 const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
@@ -65,6 +73,11 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
+  const blasterState = createBlasterState()
+  let projectiles: Projectile[] = []
+  const projectileElapsed = new Map<string, number>()
+  const projectileModels = new Map<string, THREE.Group>()
+  const blasterTier = 1
 
   // --- Input ---
   const inputState = createInputState()
@@ -98,6 +111,35 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     return { x: worldIntersect.x, y: worldIntersect.y }
   }
 
+  // --- Fire handlers ---
+  let fireTarget: { x: number; y: number } | null = null
+
+  function onMouseDown(e: MouseEvent): void {
+    if (getPaused()) return
+    const rect = renderer.domElement.getBoundingClientRect()
+    const sx = e.clientX - rect.left
+    const sy = e.clientY - rect.top
+    fireTarget = screenToWorld(sx, sy)
+  }
+
+  function onTouchStartFire(e: TouchEvent): void {
+    if (getPaused()) return
+    const rect = container.getBoundingClientRect()
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i]
+      // Right half only — left half is joystick
+      if (touch.clientX - rect.left >= rect.width / 2) {
+        const sx = touch.clientX - rect.left
+        const sy = touch.clientY - rect.top
+        fireTarget = screenToWorld(sx, sy)
+        return
+      }
+    }
+  }
+
+  renderer.domElement.addEventListener('mousedown', onMouseDown)
+  container.addEventListener('touchstart', onTouchStartFire)
+
   // --- Resize ---
   function onResize(): void {
     const w = container.clientWidth
@@ -124,6 +166,64 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
 
       updateShip(ship, inputState, dt, rotation)
 
+      // --- Blaster ---
+      updateBlasterCooldown(blasterState, dt)
+
+      // Fire if player clicked/tapped
+      if (fireTarget) {
+        const newProjectiles = fireBlaster(
+          blasterState,
+          ship,
+          fireTarget.x,
+          fireTarget.y,
+          blasterTier,
+        )
+        for (const p of newProjectiles) {
+          projectiles.push(p)
+          const model = createProjectileModel()
+          model.position.set(p.x, p.y, 0)
+          const angle = Math.atan2(p.velocityY, p.velocityX)
+          model.rotation.z = angle - Math.PI / 2
+          scene.add(model)
+          projectileModels.set(p.id, model)
+        }
+        fireTarget = null
+      }
+
+      // Update projectile positions
+      const prevIds = new Set(projectiles.map((p) => p.id))
+      projectiles = updateProjectiles(projectiles, dt, projectileElapsed)
+      const currentIds = new Set(projectiles.map((p) => p.id))
+
+      // Remove expired projectile models
+      for (const id of prevIds) {
+        if (!currentIds.has(id)) {
+          const model = projectileModels.get(id)
+          if (model) {
+            scene.remove(model)
+            model.traverse((obj) => {
+              if (obj instanceof THREE.Mesh) {
+                obj.geometry.dispose()
+                if (Array.isArray(obj.material)) {
+                  obj.material.forEach((m) => m.dispose())
+                } else {
+                  obj.material.dispose()
+                }
+              }
+            })
+            projectileModels.delete(id)
+          }
+        }
+      }
+
+      // Sync surviving projectile positions
+      for (const p of projectiles) {
+        const model = projectileModels.get(p.id)
+        if (model) {
+          model.position.set(p.x, p.y, 0)
+        }
+      }
+
       // Sync Three.js model to game state
       shipModel.position.set(ship.x, ship.y, 0)
       shipModel.rotation.z = ship.rotation
@@ -148,6 +248,8 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     inputHandler.detach()
     aimHandler.detach()
     joystick.detach()
+    renderer.domElement.removeEventListener('mousedown', onMouseDown)
+    container.removeEventListener('touchstart', onTouchStartFire)
     window.removeEventListener('resize', onResize)
 
     // Dispose all Three.js geometries and materials

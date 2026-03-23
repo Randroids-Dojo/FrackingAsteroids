@@ -14,6 +14,27 @@ export {
 } from './ship-constants'
 export { createShipModel } from './ship-model'
 export { createLargeAsteroidModel, ASTEROID_COLORS } from './asteroid-model'
+export { createProjectileModel } from './projectile-model'
+export {
+  BASE_PROJECTILE_SPEED,
+  SPEED_MULTIPLIERS,
+  FIRE_RATES,
+  DAMAGE_PER_TIER,
+  PROJECTILE_LIFETIME,
+  PROJECTILE_RADIUS,
+  DUAL_SPREAD_ANGLE,
+  TRIPLE_SPREAD_ANGLE,
+  PROJECTILE_COLOR,
+  PROJECTILE_CORE_COLOR,
+} from './blaster-constants'
+export {
+  createBlasterState,
+  updateBlasterCooldown,
+  fireBlaster,
+  updateProjectiles,
+  resetProjectileIdCounter,
+} from './blaster'
+export type { BlasterState } from './blaster'
 export {
   createInputState,
   createInputHandler,
