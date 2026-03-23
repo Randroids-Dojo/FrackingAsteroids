@@ -23,6 +23,15 @@ import {
   HITS_PER_BREAK,
 } from './asteroid-debris'
 import type { DebrisChunk } from './asteroid-debris'
+import {
+  createMetalChunk,
+  updateMetalChunk,
+  bounceMetalOffShip,
+  bounceMetalOffAsteroid,
+  disposeMetalChunk,
+  METAL_SPAWN_CHANCE,
+} from './metal-chunk'
+import type { MetalChunk } from './metal-chunk'
 import type { Asteroid, Projectile } from './types'
 
 function disposeMesh(obj: THREE.Object3D): void {
@@ -136,6 +145,9 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
 
   // Active debris chunks flying off asteroids
   const debrisChunks: DebrisChunk[] = []
+
+  // Persistent metal chunks floating in space
+  const metalChunks: MetalChunk[] = []
 
   // Track cumulative hits on each asteroid for chunk break-off timing
   const asteroidHitCounts = new Map<string, number>()
@@ -317,6 +329,21 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
               scene.add(chunk.mesh)
               debrisChunks.push(chunk)
             }
+
+            // Occasionally spawn a metal nugget alongside the debris
+            if (Math.random() < METAL_SPAWN_CHANCE) {
+              const hitAsteroid = asteroids.find((a) => a.id === hit.asteroidId)
+              const ax = hitAsteroid ? hitAsteroid.x : hit.x
+              const ay = hitAsteroid ? hitAsteroid.y : hit.y
+              const dx = hit.x - ax
+              const dy = hit.y - ay
+              const d = Math.sqrt(dx * dx + dy * dy)
+              const nx = d > 0.01 ? dx / d : Math.random() - 0.5
+              const ny = d > 0.01 ? dy / d : Math.random() - 0.5
+              const metal = createMetalChunk(hit.x, hit.y, nx, ny)
+              scene.add(metal.mesh)
+              metalChunks.push(metal)
+            }
           }
         }
 
@@ -347,6 +374,15 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
           scene.remove(debrisChunks[i].mesh)
           disposeDebrisChunk(debrisChunks[i])
           debrisChunks.splice(i, 1)
+        }
+      }
+
+      // --- Update Metal Chunks ---
+      for (const metal of metalChunks) {
+        updateMetalChunk(metal, dt)
+        bounceMetalOffShip(metal, ship)
+        for (const a of asteroids) {
+          bounceMetalOffAsteroid(metal, a)
         }
       }
 
@@ -403,6 +439,12 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       disposeDebrisChunk(d)
     }
     debrisChunks.length = 0
+
+    // Clean up metal chunks
+    for (const m of metalChunks) {
+      disposeMetalChunk(m)
+    }
+    metalChunks.length = 0
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)

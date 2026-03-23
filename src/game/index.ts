@@ -61,6 +61,14 @@ export {
   HITS_PER_BREAK,
 } from './asteroid-debris'
 export type { DebrisChunk } from './asteroid-debris'
+export {
+  bounceMetalOffShip,
+  bounceMetalOffAsteroid,
+  updateMetalChunk,
+  METAL_CHUNK_RADIUS,
+  METAL_SPAWN_CHANCE,
+} from './metal-chunk'
+export type { MetalChunk } from './metal-chunk'
 export { computeHealthMeterState } from './asteroid-health-meter'
 export type { HealthMeterState } from './asteroid-health-meter'
 export { createGameScene } from './scene'
