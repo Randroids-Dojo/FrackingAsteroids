@@ -12,7 +12,11 @@ import {
   updateProjectiles,
 } from './blaster'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
-import type { Projectile } from './types'
+import { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
+import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
+import type { Explosion } from './explosion'
+import { createHealthMeter, updateHealthMeter } from './asteroid-health-meter'
+import type { Asteroid, Projectile } from './types'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -93,6 +97,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   asteroidModel.position.set(30, 30, 0)
   scene.add(asteroidModel)
 
+  // --- Asteroid Health Meter ---
+  const asteroidHealthMeter = createHealthMeter()
+  asteroidModel.add(asteroidHealthMeter)
+
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
   const blasterState = createBlasterState()
@@ -100,6 +108,24 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   const projectileElapsed = new Map<string, number>()
   const projectileModels = new Map<string, THREE.Group>()
   const blasterTier = 1
+
+  // Asteroid game state
+  const asteroids: Asteroid[] = [
+    {
+      id: 'asteroid-0',
+      x: 30,
+      y: 30,
+      velocityX: 0,
+      velocityY: 0,
+      type: 'common',
+      hp: 3,
+      maxHp: 3,
+      size: 1,
+    },
+  ]
+
+  // Active explosions
+  const explosions: Explosion[] = []
 
   // --- Input ---
   const inputState = createInputState()
@@ -173,6 +199,16 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   }
   window.addEventListener('resize', onResize)
 
+  // Helper to remove a projectile model from the scene
+  function removeProjectileModel(id: string): void {
+    const model = projectileModels.get(id)
+    if (model) {
+      scene.remove(model)
+      model.traverse(disposeMesh)
+      projectileModels.delete(id)
+    }
+  }
+
   // --- Game Loop ---
   let prevTime = performance.now()
   let animId = 0
@@ -188,6 +224,13 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       const rotation = aimToRotation(ship, aimState, screenToWorld)
 
       updateShip(ship, inputState, dt, rotation)
+
+      // --- Ship-Asteroid Collision ---
+      for (const a of asteroids) {
+        if (a.hp > 0) {
+          resolveShipAsteroidCollision(ship, a)
+        }
+      }
 
       // --- Blaster ---
       updateBlasterCooldown(blasterState, dt)
@@ -224,13 +267,44 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         const currentIds = new Set(projectiles.map((p) => p.id))
         for (const id of prevIds) {
           if (!currentIds.has(id)) {
-            const model = projectileModels.get(id)
-            if (model) {
-              scene.remove(model)
-              model.traverse(disposeMesh)
-              projectileModels.delete(id)
-            }
+            removeProjectileModel(id)
           }
+        }
+      }
+
+      // --- Projectile-Asteroid Collision ---
+      const liveAsteroids = asteroids.filter((a) => a.hp > 0)
+      if (projectiles.length > 0 && liveAsteroids.length > 0) {
+        const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
+
+        // Remove hit projectile models and spawn explosions
+        for (const hit of hits) {
+          removeProjectileModel(hit.projectileId)
+          projectileElapsed.delete(hit.projectileId)
+
+          // Spawn explosion at hit position
+          const explosion = createExplosion(hit.x, hit.y)
+          scene.add(explosion.group)
+          explosions.push(explosion)
+        }
+
+        projectiles = surviving
+      }
+
+      // --- Update Asteroid Health Meter ---
+      const a0 = asteroids[0]
+      updateHealthMeter(asteroidHealthMeter, a0.hp, a0.maxHp)
+
+      // Hide asteroid model if destroyed
+      asteroidModel.visible = a0.hp > 0
+
+      // --- Update Explosions ---
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        const alive = updateExplosion(explosions[i], dt)
+        if (!alive) {
+          scene.remove(explosions[i].group)
+          disposeExplosion(explosions[i])
+          explosions.splice(i, 1)
         }
       }
 
@@ -275,6 +349,12 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     projectileModels.clear()
     projectileElapsed.clear()
     projectiles = []
+
+    // Clean up explosions
+    for (const e of explosions) {
+      disposeExplosion(e)
+    }
+    explosions.length = 0
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)

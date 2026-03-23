@@ -8,6 +8,7 @@ export interface Asteroid {
   velocityY: number
   type: AsteroidType
   hp: number
+  maxHp: number
   size: number
 }
 
