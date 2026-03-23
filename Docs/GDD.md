@@ -114,7 +114,7 @@ claim, reinforcing the mining fantasy.
 
 **Mobile:**
 - Left thumb virtual joystick — move (fixed position, left half of screen)
-- Right thumb tap — fire toward tap position (ship aims at tap)
+- Right thumb tap — fire in the direction the ship is facing (right half of screen)
 - Pause button in HUD — pause (reveals Feedback FAB)
 
 **Design Notes:**

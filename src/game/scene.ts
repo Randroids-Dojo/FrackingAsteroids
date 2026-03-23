@@ -146,9 +146,9 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       const touch = e.changedTouches[i]
       // Right half only — left half is joystick
       if (touch.clientX - rect.left >= rect.width / 2) {
-        const sx = touch.clientX - rect.left
-        const sy = touch.clientY - rect.top
-        fireTarget = screenToWorld(sx, sy)
+        // Fire in the direction the ship is currently facing
+        const angle = ship.rotation + Math.PI / 2
+        fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
         return
       }
     }
