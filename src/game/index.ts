@@ -27,7 +27,12 @@ export {
   PROJECTILE_COLOR,
   PROJECTILE_CORE_COLOR,
 } from './blaster-constants'
-export { createBlasterState, updateBlasterCooldown, fireBlaster, updateProjectiles } from './blaster'
+export {
+  createBlasterState,
+  updateBlasterCooldown,
+  fireBlaster,
+  updateProjectiles,
+} from './blaster'
 export type { BlasterState } from './blaster'
 export {
   createInputState,
