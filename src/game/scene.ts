@@ -12,7 +12,27 @@ import {
   updateProjectiles,
 } from './blaster'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
-import type { Projectile } from './types'
+import { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
+import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
+import type { Explosion } from './explosion'
+import { createHealthMeter, updateHealthMeter } from './asteroid-health-meter'
+import {
+  breakChunks,
+  updateDebrisChunk,
+  disposeDebrisChunk,
+  HITS_PER_BREAK,
+} from './asteroid-debris'
+import type { DebrisChunk } from './asteroid-debris'
+import {
+  createMetalChunk,
+  updateMetalChunk,
+  bounceMetalOffShip,
+  bounceMetalOffAsteroid,
+  disposeMetalChunk,
+  METAL_SPAWN_CHANCE,
+} from './metal-chunk'
+import type { MetalChunk } from './metal-chunk'
+import type { Asteroid, Projectile } from './types'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -93,6 +113,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   asteroidModel.position.set(30, 30, 0)
   scene.add(asteroidModel)
 
+  // --- Asteroid Health Meter ---
+  const asteroidHealthMeter = createHealthMeter()
+  asteroidModel.add(asteroidHealthMeter)
+
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
   const blasterState = createBlasterState()
@@ -100,6 +124,34 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   const projectileElapsed = new Map<string, number>()
   const projectileModels = new Map<string, THREE.Group>()
   const blasterTier = 1
+
+  // Asteroid game state
+  const asteroids: Asteroid[] = [
+    {
+      id: 'asteroid-0',
+      x: 30,
+      y: 30,
+      velocityX: 0,
+      velocityY: 0,
+      type: 'common',
+      hp: 15,
+      maxHp: 15,
+      size: 1,
+    },
+  ]
+
+  // Active explosions
+  const explosions: Explosion[] = []
+
+  // Active debris chunks flying off asteroids
+  const debrisChunks: DebrisChunk[] = []
+
+  // Persistent metal chunks floating in space
+  const metalChunks: MetalChunk[] = []
+
+  // Track cumulative hits on each asteroid for chunk break-off timing
+  const asteroidHitCounts = new Map<string, number>()
+  asteroidHitCounts.set('asteroid-0', 0)
 
   // --- Input ---
   const inputState = createInputState()
@@ -173,6 +225,16 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   }
   window.addEventListener('resize', onResize)
 
+  // Helper to remove a projectile model from the scene
+  function removeProjectileModel(id: string): void {
+    const model = projectileModels.get(id)
+    if (model) {
+      scene.remove(model)
+      model.traverse(disposeMesh)
+      projectileModels.delete(id)
+    }
+  }
+
   // --- Game Loop ---
   let prevTime = performance.now()
   let animId = 0
@@ -188,6 +250,13 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       const rotation = aimToRotation(ship, aimState, screenToWorld)
 
       updateShip(ship, inputState, dt, rotation)
+
+      // --- Ship-Asteroid Collision ---
+      for (const a of asteroids) {
+        if (a.hp > 0) {
+          resolveShipAsteroidCollision(ship, a)
+        }
+      }
 
       // --- Blaster ---
       updateBlasterCooldown(blasterState, dt)
@@ -224,13 +293,96 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         const currentIds = new Set(projectiles.map((p) => p.id))
         for (const id of prevIds) {
           if (!currentIds.has(id)) {
-            const model = projectileModels.get(id)
-            if (model) {
-              scene.remove(model)
-              model.traverse(disposeMesh)
-              projectileModels.delete(id)
+            removeProjectileModel(id)
+          }
+        }
+      }
+
+      // --- Projectile-Asteroid Collision ---
+      const liveAsteroids = asteroids.filter((a) => a.hp > 0)
+      if (projectiles.length > 0 && liveAsteroids.length > 0) {
+        const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
+
+        // Remove hit projectile models, spawn explosions and debris
+        for (const hit of hits) {
+          removeProjectileModel(hit.projectileId)
+          projectileElapsed.delete(hit.projectileId)
+
+          // Spawn explosion at hit position
+          const explosion = createExplosion(hit.x, hit.y)
+          scene.add(explosion.group)
+          explosions.push(explosion)
+
+          // Break off asteroid chunks every few hits
+          const prevHits = asteroidHitCounts.get(hit.asteroidId) ?? 0
+          const newHits = prevHits + 1
+          asteroidHitCounts.set(hit.asteroidId, newHits)
+
+          if (newHits % HITS_PER_BREAK === 0) {
+            const chunks = breakChunks(
+              asteroidModel,
+              hit.x,
+              hit.y,
+              2 + Math.floor(Math.random() * 2),
+            )
+            for (const chunk of chunks) {
+              scene.add(chunk.mesh)
+              debrisChunks.push(chunk)
+            }
+
+            // Occasionally spawn a metal nugget alongside the debris
+            if (Math.random() < METAL_SPAWN_CHANCE) {
+              const hitAsteroid = asteroids.find((a) => a.id === hit.asteroidId)
+              const ax = hitAsteroid ? hitAsteroid.x : hit.x
+              const ay = hitAsteroid ? hitAsteroid.y : hit.y
+              const dx = hit.x - ax
+              const dy = hit.y - ay
+              const d = Math.sqrt(dx * dx + dy * dy)
+              const nx = d > 0.01 ? dx / d : Math.random() - 0.5
+              const ny = d > 0.01 ? dy / d : Math.random() - 0.5
+              const metal = createMetalChunk(hit.x, hit.y, nx, ny)
+              scene.add(metal.mesh)
+              metalChunks.push(metal)
             }
           }
+        }
+
+        projectiles = surviving
+      }
+
+      // --- Update Asteroid Health Meter ---
+      const a0 = asteroids[0]
+      updateHealthMeter(asteroidHealthMeter, a0.hp, a0.maxHp)
+
+      // Hide asteroid model if destroyed
+      asteroidModel.visible = a0.hp > 0
+
+      // --- Update Explosions ---
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        const alive = updateExplosion(explosions[i], dt)
+        if (!alive) {
+          scene.remove(explosions[i].group)
+          disposeExplosion(explosions[i])
+          explosions.splice(i, 1)
+        }
+      }
+
+      // --- Update Debris Chunks ---
+      for (let i = debrisChunks.length - 1; i >= 0; i--) {
+        const alive = updateDebrisChunk(debrisChunks[i], dt)
+        if (!alive) {
+          scene.remove(debrisChunks[i].mesh)
+          disposeDebrisChunk(debrisChunks[i])
+          debrisChunks.splice(i, 1)
+        }
+      }
+
+      // --- Update Metal Chunks ---
+      for (const metal of metalChunks) {
+        updateMetalChunk(metal, dt)
+        bounceMetalOffShip(metal, ship)
+        for (const a of asteroids) {
+          bounceMetalOffAsteroid(metal, a)
         }
       }
 
@@ -275,6 +427,24 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     projectileModels.clear()
     projectileElapsed.clear()
     projectiles = []
+
+    // Clean up explosions
+    for (const e of explosions) {
+      disposeExplosion(e)
+    }
+    explosions.length = 0
+
+    // Clean up debris
+    for (const d of debrisChunks) {
+      disposeDebrisChunk(d)
+    }
+    debrisChunks.length = 0
+
+    // Clean up metal chunks
+    for (const m of metalChunks) {
+      disposeMetalChunk(m)
+    }
+    metalChunks.length = 0
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)

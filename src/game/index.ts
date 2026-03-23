@@ -45,5 +45,31 @@ export type { InputState, AimState } from './input'
 export { updateShip, aimToRotation } from './ship-controller'
 export { createVirtualJoystick } from './virtual-joystick'
 export type { VirtualJoystick } from './virtual-joystick'
+export {
+  SHIP_COLLISION_RADIUS,
+  ASTEROID_COLLISION_RADIUS,
+  COLLISION_PUSH_BUFFER,
+} from './collision-constants'
+export { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
+export type { ProjectileHit } from './collision'
+export { createExplosion, updateExplosion, disposeExplosion, EXPLOSION_DURATION } from './explosion'
+export type { Explosion } from './explosion'
+export {
+  breakChunks,
+  updateDebrisChunk,
+  disposeDebrisChunk,
+  HITS_PER_BREAK,
+} from './asteroid-debris'
+export type { DebrisChunk } from './asteroid-debris'
+export {
+  bounceMetalOffShip,
+  bounceMetalOffAsteroid,
+  updateMetalChunk,
+  METAL_CHUNK_RADIUS,
+  METAL_SPAWN_CHANCE,
+} from './metal-chunk'
+export type { MetalChunk } from './metal-chunk'
+export { computeHealthMeterState } from './asteroid-health-meter'
+export type { HealthMeterState } from './asteroid-health-meter'
 export { createGameScene } from './scene'
 export type { GameScene } from './scene'

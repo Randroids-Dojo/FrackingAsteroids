@@ -254,8 +254,11 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
   - [x] Desktop (mouse click) and mobile (right-half tap) fire input
   - [x] Recharge meter (cooldown bar below ship)
   - [ ] Asteroid spawning and wave system
-  - [ ] Projectile–asteroid collision detection
-  - [ ] Asteroid damage, destruction, and fragment spawning
+  - [x] Projectile–asteroid collision detection
+  - [x] Asteroid damage with health meter display
+  - [x] Ship–asteroid collision (no clipping)
+  - [x] Projectile explosion effect on asteroid hit
+  - [ ] Asteroid destruction and fragment spawning
 - [ ] **M4: Economy** — Fragment collection, scrap conversion, cargo system
 - [ ] **M5: Upgrades** — Upgrade panel, tier progression, stat scaling
 - [ ] **M6: Persistence** — KV save/load, auto-save, game state recovery
