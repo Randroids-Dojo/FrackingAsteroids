@@ -1,6 +1,11 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
 import { createLargeAsteroidModel } from './asteroid-model'
+import {
+  createGasStationModel,
+  initGasStationNeon,
+  updateGasStationNeon,
+} from './gas-station-model'
 import { createProjectileModel } from './projectile-model'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { updateShip, aimToRotation } from './ship-controller'
@@ -185,6 +190,12 @@ export function createGameScene(
   // --- Asteroid Health Meter ---
   const asteroidHealthMeter = createHealthMeter()
   asteroidModel.add(asteroidHealthMeter)
+
+  // --- Space Gas Station (north of asteroid) ---
+  const gasStation = createGasStationModel()
+  gasStation.group.position.set(30, 65, 0)
+  initGasStationNeon(gasStation.neonMeshes)
+  scene.add(gasStation.group)
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -703,6 +714,9 @@ export function createGameScene(
       } else {
         stopCollectorHum()
       }
+
+      // --- Update Gas Station Neon ---
+      updateGasStationNeon(gasStation.neonMeshes, now / 1000)
 
       // Sync surviving projectile positions
       for (const p of projectiles) {
