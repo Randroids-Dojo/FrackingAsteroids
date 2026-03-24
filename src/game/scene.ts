@@ -88,7 +88,7 @@ const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
 
 /** Delay before enemy spawns after first metal chunk collection (seconds). */
-const ENEMY_SPAWN_DELAY = 10
+const ENEMY_SPAWN_DELAY = 0
 
 /** Distance at which enemy triggers the tutorial freeze. */
 const ENEMY_NEARBY_DISTANCE = 22
