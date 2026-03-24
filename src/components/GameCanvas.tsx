@@ -122,24 +122,19 @@ export function GameCanvas({
     import('@/game/scene')
       .then(({ createGameScene }) => {
         if (disposed) return
-        sceneRef.current = createGameScene(
-          el,
-          getPaused,
-          () => tutorialStepRef.current,
-          {
-            onCollect: (variant) => onCollectRef.current?.(variant),
-            onShipMoved: () => onShipMovedRef.current?.(),
-            onAsteroidHit: () => onAsteroidHitRef.current?.(),
-            onMetalSpawned: () => onMetalSpawnedRef.current?.(),
-            onMetalCollected: () => onMetalCollectedRef.current?.(),
-            onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
-            onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
-            onEnemyNearby: () => onEnemyNearbyRef.current?.(),
-            onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
-            onScrapCollected: () => onScrapCollectedRef.current?.(),
-            onReachedStation: () => onReachedStationRef.current?.(),
-          },
-        )
+        sceneRef.current = createGameScene(el, getPaused, () => tutorialStepRef.current, {
+          onCollect: (variant) => onCollectRef.current?.(variant),
+          onShipMoved: () => onShipMovedRef.current?.(),
+          onAsteroidHit: () => onAsteroidHitRef.current?.(),
+          onMetalSpawned: () => onMetalSpawnedRef.current?.(),
+          onMetalCollected: () => onMetalCollectedRef.current?.(),
+          onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
+          onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
+          onEnemyNearby: () => onEnemyNearbyRef.current?.(),
+          onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
+          onScrapCollected: () => onScrapCollectedRef.current?.(),
+          onReachedStation: () => onReachedStationRef.current?.(),
+        })
       })
       .catch((err: unknown) => {
         console.error('Failed to load game scene:', err)

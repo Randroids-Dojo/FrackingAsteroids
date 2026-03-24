@@ -84,13 +84,7 @@ export function createGasStationModel(): {
 
   const C = GAS_STATION_COLORS
 
-  function neon(
-    x: number,
-    y: number,
-    z: number,
-    color: number,
-    intensity: number = 0.9,
-  ): void {
+  function neon(x: number, y: number, z: number, color: number, intensity: number = 0.9): void {
     const geo = new THREE.BoxGeometry(V, V, V)
     const mat = new THREE.MeshStandardMaterial({
       color,
