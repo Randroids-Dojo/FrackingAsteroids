@@ -122,8 +122,24 @@ describe('advanceTutorial', () => {
       'collect-scrap',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
-      move: ['asteroid-hit', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
-      shoot: ['ship-moved', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
+      move: [
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'unfreeze',
+      ],
+      shoot: [
+        'ship-moved',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'unfreeze',
+      ],
       'wait-for-metal': [
         'ship-moved',
         'asteroid-hit',
@@ -133,9 +149,31 @@ describe('advanceTutorial', () => {
         'scrap-collected',
         'unfreeze',
       ],
-      collect: ['ship-moved', 'asteroid-hit', 'metal-spawned', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
-      'destroy-enemy': ['ship-moved', 'asteroid-hit', 'metal-spawned', 'metal-collected', 'scrap-collected'],
-      'collect-scrap': ['ship-moved', 'asteroid-hit', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'unfreeze'],
+      collect: [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'unfreeze',
+      ],
+      'destroy-enemy': [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'scrap-collected',
+      ],
+      'collect-scrap': [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'unfreeze',
+      ],
     }
 
     for (const step of steps) {
