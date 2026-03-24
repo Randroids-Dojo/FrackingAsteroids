@@ -53,6 +53,18 @@ describe('advanceTutorial', () => {
     assert.strictEqual(next, state)
   })
 
+  it('ignores enemy-nearby when not active', () => {
+    const state: TutorialState = { active: false, step: 'done', frozen: false }
+    const next = advanceTutorial(state, 'enemy-nearby')
+    assert.strictEqual(next, state)
+  })
+
+  it('unfreeze is no-op when destroy-enemy is not frozen', () => {
+    const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: false }
+    const next = advanceTutorial(state, 'unfreeze')
+    assert.strictEqual(next, state)
+  })
+
   it('skip from move', () => {
     const next = advanceTutorial(initial, 'skip')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })

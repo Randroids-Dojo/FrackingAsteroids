@@ -40,7 +40,11 @@ const STEPS: {
 ]
 
 function StepDots({ step }: { step: TutorialStep }) {
-  const stepIndex = step === 'move' ? 0 : step === 'shoot' ? 1 : step === 'collect' ? 2 : 3
+  // wait-for-metal is an intermediate state between shoot and collect —
+  // show the collect dot as active (index 2) during that phase.
+  const lookupKey = step === 'wait-for-metal' ? 'collect' : step
+  const foundIndex = STEPS.findIndex((s) => s.key === lookupKey)
+  const stepIndex = foundIndex === -1 ? STEPS.length : foundIndex
 
   return (
     <div className="flex gap-2 justify-center mb-3" aria-label="Tutorial progress">

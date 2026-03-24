@@ -513,7 +513,7 @@ export function createGameScene(
 
       // --- Update Enemy Ship ---
       if (enemy && enemy.alive) {
-        // Fire tutorial freeze when enemy gets close enough to be visible
+        // Notify tutorial when enemy gets close enough to be visible
         if (!enemyNearbyFired) {
           const edx = enemy.x - ship.x
           const edy = enemy.y - ship.y
