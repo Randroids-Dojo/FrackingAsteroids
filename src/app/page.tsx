@@ -69,6 +69,8 @@ export default function Home() {
         onPlayerDamage={onPlayerDamage}
         onScrapCollect={onScrapCollect}
         onEnemyNearby={tutorial.onEnemyNearby}
+        onEnemyDestroyed={tutorial.onEnemyDestroyed}
+        onScrapCollected={tutorial.onScrapCollected}
       />
       <HUD
         scrap={scrap}

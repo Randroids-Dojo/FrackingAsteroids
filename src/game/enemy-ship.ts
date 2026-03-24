@@ -24,6 +24,11 @@ const ENEMY_TURN_RATE = 1.8
 /** How often the enemy picks a new strafe direction (seconds). */
 const ENEMY_STRAFE_CHANGE_INTERVAL = 3.0
 
+/** Duration of idle (drifting) periods when in orbit sweet spot. */
+const ENEMY_IDLE_DURATION = 2.0
+/** Interval between idle periods. */
+const ENEMY_IDLE_INTERVAL = 4.0
+
 /** How often the enemy shoots (average seconds between shots). */
 const ENEMY_SHOOT_INTERVAL = 3
 
@@ -97,6 +102,10 @@ export interface EnemyShip {
   strafeDir: number
   /** Time until next shot. */
   shootTimer: number
+  /** Countdown to next idle/active transition. */
+  idleTimer: number
+  /** Whether the enemy is currently drifting idle. */
+  idling: boolean
 }
 
 export interface EnemyProjectile {
@@ -217,13 +226,15 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
     vx: 0,
     vy: 0,
     rotation: 0,
-    hp: ENEMY_MAX_HP,
+    hp: Math.ceil(ENEMY_MAX_HP / 2),
     maxHp: ENEMY_MAX_HP,
     alive: true,
     heading: Math.random() * Math.PI * 2,
     strafeTimer: ENEMY_STRAFE_CHANGE_INTERVAL * (0.5 + Math.random() * 0.5),
     strafeDir: Math.random() < 0.5 ? 1 : -1,
     shootTimer: ENEMY_SHOOT_INTERVAL * 0.5, // first shot comes quicker
+    idleTimer: ENEMY_IDLE_INTERVAL * (0.5 + Math.random() * 0.5),
+    idling: false,
   }
 }
 
@@ -277,6 +288,21 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     enemy.strafeDir = -enemy.strafeDir
   }
 
+  // Idle timer — periodically drift to a stop when in the sweet spot
+  const inSweetSpot = dist >= ORBIT_DISTANCE * 0.7 && dist <= ORBIT_DISTANCE * 1.3
+  enemy.idleTimer -= dt
+  if (enemy.idleTimer <= 0) {
+    if (enemy.idling) {
+      enemy.idling = false
+      enemy.idleTimer = ENEMY_IDLE_INTERVAL * (0.7 + Math.random() * 0.6)
+    } else {
+      enemy.idling = true
+      enemy.idleTimer = ENEMY_IDLE_DURATION * (0.7 + Math.random() * 0.6)
+    }
+  }
+  // Only idle when comfortably in the sweet spot
+  const effectivelyIdle = enemy.idling && inSweetSpot
+
   const tangentAngle = toPlayer + (enemy.strafeDir * Math.PI) / 2
   const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
   const absRadial = Math.abs(radialWeight)
@@ -296,9 +322,10 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   }
   enemy.heading = normaliseAngle(enemy.heading)
 
-  // --- Move along current heading ---
-  enemy.vx = Math.cos(enemy.heading) * ENEMY_SPEED
-  enemy.vy = Math.sin(enemy.heading) * ENEMY_SPEED
+  // --- Move along current heading (decelerate when idling) ---
+  const speed = effectivelyIdle ? 0 : ENEMY_SPEED
+  enemy.vx = Math.cos(enemy.heading) * speed
+  enemy.vy = Math.sin(enemy.heading) * speed
   enemy.x += enemy.vx * dt
   enemy.y += enemy.vy * dt
 

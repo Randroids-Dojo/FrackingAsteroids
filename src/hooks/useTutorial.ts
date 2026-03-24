@@ -8,6 +8,7 @@ export type TutorialStep =
   | 'wait-for-metal'
   | 'collect'
   | 'destroy-enemy'
+  | 'collect-scrap'
   | 'done'
 
 export type TutorialEvent =
@@ -16,6 +17,8 @@ export type TutorialEvent =
   | 'metal-spawned'
   | 'metal-collected'
   | 'enemy-nearby'
+  | 'enemy-destroyed'
+  | 'scrap-collected'
   | 'unfreeze'
   | 'skip'
 
@@ -48,8 +51,11 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       return state
     case 'destroy-enemy':
       if (event === 'enemy-nearby' && !state.frozen) return { ...state, frozen: true }
-      if (event === 'unfreeze' && state.frozen)
-        return { active: false, step: 'done', frozen: false }
+      if (event === 'unfreeze' && state.frozen) return { ...state, step: 'collect-scrap', frozen: false }
+      if (event === 'enemy-destroyed') return { ...state, step: 'collect-scrap' }
+      return state
+    case 'collect-scrap':
+      if (event === 'scrap-collected') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -65,6 +71,8 @@ export interface TutorialHook {
   onMetalSpawned: () => void
   onMetalCollected: () => void
   onEnemyNearby: () => void
+  onEnemyDestroyed: () => void
+  onScrapCollected: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -96,6 +104,8 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onMetalSpawned = useCallback(() => dispatch('metal-spawned'), [dispatch])
   const onMetalCollected = useCallback(() => dispatch('metal-collected'), [dispatch])
   const onEnemyNearby = useCallback(() => dispatch('enemy-nearby'), [dispatch])
+  const onEnemyDestroyed = useCallback(() => dispatch('enemy-destroyed'), [dispatch])
+  const onScrapCollected = useCallback(() => dispatch('scrap-collected'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -108,6 +118,8 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onMetalSpawned,
     onMetalCollected,
     onEnemyNearby,
+    onEnemyDestroyed,
+    onScrapCollected,
     unfreeze,
     skip,
   }

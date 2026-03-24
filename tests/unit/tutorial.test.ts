@@ -35,9 +35,21 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'destroy-enemy', frozen: true })
   })
 
-  it('destroy-enemy unfreezes and completes on unfreeze', () => {
+  it('destroy-enemy transitions to collect-scrap on unfreeze', () => {
     const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: true }
     const next = advanceTutorial(state, 'unfreeze')
+    assert.deepStrictEqual(next, { active: true, step: 'collect-scrap', frozen: false })
+  })
+
+  it('destroy-enemy transitions to collect-scrap on enemy-destroyed', () => {
+    const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: false }
+    const next = advanceTutorial(state, 'enemy-destroyed')
+    assert.deepStrictEqual(next, { active: true, step: 'collect-scrap', frozen: false })
+  })
+
+  it('collect-scrap completes on scrap-collected', () => {
+    const state: TutorialState = { active: true, step: 'collect-scrap', frozen: false }
+    const next = advanceTutorial(state, 'scrap-collected')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
@@ -94,6 +106,12 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
+  it('skip from collect-scrap', () => {
+    const state: TutorialState = { active: true, step: 'collect-scrap', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  })
+
   it('returns same reference for no-op transitions', () => {
     const steps: TutorialState['step'][] = [
       'move',
@@ -101,19 +119,23 @@ describe('advanceTutorial', () => {
       'wait-for-metal',
       'collect',
       'destroy-enemy',
+      'collect-scrap',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
-      move: ['asteroid-hit', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'unfreeze'],
-      shoot: ['ship-moved', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'unfreeze'],
+      move: ['asteroid-hit', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
+      shoot: ['ship-moved', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
       'wait-for-metal': [
         'ship-moved',
         'asteroid-hit',
         'metal-collected',
         'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
         'unfreeze',
       ],
-      collect: ['ship-moved', 'asteroid-hit', 'metal-spawned', 'enemy-nearby', 'unfreeze'],
-      'destroy-enemy': ['ship-moved', 'asteroid-hit', 'metal-spawned', 'metal-collected'],
+      collect: ['ship-moved', 'asteroid-hit', 'metal-spawned', 'enemy-nearby', 'enemy-destroyed', 'scrap-collected', 'unfreeze'],
+      'destroy-enemy': ['ship-moved', 'asteroid-hit', 'metal-spawned', 'metal-collected', 'scrap-collected'],
+      'collect-scrap': ['ship-moved', 'asteroid-hit', 'metal-spawned', 'metal-collected', 'enemy-nearby', 'enemy-destroyed', 'unfreeze'],
     }
 
     for (const step of steps) {
@@ -140,6 +162,9 @@ describe('advanceTutorial', () => {
     assert.equal(state.step, 'destroy-enemy')
     assert.equal(state.frozen, true)
     state = advanceTutorial(state, 'unfreeze')
+    assert.equal(state.step, 'collect-scrap')
+    assert.equal(state.frozen, false)
+    state = advanceTutorial(state, 'scrap-collected')
     assert.equal(state.step, 'done')
     assert.equal(state.active, false)
     assert.equal(state.frozen, false)

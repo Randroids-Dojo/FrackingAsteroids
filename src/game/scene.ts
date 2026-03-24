@@ -105,6 +105,8 @@ export interface GameSceneOptions {
   onPlayerDamage?: (hp: number) => void
   onScrapCollect?: (amount: number) => void
   onEnemyNearby?: () => void
+  onEnemyDestroyed?: () => void
+  onScrapCollected?: () => void
 }
 
 export interface GameScene {
@@ -128,6 +130,8 @@ export function createGameScene(
   const onPlayerDamage = options?.onPlayerDamage
   const onScrapCollect = options?.onScrapCollect
   const onEnemyNearby = options?.onEnemyNearby
+  const onEnemyDestroyed = options?.onEnemyDestroyed
+  const onScrapCollected = options?.onScrapCollected
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -571,6 +575,7 @@ export function createGameScene(
             scene.remove(enemy.mesh)
             disposeEnemyShip(enemy)
             enemy = null
+            onEnemyDestroyed?.()
           }
         }
       }
@@ -634,6 +639,7 @@ export function createGameScene(
             scrapBoxes.splice(i, 1)
             playCollectPling()
             onScrapCollect?.(SCRAP_BOX_VALUE)
+            onScrapCollected?.()
             continue
           }
         }

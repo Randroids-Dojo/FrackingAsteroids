@@ -14,6 +14,8 @@ interface GameCanvasProps {
   onPlayerDamage?: (hp: number) => void
   onScrapCollect?: (amount: number) => void
   onEnemyNearby?: () => void
+  onEnemyDestroyed?: () => void
+  onScrapCollected?: () => void
 }
 
 export function GameCanvas({
@@ -27,6 +29,8 @@ export function GameCanvas({
   onPlayerDamage,
   onScrapCollect,
   onEnemyNearby,
+  onEnemyDestroyed,
+  onScrapCollected,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
@@ -40,6 +44,8 @@ export function GameCanvas({
   const onPlayerDamageRef = useRef(onPlayerDamage)
   const onScrapCollectRef = useRef(onScrapCollect)
   const onEnemyNearbyRef = useRef(onEnemyNearby)
+  const onEnemyDestroyedRef = useRef(onEnemyDestroyed)
+  const onScrapCollectedRef = useRef(onScrapCollected)
 
   // Keep refs in sync so the game loop can read them without re-renders
   useEffect(() => {
@@ -82,6 +88,14 @@ export function GameCanvas({
     onEnemyNearbyRef.current = onEnemyNearby
   }, [onEnemyNearby])
 
+  useEffect(() => {
+    onEnemyDestroyedRef.current = onEnemyDestroyed
+  }, [onEnemyDestroyed])
+
+  useEffect(() => {
+    onScrapCollectedRef.current = onScrapCollected
+  }, [onScrapCollected])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -102,6 +116,8 @@ export function GameCanvas({
           onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
           onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
           onEnemyNearby: () => onEnemyNearbyRef.current?.(),
+          onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
+          onScrapCollected: () => onScrapCollectedRef.current?.(),
         })
       })
       .catch((err: unknown) => {
