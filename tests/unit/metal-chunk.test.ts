@@ -244,7 +244,6 @@ describe('updateMetalChunk', () => {
   it('moves the chunk by velocity * dt', () => {
     const chunk = createMetalChunk(0, 0, 1, 0)
     const startX = chunk.x
-    const vx = chunk.vx
     updateMetalChunk(chunk, 1 / 60)
     assert.ok(chunk.x > startX, 'x should increase')
     assert.equal(chunk.mesh.position.x, chunk.x)
