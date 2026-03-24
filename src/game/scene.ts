@@ -193,7 +193,7 @@ export function createGameScene(
 
   // --- Space Gas Station (north of asteroid) ---
   const gasStation = createGasStationModel()
-  gasStation.group.position.set(30, 65, 0)
+  gasStation.group.position.set(30, 75, 0)
   initGasStationNeon(gasStation.neonMeshes)
   scene.add(gasStation.group)
 
