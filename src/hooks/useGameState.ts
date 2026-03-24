@@ -4,20 +4,26 @@ import { useState, useCallback } from 'react'
 import { defaultGameState } from '@/lib/schemas'
 import type { Cargo, Upgrades } from '@/lib/schemas'
 import type { MetalVariant } from '@/game/scene'
+import { PLAYER_MAX_HP } from '@/game/scene'
 
 export interface GameStateHook {
   paused: boolean
   scrap: number
   cargo: Cargo
   upgrades: Upgrades
+  playerHp: number
+  playerMaxHp: number
   togglePause: () => void
   onCollect: (variant: MetalVariant) => void
+  onPlayerDamage: (hp: number, maxHp: number) => void
+  onScrapCollect: (amount: number) => void
 }
 
 export function useGameState(): GameStateHook {
   const [paused, setPaused] = useState(false)
   const [cargo, setCargo] = useState(() => defaultGameState().cargo)
-  const [state] = useState(() => defaultGameState())
+  const [scrap, setScrap] = useState(0)
+  const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP)
 
   const togglePause = useCallback(() => {
     setPaused((p) => !p)
@@ -32,12 +38,24 @@ export function useGameState(): GameStateHook {
     }))
   }, [])
 
+  const onPlayerDamage = useCallback((hp: number) => {
+    setPlayerHp(hp)
+  }, [])
+
+  const onScrapCollect = useCallback((amount: number) => {
+    setScrap((prev) => prev + amount)
+  }, [])
+
   return {
     paused,
-    scrap: state.cargo.scrap,
+    scrap,
     cargo,
-    upgrades: state.upgrades,
+    upgrades: defaultGameState().upgrades,
+    playerHp,
+    playerMaxHp: PLAYER_MAX_HP,
     togglePause,
     onCollect,
+    onPlayerDamage,
+    onScrapCollect,
   }
 }

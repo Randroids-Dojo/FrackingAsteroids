@@ -6,6 +6,8 @@ interface HUDProps {
   scrap: number
   cargo: Cargo
   upgrades: Upgrades
+  playerHp: number
+  playerMaxHp: number
   onPause: () => void
 }
 
@@ -47,8 +49,11 @@ function GoldIcon({ size = 16 }: { size?: number }) {
   )
 }
 
-export function HUD({ scrap, cargo, upgrades, onPause }: HUDProps) {
+export function HUD({ scrap, cargo, upgrades, playerHp, playerMaxHp, onPause }: HUDProps) {
   const cargoPercent = cargo.capacity > 0 ? Math.round((cargo.fragments / cargo.capacity) * 100) : 0
+  const hpPercent = playerMaxHp > 0 ? Math.round((playerHp / playerMaxHp) * 100) : 100
+  const hpColor = hpPercent > 50 ? '#00ff88' : hpPercent > 25 ? '#ffaa00' : '#ff4444'
+  const showHealth = playerHp < playerMaxHp
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -68,6 +73,22 @@ export function HUD({ scrap, cargo, upgrades, onPause }: HUDProps) {
             {cargo.gold}
           </span>
         </div>
+        {showHealth && (
+          <div className="flex flex-col gap-1">
+            <div className="font-mono text-xs" style={{ color: hpColor }}>
+              HULL: {hpPercent}%
+            </div>
+            <div
+              className="w-32 h-2 rounded-sm overflow-hidden"
+              style={{ backgroundColor: '#333344' }}
+            >
+              <div
+                className="h-full transition-all duration-200"
+                style={{ width: `${hpPercent}%`, backgroundColor: hpColor }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Top-right: Upgrades + Pause */}

@@ -5,34 +5,50 @@ import type { GameScene, MetalVariant } from '@/game/scene'
 
 interface GameCanvasProps {
   paused: boolean
+  frozen: boolean
   onCollect?: (variant: MetalVariant) => void
   onShipMoved?: () => void
   onAsteroidHit?: () => void
   onMetalSpawned?: () => void
   onMetalCollected?: () => void
+  onPlayerDamage?: (hp: number, maxHp: number) => void
+  onScrapCollect?: (amount: number) => void
+  onEnemyNearby?: () => void
 }
 
 export function GameCanvas({
   paused,
+  frozen,
   onCollect,
   onShipMoved,
   onAsteroidHit,
   onMetalSpawned,
   onMetalCollected,
+  onPlayerDamage,
+  onScrapCollect,
+  onEnemyNearby,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
   const pausedRef = useRef(paused)
+  const frozenRef = useRef(frozen)
   const onCollectRef = useRef(onCollect)
   const onShipMovedRef = useRef(onShipMoved)
   const onAsteroidHitRef = useRef(onAsteroidHit)
   const onMetalSpawnedRef = useRef(onMetalSpawned)
   const onMetalCollectedRef = useRef(onMetalCollected)
+  const onPlayerDamageRef = useRef(onPlayerDamage)
+  const onScrapCollectRef = useRef(onScrapCollect)
+  const onEnemyNearbyRef = useRef(onEnemyNearby)
 
   // Keep refs in sync so the game loop can read them without re-renders
   useEffect(() => {
     pausedRef.current = paused
   }, [paused])
+
+  useEffect(() => {
+    frozenRef.current = frozen
+  }, [frozen])
 
   useEffect(() => {
     onCollectRef.current = onCollect
@@ -54,7 +70,19 @@ export function GameCanvas({
     onMetalCollectedRef.current = onMetalCollected
   }, [onMetalCollected])
 
-  const getPaused = useCallback(() => pausedRef.current, [])
+  useEffect(() => {
+    onPlayerDamageRef.current = onPlayerDamage
+  }, [onPlayerDamage])
+
+  useEffect(() => {
+    onScrapCollectRef.current = onScrapCollect
+  }, [onScrapCollect])
+
+  useEffect(() => {
+    onEnemyNearbyRef.current = onEnemyNearby
+  }, [onEnemyNearby])
+
+  const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
     const el = containerRef.current
@@ -71,6 +99,9 @@ export function GameCanvas({
           onAsteroidHit: () => onAsteroidHitRef.current?.(),
           onMetalSpawned: () => onMetalSpawnedRef.current?.(),
           onMetalCollected: () => onMetalCollectedRef.current?.(),
+          onPlayerDamage: (hp, maxHp) => onPlayerDamageRef.current?.(hp, maxHp),
+          onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
+          onEnemyNearby: () => onEnemyNearbyRef.current?.(),
         })
       })
       .catch((err: unknown) => {
