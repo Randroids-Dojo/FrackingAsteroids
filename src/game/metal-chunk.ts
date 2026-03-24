@@ -199,6 +199,40 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
   return true
 }
 
+/** Collector pull speed (units/sec). */
+export const COLLECTOR_PULL_SPEED = 60
+
+/** Collector range in world units. */
+export const COLLECTOR_RANGE = 30
+
+/**
+ * Pull a metal chunk toward the ship when the collector is active.
+ * Returns true if the chunk is close enough to be collected (absorbed).
+ */
+export function attractMetalToShip(chunk: MetalChunk, ship: Ship, dt: number): boolean {
+  const dx = ship.x - chunk.x
+  const dy = ship.y - chunk.y
+  const distSq = dx * dx + dy * dy
+  const range = COLLECTOR_RANGE
+
+  if (distSq > range * range) return false
+
+  const dist = Math.sqrt(distSq)
+  const collectDist = METAL_CHUNK_RADIUS + SHIP_COLLISION_RADIUS
+
+  if (dist < collectDist) return true
+
+  // Pull toward ship — stronger as chunk gets closer
+  const strength = 1 - dist / range
+  const pull = COLLECTOR_PULL_SPEED * strength * dt
+  const nx = dx / dist
+  const ny = dy / dist
+  chunk.vx += nx * pull
+  chunk.vy += ny * pull
+
+  return false
+}
+
 /**
  * Dispose all geometries and materials in a metal chunk.
  */
