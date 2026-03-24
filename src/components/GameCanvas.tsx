@@ -11,7 +11,7 @@ interface GameCanvasProps {
   onAsteroidHit?: () => void
   onMetalSpawned?: () => void
   onMetalCollected?: () => void
-  onPlayerDamage?: (hp: number, maxHp: number) => void
+  onPlayerDamage?: (hp: number) => void
   onScrapCollect?: (amount: number) => void
   onEnemyNearby?: () => void
 }
@@ -99,7 +99,7 @@ export function GameCanvas({
           onAsteroidHit: () => onAsteroidHitRef.current?.(),
           onMetalSpawned: () => onMetalSpawnedRef.current?.(),
           onMetalCollected: () => onMetalCollectedRef.current?.(),
-          onPlayerDamage: (hp, maxHp) => onPlayerDamageRef.current?.(hp, maxHp),
+          onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
           onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
           onEnemyNearby: () => onEnemyNearbyRef.current?.(),
         })

@@ -104,7 +104,7 @@ export interface GameSceneOptions {
   onAsteroidHit?: () => void
   onMetalSpawned?: () => void
   onMetalCollected?: () => void
-  onPlayerDamage?: (hp: number, maxHp: number) => void
+  onPlayerDamage?: (hp: number) => void
   onScrapCollect?: (amount: number) => void
   onEnemyNearby?: () => void
 }
@@ -590,11 +590,12 @@ export function createGameScene(
 
       // --- Enemy Projectile → Player Collision ---
       if (enemyProjectiles.length > 0) {
-        const hitIds = checkEnemyProjectilePlayerCollisions(enemyProjectiles, ship)
-        for (const hitId of hitIds) {
-          const idx = enemyProjectiles.findIndex((p) => p.id === hitId)
-          if (idx !== -1) {
-            const proj = enemyProjectiles[idx]
+        const hitIdSet = new Set(checkEnemyProjectilePlayerCollisions(enemyProjectiles, ship))
+        if (hitIdSet.size > 0) {
+          for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+            const proj = enemyProjectiles[i]
+            if (!hitIdSet.has(proj.id)) continue
+
             // Spawn small explosion at hit position
             const hitExplosion = createExplosion(proj.x, proj.y)
             scene.add(hitExplosion.group)
@@ -602,12 +603,12 @@ export function createGameScene(
 
             scene.remove(proj.mesh)
             disposeEnemyProjectile(proj)
-            enemyProjectiles.splice(idx, 1)
-          }
+            enemyProjectiles.splice(i, 1)
 
-          // Apply damage to player
-          playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
-          onPlayerDamage?.(playerHp, PLAYER_MAX_HP)
+            // Apply damage to player
+            playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
+          }
+          onPlayerDamage?.(playerHp)
         }
       }
 

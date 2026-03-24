@@ -265,10 +265,10 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   enemy.y += enemy.vy * dt
 
   // --- Face toward player ---
-  const faceDx = player.x - enemy.x
-  const faceDy = player.y - enemy.y
-  const targetRotation = Math.atan2(faceDy, faceDx) - Math.PI / 2
-  enemy.rotation = targetRotation
+  const toPlayerDx = player.x - enemy.x
+  const toPlayerDy = player.y - enemy.y
+  const toPlayerDist = Math.sqrt(toPlayerDx * toPlayerDx + toPlayerDy * toPlayerDy)
+  enemy.rotation = Math.atan2(toPlayerDy, toPlayerDx) - Math.PI / 2
 
   // --- Shoot timer ---
   enemy.shootTimer -= dt
@@ -276,13 +276,10 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     enemy.shootTimer =
       ENEMY_SHOOT_MIN_INTERVAL + Math.random() * (ENEMY_SHOOT_INTERVAL - ENEMY_SHOOT_MIN_INTERVAL)
 
-    // Fire toward player
-    const shootDx = player.x - enemy.x
-    const shootDy = player.y - enemy.y
-    const shootDist = Math.sqrt(shootDx * shootDx + shootDy * shootDy)
-    if (shootDist > 0.1) {
-      const nx = shootDx / shootDist
-      const ny = shootDy / shootDist
+    // Fire toward player (reuse direction from facing calc)
+    if (toPlayerDist > 0.1) {
+      const nx = toPlayerDx / toPlayerDist
+      const ny = toPlayerDy / toPlayerDist
       const proj = createEnemyProjectile(
         enemy.x + nx * 4, // spawn slightly ahead
         enemy.y + ny * 4,
@@ -367,6 +364,11 @@ export function checkProjectileEnemyCollisions(
   const hitProjectileIds: string[] = []
 
   for (const p of projectiles) {
+    if (!enemy.alive) {
+      surviving.push(p)
+      continue
+    }
+
     const dx = p.x - enemy.x
     const dy = p.y - enemy.y
     const distSq = dx * dx + dy * dy
@@ -500,14 +502,14 @@ export function disposeShipwreckDebris(debris: ShipwreckDebris): void {
 // ---------------------------------------------------------------------------
 
 export function disposeEnemyShip(enemy: EnemyShip): void {
-  for (const child of enemy.mesh.children) {
+  enemy.mesh.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       child.geometry.dispose()
       if (child.material instanceof THREE.Material) {
         child.material.dispose()
       }
     }
-  }
+  })
 }
 
 /** Reset enemy projectile ID counter (for testing). */
