@@ -10,6 +10,9 @@ export type TutorialStep =
   | 'destroy-enemy'
   | 'collect-scrap'
   | 'go-to-station'
+  | 'approach-station'
+  | 'trade-sell'
+  | 'trade-buy'
   | 'done'
 
 export type TutorialEvent =
@@ -20,7 +23,10 @@ export type TutorialEvent =
   | 'enemy-nearby'
   | 'enemy-destroyed'
   | 'scrap-collected'
-  | 'reached-station'
+  | 'near-station'
+  | 'entered-station'
+  | 'sold-materials'
+  | 'bought-upgrade'
   | 'unfreeze'
   | 'skip'
 
@@ -61,7 +67,16 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'scrap-collected') return { ...state, step: 'go-to-station' }
       return state
     case 'go-to-station':
-      if (event === 'reached-station') return { active: false, step: 'done', frozen: false }
+      if (event === 'near-station') return { ...state, step: 'approach-station' }
+      return state
+    case 'approach-station':
+      if (event === 'entered-station') return { ...state, step: 'trade-sell' }
+      return state
+    case 'trade-sell':
+      if (event === 'sold-materials') return { ...state, step: 'trade-buy' }
+      return state
+    case 'trade-buy':
+      if (event === 'bought-upgrade') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -79,7 +94,10 @@ export interface TutorialHook {
   onEnemyNearby: () => void
   onEnemyDestroyed: () => void
   onScrapCollected: () => void
-  onReachedStation: () => void
+  onNearStation: () => void
+  onEnteredStation: () => void
+  onSoldMaterials: () => void
+  onBoughtUpgrade: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -113,7 +131,10 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onEnemyNearby = useCallback(() => dispatch('enemy-nearby'), [dispatch])
   const onEnemyDestroyed = useCallback(() => dispatch('enemy-destroyed'), [dispatch])
   const onScrapCollected = useCallback(() => dispatch('scrap-collected'), [dispatch])
-  const onReachedStation = useCallback(() => dispatch('reached-station'), [dispatch])
+  const onNearStation = useCallback(() => dispatch('near-station'), [dispatch])
+  const onEnteredStation = useCallback(() => dispatch('entered-station'), [dispatch])
+  const onSoldMaterials = useCallback(() => dispatch('sold-materials'), [dispatch])
+  const onBoughtUpgrade = useCallback(() => dispatch('bought-upgrade'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -128,7 +149,10 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onEnemyNearby,
     onEnemyDestroyed,
     onScrapCollected,
-    onReachedStation,
+    onNearStation,
+    onEnteredStation,
+    onSoldMaterials,
+    onBoughtUpgrade,
     unfreeze,
     skip,
   }

@@ -16,7 +16,16 @@ interface TutorialOverlayProps {
 const isTouchDevice = (): boolean => typeof window !== 'undefined' && 'ontouchstart' in window
 
 const STEPS: {
-  key: 'move' | 'shoot' | 'collect' | 'destroy-enemy' | 'collect-scrap' | 'go-to-station'
+  key:
+    | 'move'
+    | 'shoot'
+    | 'collect'
+    | 'destroy-enemy'
+    | 'collect-scrap'
+    | 'go-to-station'
+    | 'approach-station'
+    | 'trade-sell'
+    | 'trade-buy'
   desktop: string
   mobile: string
 }[] = [
@@ -47,8 +56,23 @@ const STEPS: {
   },
   {
     key: 'go-to-station',
-    desktop: 'Head to the Space Gas Station! Follow the arrow!',
-    mobile: 'Head to the Space Gas Station! Follow the arrow!',
+    desktop: 'Head to the Trade Station! Follow the arrow!',
+    mobile: 'Head to the Trade Station! Follow the arrow!',
+  },
+  {
+    key: 'approach-station',
+    desktop: 'Drive into the station!',
+    mobile: 'Drive into the station!',
+  },
+  {
+    key: 'trade-sell',
+    desktop: 'Sell your collected materials!',
+    mobile: 'Sell your collected materials!',
+  },
+  {
+    key: 'trade-buy',
+    desktop: 'Buy the Fire Rate upgrade!',
+    mobile: 'Buy the Fire Rate upgrade!',
   },
 ]
 
@@ -113,6 +137,9 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
 
   // Hide overlay while waiting for enemy to approach; show again when frozen
   if (step === 'destroy-enemy' && !frozen) return null
+
+  // Hide tutorial overlay when trade menu is handling the interaction
+  if (step === 'trade-sell' || step === 'trade-buy') return null
 
   const text = getPromptText(step)
 

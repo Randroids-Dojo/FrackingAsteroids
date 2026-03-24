@@ -113,11 +113,13 @@ export interface GameSceneOptions {
   onEnemyNearby?: () => void
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
-  onReachedStation?: () => void
+  onNearStation?: () => void
+  onEnteredStation?: () => void
 }
 
 export interface GameScene {
   dispose: () => void
+  setFireRateBonus: (multiplier: number) => void
 }
 
 /**
@@ -140,7 +142,8 @@ export function createGameScene(
   const onEnemyNearby = options?.onEnemyNearby
   const onEnemyDestroyed = options?.onEnemyDestroyed
   const onScrapCollected = options?.onScrapCollected
-  const onReachedStation = options?.onReachedStation
+  const onNearStation = options?.onNearStation
+  const onEnteredStation = options?.onEnteredStation
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -198,7 +201,8 @@ export function createGameScene(
   // --- Space Gas Station (several screens north of asteroid) ---
   const GAS_STATION_X = 30
   const GAS_STATION_Y = 350
-  const STATION_ARRIVAL_DISTANCE = 40
+  const STATION_NEAR_DISTANCE = 80
+  const STATION_ENTER_DISTANCE = 20
   const gasStation = createGasStationModel()
   gasStation.group.position.set(GAS_STATION_X, GAS_STATION_Y, 0)
   initGasStationNeon(gasStation.neonMeshes)
@@ -243,7 +247,8 @@ export function createGameScene(
   botBar2.position.set(-5, -2.5, 0)
   botBar2.rotation.z = 0.5
   arrowGroup.add(botBar2)
-  let reachedStationFired = false
+  let nearStationFired = false
+  let enteredStationFired = false
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -252,6 +257,7 @@ export function createGameScene(
   const projectileElapsed = new Map<string, number>()
   const projectileModels = new Map<string, THREE.Group>()
   const blasterTier = 1
+  let fireRateBonus = 1.0
 
   // Asteroid game state
   const asteroids: Asteroid[] = [
@@ -463,6 +469,10 @@ export function createGameScene(
           fireTarget.y,
           blasterTier,
         )
+        // Apply fire rate bonus (reduces cooldown)
+        if (newProjectiles.length > 0 && fireRateBonus > 1) {
+          blasterState.cooldownRemaining /= fireRateBonus
+        }
         for (const p of newProjectiles) {
           projectiles.push(p)
           const model = createProjectileModel()
@@ -768,7 +778,7 @@ export function createGameScene(
 
       // --- Tutorial: Station Arrow & Proximity ---
       const tutStep = getTutorialStep()
-      const showArrow = tutStep === 'go-to-station'
+      const showArrow = tutStep === 'go-to-station' || tutStep === 'approach-station'
       arrowGroup.visible = showArrow
       if (showArrow) {
         // Position arrow ahead of ship, pointing toward station
@@ -789,14 +799,19 @@ export function createGameScene(
         // Bob the arrow up and down
         arrowGroup.position.z = 5 + Math.sin((now / 1000) * 2.5) * 2
 
-        // Check if player reached station
-        if (!reachedStationFired) {
-          const sDist = Math.sqrt(dx * dx + dy * dy)
-          if (sDist <= STATION_ARRIVAL_DISTANCE) {
-            reachedStationFired = true
-            arrowGroup.visible = false
-            onReachedStation?.()
-          }
+        const sDist = Math.sqrt(dx * dx + dy * dy)
+
+        // Fire near-station when within range
+        if (!nearStationFired && sDist <= STATION_NEAR_DISTANCE) {
+          nearStationFired = true
+          onNearStation?.()
+        }
+
+        // Fire entered-station when very close
+        if (!enteredStationFired && sDist <= STATION_ENTER_DISTANCE) {
+          enteredStationFired = true
+          arrowGroup.visible = false
+          onEnteredStation?.()
         }
       }
 
@@ -894,5 +909,9 @@ export function createGameScene(
     }
   }
 
-  return { dispose }
+  function setFireRateBonus(multiplier: number) {
+    fireRateBonus = multiplier
+  }
+
+  return { dispose, setFireRateBonus }
 }
