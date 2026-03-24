@@ -499,7 +499,7 @@ export function createGameScene(
         enemySpawned = true
         // Spawn enemy at a random offset from the player
         const spawnAngle = Math.random() * Math.PI * 2
-        const spawnDist = 40
+        const spawnDist = 25
         const ex = ship.x + Math.cos(spawnAngle) * spawnDist
         const ey = ship.y + Math.sin(spawnAngle) * spawnDist
         enemy = createEnemyShip(ex, ey)
@@ -607,6 +607,12 @@ export function createGameScene(
 
             // Apply damage to player
             playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
+
+            // Trigger enemy tutorial if player gets hit before enemy was in range
+            if (!enemyNearbyFired) {
+              enemyNearbyFired = true
+              onEnemyNearby?.()
+            }
           }
           onPlayerDamage?.(playerHp)
         }
