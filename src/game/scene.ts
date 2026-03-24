@@ -93,10 +93,6 @@ export function createGameScene(
   const onAsteroidHit = options?.onAsteroidHit
   const onMetalSpawned = options?.onMetalSpawned
   const onMetalCollected = options?.onMetalCollected
-  let shipMovedFired = false
-  let asteroidHitFired = false
-  let metalSpawnedFired = false
-  let metalCollectedFired = false
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -329,8 +325,7 @@ export function createGameScene(
       updateShip(ship, inputState, dt, rotation)
 
       // Tutorial: detect ship movement
-      if (!shipMovedFired && Math.sqrt(ship.x * ship.x + ship.y * ship.y) > 5) {
-        shipMovedFired = true
+      if (Math.sqrt(ship.x * ship.x + ship.y * ship.y) > 2) {
         onShipMoved?.()
       }
 
@@ -387,8 +382,7 @@ export function createGameScene(
         const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
 
         // Tutorial: detect asteroid hit
-        if (!asteroidHitFired && hits.length > 0) {
-          asteroidHitFired = true
+        if (hits.length > 0) {
           onAsteroidHit?.()
         }
 
@@ -434,10 +428,7 @@ export function createGameScene(
               metalChunks.push(metal)
 
               // Tutorial: detect metal spawn
-              if (!metalSpawnedFired) {
-                metalSpawnedFired = true
-                onMetalSpawned?.()
-              }
+              onMetalSpawned?.()
             }
           }
         }
@@ -489,10 +480,7 @@ export function createGameScene(
             onCollect?.(variant)
 
             // Tutorial: detect metal collection
-            if (!metalCollectedFired) {
-              metalCollectedFired = true
-              onMetalCollected?.()
-            }
+            onMetalCollected?.()
             continue
           }
         }

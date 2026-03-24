@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Tutorial', () => {
-  test.beforeEach(async ({ page }) => {
-    // Clear tutorial completion flag before each test
-    await page.goto('/')
-    await page.evaluate(() => localStorage.removeItem('fracking-asteroids-tutorial-done'))
-  })
-
   test('new game shows tutorial overlay', async ({ page }) => {
     await page.goto('/')
     await page.locator('button', { hasText: 'NEW GAME' }).click()
@@ -23,17 +17,9 @@ test.describe('Tutorial', () => {
     await expect(page.getByTestId('tutorial-overlay')).not.toBeVisible()
   })
 
-  test('tutorial does not reappear after completion', async ({ page }) => {
-    // Mark tutorial as done
-    await page.evaluate(() => localStorage.setItem('fracking-asteroids-tutorial-done', 'true'))
-    await page.goto('/')
-    await page.locator('button', { hasText: 'NEW GAME' }).click()
-    await page.locator('button', { hasText: 'SLOT 1' }).click()
-    await expect(page.getByTestId('tutorial-overlay')).not.toBeVisible()
-  })
-
   test('tutorial does not appear on load game', async ({ page }) => {
     // Create a fake save so load game is enabled (correct key and format)
+    await page.goto('/')
     await page.evaluate(() => {
       localStorage.setItem(
         'fracking-asteroids-slot-summaries',

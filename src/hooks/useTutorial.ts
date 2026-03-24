@@ -16,8 +16,6 @@ export interface TutorialState {
   step: TutorialStep
 }
 
-const STORAGE_KEY = 'fracking-asteroids-tutorial-done'
-
 /** Pure state machine — testable without React */
 export function advanceTutorial(state: TutorialState, event: TutorialEvent): TutorialState {
   if (!state.active) return state
@@ -44,19 +42,6 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
   }
 }
 
-function markTutorialDone(): void {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, 'true')
-  }
-}
-
-function isTutorialDone(): boolean {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(STORAGE_KEY) === 'true'
-  }
-  return false
-}
-
 export interface TutorialHook {
   active: boolean
   step: TutorialStep
@@ -73,9 +58,9 @@ export function useTutorial(enabled: boolean): TutorialHook {
     step: 'done',
   })
 
-  // Activate when enabled becomes true (e.g. after NEW GAME click)
+  // Activate every time enabled flips to true (fresh new game)
   useEffect(() => {
-    if (enabled && !isTutorialDone()) {
+    if (enabled) {
       setState({ active: true, step: 'move' })
     }
   }, [enabled])
@@ -84,7 +69,6 @@ export function useTutorial(enabled: boolean): TutorialHook {
     setState((prev) => {
       const next = advanceTutorial(prev, event)
       if (next === prev) return prev
-      if (!next.active) markTutorialDone()
       return next
     })
   }, [])
