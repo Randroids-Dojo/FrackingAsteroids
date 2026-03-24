@@ -91,7 +91,7 @@ const STAR_COUNT = 400
 const ENEMY_SPAWN_DELAY = 10
 
 /** Distance at which enemy triggers the tutorial freeze. */
-const ENEMY_NEARBY_DISTANCE = 35
+const ENEMY_NEARBY_DISTANCE = 18
 
 /** Player max health. */
 export const PLAYER_MAX_HP = 100

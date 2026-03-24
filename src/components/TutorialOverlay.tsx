@@ -95,6 +95,9 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
 
   if (step === 'done') return null
 
+  // Hide overlay while waiting for enemy to approach; show again when frozen
+  if (step === 'destroy-enemy' && !frozen) return null
+
   const text = getPromptText(step)
 
   return (
