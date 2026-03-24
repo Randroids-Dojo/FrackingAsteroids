@@ -47,9 +47,15 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'collect-scrap', frozen: false })
   })
 
-  it('collect-scrap completes on scrap-collected', () => {
+  it('collect-scrap transitions to go-to-station on scrap-collected', () => {
     const state: TutorialState = { active: true, step: 'collect-scrap', frozen: false }
     const next = advanceTutorial(state, 'scrap-collected')
+    assert.deepStrictEqual(next, { active: true, step: 'go-to-station', frozen: false })
+  })
+
+  it('go-to-station completes on reached-station', () => {
+    const state: TutorialState = { active: true, step: 'go-to-station', frozen: false }
+    const next = advanceTutorial(state, 'reached-station')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
@@ -112,6 +118,12 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
+  it('skip from go-to-station', () => {
+    const state: TutorialState = { active: true, step: 'go-to-station', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  })
+
   it('returns same reference for no-op transitions', () => {
     const steps: TutorialState['step'][] = [
       'move',
@@ -120,6 +132,7 @@ describe('advanceTutorial', () => {
       'collect',
       'destroy-enemy',
       'collect-scrap',
+      'go-to-station',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
       move: [
@@ -129,6 +142,7 @@ describe('advanceTutorial', () => {
         'enemy-nearby',
         'enemy-destroyed',
         'scrap-collected',
+        'reached-station',
         'unfreeze',
       ],
       shoot: [
@@ -138,6 +152,7 @@ describe('advanceTutorial', () => {
         'enemy-nearby',
         'enemy-destroyed',
         'scrap-collected',
+        'reached-station',
         'unfreeze',
       ],
       'wait-for-metal': [
@@ -147,6 +162,7 @@ describe('advanceTutorial', () => {
         'enemy-nearby',
         'enemy-destroyed',
         'scrap-collected',
+        'reached-station',
         'unfreeze',
       ],
       collect: [
@@ -156,6 +172,7 @@ describe('advanceTutorial', () => {
         'enemy-nearby',
         'enemy-destroyed',
         'scrap-collected',
+        'reached-station',
         'unfreeze',
       ],
       'destroy-enemy': [
@@ -164,6 +181,7 @@ describe('advanceTutorial', () => {
         'metal-spawned',
         'metal-collected',
         'scrap-collected',
+        'reached-station',
       ],
       'collect-scrap': [
         'ship-moved',
@@ -172,6 +190,17 @@ describe('advanceTutorial', () => {
         'metal-collected',
         'enemy-nearby',
         'enemy-destroyed',
+        'reached-station',
+        'unfreeze',
+      ],
+      'go-to-station': [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
         'unfreeze',
       ],
     }
@@ -203,6 +232,9 @@ describe('advanceTutorial', () => {
     assert.equal(state.step, 'collect-scrap')
     assert.equal(state.frozen, false)
     state = advanceTutorial(state, 'scrap-collected')
+    assert.equal(state.step, 'go-to-station')
+    assert.equal(state.active, true)
+    state = advanceTutorial(state, 'reached-station')
     assert.equal(state.step, 'done')
     assert.equal(state.active, false)
     assert.equal(state.frozen, false)

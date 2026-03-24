@@ -61,6 +61,7 @@ export default function Home() {
       <GameCanvas
         paused={paused}
         frozen={tutorial.frozen}
+        tutorialStep={tutorial.step}
         onCollect={onCollect}
         onShipMoved={tutorial.onShipMoved}
         onAsteroidHit={tutorial.onAsteroidHit}
@@ -71,6 +72,7 @@ export default function Home() {
         onEnemyNearby={tutorial.onEnemyNearby}
         onEnemyDestroyed={tutorial.onEnemyDestroyed}
         onScrapCollected={tutorial.onScrapCollected}
+        onReachedStation={tutorial.onReachedStation}
       />
       <HUD
         scrap={scrap}

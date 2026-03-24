@@ -9,6 +9,7 @@ export type TutorialStep =
   | 'collect'
   | 'destroy-enemy'
   | 'collect-scrap'
+  | 'go-to-station'
   | 'done'
 
 export type TutorialEvent =
@@ -19,6 +20,7 @@ export type TutorialEvent =
   | 'enemy-nearby'
   | 'enemy-destroyed'
   | 'scrap-collected'
+  | 'reached-station'
   | 'unfreeze'
   | 'skip'
 
@@ -56,7 +58,10 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'enemy-destroyed') return { ...state, step: 'collect-scrap' }
       return state
     case 'collect-scrap':
-      if (event === 'scrap-collected') return { active: false, step: 'done', frozen: false }
+      if (event === 'scrap-collected') return { ...state, step: 'go-to-station' }
+      return state
+    case 'go-to-station':
+      if (event === 'reached-station') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -74,6 +79,7 @@ export interface TutorialHook {
   onEnemyNearby: () => void
   onEnemyDestroyed: () => void
   onScrapCollected: () => void
+  onReachedStation: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -107,6 +113,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onEnemyNearby = useCallback(() => dispatch('enemy-nearby'), [dispatch])
   const onEnemyDestroyed = useCallback(() => dispatch('enemy-destroyed'), [dispatch])
   const onScrapCollected = useCallback(() => dispatch('scrap-collected'), [dispatch])
+  const onReachedStation = useCallback(() => dispatch('reached-station'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -121,6 +128,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onEnemyNearby,
     onEnemyDestroyed,
     onScrapCollected,
+    onReachedStation,
     unfreeze,
     skip,
   }

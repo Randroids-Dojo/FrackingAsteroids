@@ -16,7 +16,7 @@ interface TutorialOverlayProps {
 const isTouchDevice = (): boolean => typeof window !== 'undefined' && 'ontouchstart' in window
 
 const STEPS: {
-  key: 'move' | 'shoot' | 'collect' | 'destroy-enemy' | 'collect-scrap'
+  key: 'move' | 'shoot' | 'collect' | 'destroy-enemy' | 'collect-scrap' | 'go-to-station'
   desktop: string
   mobile: string
 }[] = [
@@ -44,6 +44,11 @@ const STEPS: {
     key: 'collect-scrap',
     desktop: 'Collect the scrap it dropped!',
     mobile: 'Collect the scrap it dropped!',
+  },
+  {
+    key: 'go-to-station',
+    desktop: 'Head to the Space Gas Station! Follow the arrow!',
+    mobile: 'Head to the Space Gas Station! Follow the arrow!',
   },
 ]
 

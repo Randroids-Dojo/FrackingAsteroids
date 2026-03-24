@@ -71,6 +71,7 @@ import {
   SCRAP_BOX_VALUE,
 } from './scrap-box'
 import type { ScrapBox } from './scrap-box'
+import type { TutorialStep } from '@/hooks/useTutorial'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -112,6 +113,7 @@ export interface GameSceneOptions {
   onEnemyNearby?: () => void
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
+  onReachedStation?: () => void
 }
 
 export interface GameScene {
@@ -125,6 +127,7 @@ export interface GameScene {
 export function createGameScene(
   container: HTMLElement,
   getPaused: () => boolean,
+  getTutorialStep: () => TutorialStep,
   options?: GameSceneOptions,
 ): GameScene {
   const onCollect = options?.onCollect
@@ -137,6 +140,7 @@ export function createGameScene(
   const onEnemyNearby = options?.onEnemyNearby
   const onEnemyDestroyed = options?.onEnemyDestroyed
   const onScrapCollected = options?.onScrapCollected
+  const onReachedStation = options?.onReachedStation
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -191,11 +195,55 @@ export function createGameScene(
   const asteroidHealthMeter = createHealthMeter()
   asteroidModel.add(asteroidHealthMeter)
 
-  // --- Space Gas Station (north of asteroid) ---
+  // --- Space Gas Station (several screens north of asteroid) ---
+  const GAS_STATION_X = 30
+  const GAS_STATION_Y = 350
+  const STATION_ARRIVAL_DISTANCE = 40
   const gasStation = createGasStationModel()
-  gasStation.group.position.set(30, 75, 0)
+  gasStation.group.position.set(GAS_STATION_X, GAS_STATION_Y, 0)
   initGasStationNeon(gasStation.neonMeshes)
   scene.add(gasStation.group)
+
+  // --- Directional Arrow (hidden until go-to-station tutorial step) ---
+  const arrowGroup = new THREE.Group()
+  arrowGroup.visible = false
+  scene.add(arrowGroup)
+  // Chevron shape: 2 angled bars forming a ">" pointing right (rotated later)
+  const arrowMat = new THREE.MeshStandardMaterial({
+    color: 0x39ff14,
+    emissive: 0x39ff14,
+    emissiveIntensity: 1.2,
+    flatShading: true,
+  })
+  // Top bar of chevron
+  const barGeo = new THREE.BoxGeometry(12, 2.5, 2)
+  const topBar = new THREE.Mesh(barGeo, arrowMat)
+  topBar.position.set(3, 2.5, 0)
+  topBar.rotation.z = -0.5 // angle downward
+  arrowGroup.add(topBar)
+  // Bottom bar of chevron
+  const botBar = new THREE.Mesh(barGeo.clone(), arrowMat)
+  botBar.position.set(3, -2.5, 0)
+  botBar.rotation.z = 0.5 // angle upward
+  arrowGroup.add(botBar)
+  // Second chevron (trailing, slightly transparent)
+  const arrowMat2 = new THREE.MeshStandardMaterial({
+    color: 0x39ff14,
+    emissive: 0x39ff14,
+    emissiveIntensity: 0.7,
+    flatShading: true,
+    transparent: true,
+    opacity: 0.6,
+  })
+  const topBar2 = new THREE.Mesh(barGeo.clone(), arrowMat2)
+  topBar2.position.set(-5, 2.5, 0)
+  topBar2.rotation.z = -0.5
+  arrowGroup.add(topBar2)
+  const botBar2 = new THREE.Mesh(barGeo.clone(), arrowMat2)
+  botBar2.position.set(-5, -2.5, 0)
+  botBar2.rotation.z = 0.5
+  arrowGroup.add(botBar2)
+  let reachedStationFired = false
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -717,6 +765,40 @@ export function createGameScene(
 
       // --- Update Gas Station Neon ---
       updateGasStationNeon(gasStation.neonMeshes, now / 1000)
+
+      // --- Tutorial: Station Arrow & Proximity ---
+      const tutStep = getTutorialStep()
+      const showArrow = tutStep === 'go-to-station'
+      arrowGroup.visible = showArrow
+      if (showArrow) {
+        // Position arrow ahead of ship, pointing toward station
+        const dx = GAS_STATION_X - ship.x
+        const dy = GAS_STATION_Y - ship.y
+        const angle = Math.atan2(dy, dx)
+        const arrowDist = 25 // distance from ship to arrow
+        arrowGroup.position.set(
+          ship.x + Math.cos(angle) * arrowDist,
+          ship.y + Math.sin(angle) * arrowDist,
+          5,
+        )
+        arrowGroup.rotation.z = angle
+        // Flash the arrow
+        const flash = 0.6 + 0.4 * Math.sin((now / 1000) * 4.0)
+        arrowMat.emissiveIntensity = flash * 1.5
+        arrowMat2.emissiveIntensity = flash * 0.7
+        // Bob the arrow up and down
+        arrowGroup.position.z = 5 + Math.sin((now / 1000) * 2.5) * 2
+
+        // Check if player reached station
+        if (!reachedStationFired) {
+          const sDist = Math.sqrt(dx * dx + dy * dy)
+          if (sDist <= STATION_ARRIVAL_DISTANCE) {
+            reachedStationFired = true
+            arrowGroup.visible = false
+            onReachedStation?.()
+          }
+        }
+      }
 
       // Sync surviving projectile positions
       for (const p of projectiles) {

@@ -2,10 +2,12 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import type { GameScene, MetalVariant } from '@/game/scene'
+import type { TutorialStep } from '@/hooks/useTutorial'
 
 interface GameCanvasProps {
   paused: boolean
   frozen: boolean
+  tutorialStep: TutorialStep
   onCollect?: (variant: MetalVariant) => void
   onShipMoved?: () => void
   onAsteroidHit?: () => void
@@ -16,11 +18,13 @@ interface GameCanvasProps {
   onEnemyNearby?: () => void
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
+  onReachedStation?: () => void
 }
 
 export function GameCanvas({
   paused,
   frozen,
+  tutorialStep,
   onCollect,
   onShipMoved,
   onAsteroidHit,
@@ -31,11 +35,13 @@ export function GameCanvas({
   onEnemyNearby,
   onEnemyDestroyed,
   onScrapCollected,
+  onReachedStation,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
   const pausedRef = useRef(paused)
   const frozenRef = useRef(frozen)
+  const tutorialStepRef = useRef(tutorialStep)
   const onCollectRef = useRef(onCollect)
   const onShipMovedRef = useRef(onShipMoved)
   const onAsteroidHitRef = useRef(onAsteroidHit)
@@ -46,6 +52,7 @@ export function GameCanvas({
   const onEnemyNearbyRef = useRef(onEnemyNearby)
   const onEnemyDestroyedRef = useRef(onEnemyDestroyed)
   const onScrapCollectedRef = useRef(onScrapCollected)
+  const onReachedStationRef = useRef(onReachedStation)
 
   // Keep refs in sync so the game loop can read them without re-renders
   useEffect(() => {
@@ -55,6 +62,10 @@ export function GameCanvas({
   useEffect(() => {
     frozenRef.current = frozen
   }, [frozen])
+
+  useEffect(() => {
+    tutorialStepRef.current = tutorialStep
+  }, [tutorialStep])
 
   useEffect(() => {
     onCollectRef.current = onCollect
@@ -96,6 +107,10 @@ export function GameCanvas({
     onScrapCollectedRef.current = onScrapCollected
   }, [onScrapCollected])
 
+  useEffect(() => {
+    onReachedStationRef.current = onReachedStation
+  }, [onReachedStation])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -107,18 +122,24 @@ export function GameCanvas({
     import('@/game/scene')
       .then(({ createGameScene }) => {
         if (disposed) return
-        sceneRef.current = createGameScene(el, getPaused, {
-          onCollect: (variant) => onCollectRef.current?.(variant),
-          onShipMoved: () => onShipMovedRef.current?.(),
-          onAsteroidHit: () => onAsteroidHitRef.current?.(),
-          onMetalSpawned: () => onMetalSpawnedRef.current?.(),
-          onMetalCollected: () => onMetalCollectedRef.current?.(),
-          onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
-          onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
-          onEnemyNearby: () => onEnemyNearbyRef.current?.(),
-          onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
-          onScrapCollected: () => onScrapCollectedRef.current?.(),
-        })
+        sceneRef.current = createGameScene(
+          el,
+          getPaused,
+          () => tutorialStepRef.current,
+          {
+            onCollect: (variant) => onCollectRef.current?.(variant),
+            onShipMoved: () => onShipMovedRef.current?.(),
+            onAsteroidHit: () => onAsteroidHitRef.current?.(),
+            onMetalSpawned: () => onMetalSpawnedRef.current?.(),
+            onMetalCollected: () => onMetalCollectedRef.current?.(),
+            onPlayerDamage: (hp) => onPlayerDamageRef.current?.(hp),
+            onScrapCollect: (amount) => onScrapCollectRef.current?.(amount),
+            onEnemyNearby: () => onEnemyNearbyRef.current?.(),
+            onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
+            onScrapCollected: () => onScrapCollectedRef.current?.(),
+            onReachedStation: () => onReachedStationRef.current?.(),
+          },
+        )
       })
       .catch((err: unknown) => {
         console.error('Failed to load game scene:', err)
