@@ -16,10 +16,10 @@ export const ENEMY_COLLISION_RADIUS = 3
 export const ENEMY_MAX_HP = 3
 
 /** Enemy movement speed (units/sec). */
-const ENEMY_SPEED = 40
+const ENEMY_SPEED = 30
 
 /** How often the enemy changes direction (seconds). */
-const ENEMY_DIRECTION_CHANGE_INTERVAL = 2.5
+const ENEMY_DIRECTION_CHANGE_INTERVAL = 2.0
 
 /** How often the enemy shoots (average seconds between shots). */
 const ENEMY_SHOOT_INTERVAL = 3
@@ -40,7 +40,7 @@ const ENEMY_PROJECTILE_LIFETIME = 2.0
 const ENEMY_PROJECTILE_RADIUS = 0.8
 
 /** Orbit distance — enemy tries to stay roughly this far from player. */
-const ORBIT_DISTANCE = 50
+const ORBIT_DISTANCE = 30
 
 /** Colors for the enemy ship. */
 const ENEMY_COLORS = {
