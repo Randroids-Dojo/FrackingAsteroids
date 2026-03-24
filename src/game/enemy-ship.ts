@@ -277,15 +277,13 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     enemy.strafeDir = -enemy.strafeDir
   }
 
-  const tangentAngle = toPlayer + enemy.strafeDir * Math.PI / 2
+  const tangentAngle = toPlayer + (enemy.strafeDir * Math.PI) / 2
   const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
   const absRadial = Math.abs(radialWeight)
 
   // Weighted blend of radial and tangent via atan2 of combined vector
-  const desiredX =
-    Math.cos(tangentAngle) * (1 - absRadial) + Math.cos(radialAngle) * absRadial
-  const desiredY =
-    Math.sin(tangentAngle) * (1 - absRadial) + Math.sin(radialAngle) * absRadial
+  const desiredX = Math.cos(tangentAngle) * (1 - absRadial) + Math.cos(radialAngle) * absRadial
+  const desiredY = Math.sin(tangentAngle) * (1 - absRadial) + Math.sin(radialAngle) * absRadial
   const desiredAngle = Math.atan2(desiredY, desiredX)
 
   // --- Smoothly steer heading toward desired angle ---
