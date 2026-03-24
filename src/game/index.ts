@@ -71,5 +71,14 @@ export {
 export type { MetalChunk } from './metal-chunk'
 export { computeHealthMeterState } from './asteroid-health-meter'
 export type { HealthMeterState } from './asteroid-health-meter'
+export { createCollectorVfx, updateCollectorVfx, disposeCollectorVfx } from './collector-vfx'
+export type { CollectorVfx } from './collector-vfx'
+export {
+  resumeAudio,
+  startCollectorHum,
+  stopCollectorHum,
+  playCollectPling,
+  disposeAudio,
+} from './audio'
 export { createGameScene } from './scene'
 export type { GameScene } from './scene'

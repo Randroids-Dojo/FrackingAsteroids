@@ -35,6 +35,14 @@ import {
 } from './metal-chunk'
 import type { MetalChunk } from './metal-chunk'
 import type { Asteroid, Projectile } from './types'
+import { createCollectorVfx, updateCollectorVfx, disposeCollectorVfx } from './collector-vfx'
+import {
+  resumeAudio,
+  startCollectorHum,
+  stopCollectorHum,
+  playCollectPling,
+  disposeAudio,
+} from './audio'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -151,6 +159,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   // Persistent metal chunks floating in space
   const metalChunks: MetalChunk[] = []
 
+  // --- Collector VFX ---
+  const collectorVfx = createCollectorVfx()
+  scene.add(collectorVfx.group)
+
   // Track cumulative hits on each asteroid for chunk break-off timing
   const asteroidHitCounts = new Map<string, number>()
   asteroidHitCounts.set('asteroid-0', 0)
@@ -191,6 +203,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   let fireTarget: { x: number; y: number } | null = null
 
   function onMouseDown(e: MouseEvent): void {
+    resumeAudio()
     if (getPaused()) return
     const rect = renderer.domElement.getBoundingClientRect()
     const sx = e.clientX - rect.left
@@ -208,22 +221,42 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
   })
   fireButton.attach()
 
-  // --- Mobile Collect Button ---
+  // --- Collect (mobile button + keyboard) ---
   let collecting = false
+  let collectKeyDown = false
   const collectButton = createCollectButton(
     container,
     () => {
       collecting = true
     },
     () => {
-      collecting = false
+      if (!collectKeyDown) collecting = false
     },
   )
   collectButton.attach()
 
+  function onCollectKeyDown(e: KeyboardEvent): void {
+    if (e.code === 'KeyE' || e.code === 'Space') {
+      if (!collectKeyDown) {
+        collectKeyDown = true
+        collecting = true
+        resumeAudio()
+      }
+    }
+  }
+  function onCollectKeyUp(e: KeyboardEvent): void {
+    if (e.code === 'KeyE' || e.code === 'Space') {
+      collectKeyDown = false
+      if (!collectButton.isPressed()) collecting = false
+    }
+  }
+  window.addEventListener('keydown', onCollectKeyDown)
+  window.addEventListener('keyup', onCollectKeyUp)
+
   // Swallow right-half touches that miss the fire button so the browser
   // doesn't synthesize mouse events that rotate the ship or break the joystick.
   function onTouchStartSwallow(e: TouchEvent): void {
+    resumeAudio()
     const rect = container.getBoundingClientRect()
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
@@ -409,6 +442,7 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
             scene.remove(metal.mesh)
             disposeMetalChunk(metal)
             metalChunks.splice(i, 1)
+            playCollectPling()
             continue
           }
         }
@@ -417,6 +451,14 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         for (const a of asteroids) {
           bounceMetalOffAsteroid(metal, a)
         }
+      }
+
+      // --- Collector VFX & Audio ---
+      updateCollectorVfx(collectorVfx, dt, collecting, ship.x, ship.y)
+      if (collecting) {
+        startCollectorHum()
+      } else {
+        stopCollectorHum()
       }
 
       // Sync surviving projectile positions
@@ -456,6 +498,8 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
     collectButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
     container.removeEventListener('touchstart', onTouchStartSwallow)
+    window.removeEventListener('keydown', onCollectKeyDown)
+    window.removeEventListener('keyup', onCollectKeyUp)
     window.removeEventListener('resize', onResize)
 
     // Clean up projectile tracking state
@@ -480,6 +524,10 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
       disposeMetalChunk(m)
     }
     metalChunks.length = 0
+
+    // Clean up collector VFX & audio
+    disposeCollectorVfx(collectorVfx)
+    disposeAudio()
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)

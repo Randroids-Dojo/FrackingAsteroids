@@ -202,8 +202,8 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
 /** Collector pull speed (units/sec). */
 export const COLLECTOR_PULL_SPEED = 60
 
-/** Collector range in world units. */
-export const COLLECTOR_RANGE = 30
+/** Collector range in world units (tier 1 — small radius). */
+export const COLLECTOR_RANGE = 12
 
 /**
  * Pull a metal chunk toward the ship when the collector is active.
