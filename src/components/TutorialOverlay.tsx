@@ -75,18 +75,22 @@ function getPromptText(step: TutorialStep): string {
 }
 
 export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOverlayProps) {
-  // When frozen, any key or touch dismisses the overlay
+  // When frozen, any key or touch dismisses the overlay (after a short grace period
+  // so in-flight input events don't instantly close it).
   useEffect(() => {
     if (!frozen) return
 
     const handleKey = () => onDismiss()
     const handleTouch = () => onDismiss()
 
-    window.addEventListener('keydown', handleKey, { once: true })
-    window.addEventListener('touchstart', handleTouch, { once: true })
-    window.addEventListener('mousedown', handleTouch, { once: true })
+    const timerId = setTimeout(() => {
+      window.addEventListener('keydown', handleKey, { once: true })
+      window.addEventListener('touchstart', handleTouch, { once: true })
+      window.addEventListener('mousedown', handleTouch, { once: true })
+    }, 400)
 
     return () => {
+      clearTimeout(timerId)
       window.removeEventListener('keydown', handleKey)
       window.removeEventListener('touchstart', handleTouch)
       window.removeEventListener('mousedown', handleTouch)

@@ -499,7 +499,7 @@ export function createGameScene(
         enemySpawned = true
         // Spawn enemy at a random offset from the player
         const spawnAngle = Math.random() * Math.PI * 2
-        const spawnDist = 25
+        const spawnDist = 30
         const ex = ship.x + Math.cos(spawnAngle) * spawnDist
         const ey = ship.y + Math.sin(spawnAngle) * spawnDist
         enemy = createEnemyShip(ex, ey)
