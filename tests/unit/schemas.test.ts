@@ -63,6 +63,8 @@ describe('CargoSchema', () => {
     const result = CargoSchema.safeParse({
       scrap: 100,
       fragments: 25,
+      silver: 15,
+      gold: 10,
       capacity: 50,
     })
     assert.equal(result.success, true)
@@ -72,6 +74,30 @@ describe('CargoSchema', () => {
     const result = CargoSchema.safeParse({
       scrap: -1,
       fragments: 0,
+      silver: 0,
+      gold: 0,
+      capacity: 50,
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects negative silver', () => {
+    const result = CargoSchema.safeParse({
+      scrap: 0,
+      fragments: 0,
+      silver: -1,
+      gold: 0,
+      capacity: 50,
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects negative gold', () => {
+    const result = CargoSchema.safeParse({
+      scrap: 0,
+      fragments: 0,
+      silver: 0,
+      gold: -1,
       capacity: 50,
     })
     assert.equal(result.success, false)
@@ -179,6 +205,8 @@ describe('defaultGameState', () => {
     const state = defaultGameState()
     assert.equal(state.cargo.scrap, 0)
     assert.equal(state.cargo.fragments, 0)
+    assert.equal(state.cargo.silver, 0)
+    assert.equal(state.cargo.gold, 0)
     assert.equal(state.cargo.capacity, 50)
   })
 

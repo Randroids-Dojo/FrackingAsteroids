@@ -65,6 +65,12 @@ const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
 
+export type MetalVariant = 'silver' | 'gold'
+
+export interface GameSceneOptions {
+  onCollect?: (variant: MetalVariant) => void
+}
+
 export interface GameScene {
   dispose: () => void
 }
@@ -73,7 +79,12 @@ export interface GameScene {
  * Initialize the Three.js scene, renderer, camera, ship, starfield,
  * and game loop inside the given container element.
  */
-export function createGameScene(container: HTMLElement, getPaused: () => boolean): GameScene {
+export function createGameScene(
+  container: HTMLElement,
+  getPaused: () => boolean,
+  options?: GameSceneOptions,
+): GameScene {
+  const onCollect = options?.onCollect
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -439,10 +450,12 @@ export function createGameScene(container: HTMLElement, getPaused: () => boolean
         if (collecting) {
           const collected = attractMetalToShip(metal, ship, dt)
           if (collected) {
+            const variant = metal.variant
             scene.remove(metal.mesh)
             disposeMetalChunk(metal)
             metalChunks.splice(i, 1)
             playCollectPling()
+            onCollect?.(variant)
             continue
           }
         }

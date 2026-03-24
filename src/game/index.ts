@@ -81,4 +81,4 @@ export {
   disposeAudio,
 } from './audio'
 export { createGameScene } from './scene'
-export type { GameScene } from './scene'
+export type { GameScene, MetalVariant, GameSceneOptions } from './scene'
