@@ -7,7 +7,6 @@ import * as THREE from 'three'
  */
 export const GAS_STATION_COLORS = {
   // Structure surfaces (visible from above as the "floor plan")
-  metal: 0x556677,
   metalDark: 0x3a4a55,
   metalLight: 0x7a8a99,
   grime: 0x3d3d44,
@@ -66,7 +65,7 @@ export function createGasStationModel(): {
   const station = new THREE.Group()
   const neonMeshes: THREE.Mesh[] = []
 
-  const { metal, metalDark, metalLight, grime, canopy, canopyStripe, pumpRed, pumpScreen } =
+  const { metalDark, metalLight, grime, canopy, canopyStripe, pumpRed, pumpScreen } =
     GAS_STATION_COLORS
   const { neonGreen, neonPink, neonTeal, neonYellow, neonOrange } = GAS_STATION_COLORS
 
