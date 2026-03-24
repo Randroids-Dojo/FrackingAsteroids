@@ -6,7 +6,7 @@ import { COLLECTOR_RANGE } from './metal-chunk'
 // ---------------------------------------------------------------------------
 
 /** Number of stream particles spiraling inward. */
-const PARTICLE_COUNT = 24
+const PARTICLE_COUNT = 12
 
 /** How fast particles spiral inward (units/sec). */
 const PARTICLE_INWARD_SPEED = 40

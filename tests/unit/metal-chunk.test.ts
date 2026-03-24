@@ -171,8 +171,11 @@ describe('attractMetalToShip', () => {
   })
 
   it('pull is stronger when closer', () => {
-    const chunkFar = makeMetalChunk(COLLECTOR_RANGE * 0.8, 0, 0, 0)
-    const chunkNear = makeMetalChunk(COLLECTOR_RANGE * 0.3, 0, 0, 0)
+    const collectDist = METAL_CHUNK_RADIUS + SHIP_COLLISION_RADIUS
+    const nearDist = collectDist + (COLLECTOR_RANGE - collectDist) * 0.3
+    const farDist = collectDist + (COLLECTOR_RANGE - collectDist) * 0.8
+    const chunkFar = makeMetalChunk(farDist, 0, 0, 0)
+    const chunkNear = makeMetalChunk(nearDist, 0, 0, 0)
     const ship = makeShip(0, 0)
     attractMetalToShip(chunkFar, ship, 1 / 60)
     attractMetalToShip(chunkNear, ship, 1 / 60)
