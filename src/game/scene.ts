@@ -43,6 +43,29 @@ import {
   playCollectPling,
   disposeAudio,
 } from './audio'
+import {
+  createEnemyShip,
+  updateEnemyShip,
+  checkProjectileEnemyCollisions,
+  checkEnemyProjectilePlayerCollisions,
+  updateEnemyProjectile,
+  disposeEnemyProjectile,
+  disposeEnemyShip,
+  createShipwreckDebris,
+  updateShipwreckDebris,
+  disposeShipwreckDebris,
+  ENEMY_PROJECTILE_DAMAGE,
+  ENEMY_SPAWN_DISTANCE,
+} from './enemy-ship'
+import type { EnemyShip, EnemyProjectile, ShipwreckDebris } from './enemy-ship'
+import {
+  createScrapBox,
+  updateScrapBox,
+  attractScrapBoxToShip,
+  disposeScrapBox,
+  SCRAP_BOX_VALUE,
+} from './scrap-box'
+import type { ScrapBox } from './scrap-box'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -65,6 +88,12 @@ const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
 
+/** Distance at which enemy triggers the tutorial freeze. */
+const ENEMY_NEARBY_DISTANCE = 60
+
+/** Player max health. */
+export const PLAYER_MAX_HP = 100
+
 export type MetalVariant = 'silver' | 'gold'
 
 export interface GameSceneOptions {
@@ -73,6 +102,11 @@ export interface GameSceneOptions {
   onAsteroidHit?: () => void
   onMetalSpawned?: () => void
   onMetalCollected?: () => void
+  onPlayerDamage?: (hp: number) => void
+  onScrapCollect?: (amount: number) => void
+  onEnemyNearby?: () => void
+  onEnemyDestroyed?: () => void
+  onScrapCollected?: () => void
 }
 
 export interface GameScene {
@@ -93,6 +127,11 @@ export function createGameScene(
   const onAsteroidHit = options?.onAsteroidHit
   const onMetalSpawned = options?.onMetalSpawned
   const onMetalCollected = options?.onMetalCollected
+  const onPlayerDamage = options?.onPlayerDamage
+  const onScrapCollect = options?.onScrapCollect
+  const onEnemyNearby = options?.onEnemyNearby
+  const onEnemyDestroyed = options?.onEnemyDestroyed
+  const onScrapCollected = options?.onScrapCollected
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -178,6 +217,22 @@ export function createGameScene(
 
   // Persistent metal chunks floating in space
   const metalChunks: MetalChunk[] = []
+
+  // --- Enemy Ship State ---
+  let enemy: EnemyShip | null = null
+  const enemyProjectiles: EnemyProjectile[] = []
+  const shipwreckDebrisList: ShipwreckDebris[] = []
+  const scrapBoxes: ScrapBox[] = []
+  let playerHp = PLAYER_MAX_HP
+  let firstMetalCollectedTime: number | null = null
+  let enemySpawned = false
+  let enemyNearbyFired = false
+
+  function fireEnemyNearby() {
+    if (enemyNearbyFired) return
+    enemyNearbyFired = true
+    onEnemyNearby?.()
+  }
 
   // --- Collector VFX ---
   const collectorVfx = createCollectorVfx()
@@ -443,6 +498,153 @@ export function createGameScene(
       // Hide asteroid model if destroyed
       asteroidModel.visible = a0.hp > 0
 
+      // --- Enemy Spawn ---
+      if (!enemySpawned && firstMetalCollectedTime !== null) {
+        enemySpawned = true
+        const spawnAngle = Math.random() * Math.PI * 2
+        const ex = ship.x + Math.cos(spawnAngle) * ENEMY_SPAWN_DISTANCE
+        const ey = ship.y + Math.sin(spawnAngle) * ENEMY_SPAWN_DISTANCE
+        enemy = createEnemyShip(ex, ey)
+        scene.add(enemy.mesh)
+
+        // Add a health meter to the enemy
+        const enemyHealthMeter = createHealthMeter()
+        enemy.mesh.add(enemyHealthMeter)
+        enemy.mesh.userData.healthMeter = enemyHealthMeter
+      }
+
+      // --- Update Enemy Ship ---
+      if (enemy && enemy.alive) {
+        // Notify tutorial when enemy gets close enough to be visible
+        if (!enemyNearbyFired) {
+          const edx = enemy.x - ship.x
+          const edy = enemy.y - ship.y
+          const eDist = Math.sqrt(edx * edx + edy * edy)
+          if (eDist <= ENEMY_NEARBY_DISTANCE) {
+            fireEnemyNearby()
+          }
+        }
+
+        const newEnemyProjs = updateEnemyShip(enemy, ship, dt)
+        for (const proj of newEnemyProjs) {
+          scene.add(proj.mesh)
+          enemyProjectiles.push(proj)
+        }
+
+        // Update enemy health meter
+        const ehm = enemy.mesh.userData.healthMeter as THREE.Group | undefined
+        if (ehm) {
+          updateHealthMeter(ehm, enemy.hp, enemy.maxHp)
+        }
+
+        // Check player projectiles hitting enemy
+        if (projectiles.length > 0) {
+          const { surviving: afterEnemy, hitProjectileIds } = checkProjectileEnemyCollisions(
+            projectiles,
+            enemy,
+          )
+          for (const hitId of hitProjectileIds) {
+            removeProjectileModel(hitId)
+            projectileElapsed.delete(hitId)
+
+            // Spawn explosion at enemy position
+            const explosion = createExplosion(enemy.x, enemy.y)
+            scene.add(explosion.group)
+            explosions.push(explosion)
+          }
+          projectiles = afterEnemy
+
+          // Enemy destroyed
+          if (!enemy.alive) {
+            // Spawn shipwreck debris explosion
+            const wreck = createShipwreckDebris(enemy.x, enemy.y)
+            scene.add(wreck.group)
+            shipwreckDebrisList.push(wreck)
+
+            // Also spawn a regular big explosion
+            const bigExplosion = createExplosion(enemy.x, enemy.y)
+            scene.add(bigExplosion.group)
+            explosions.push(bigExplosion)
+
+            // Drop a scrap box
+            const box = createScrapBox(enemy.x, enemy.y)
+            scene.add(box.mesh)
+            scrapBoxes.push(box)
+
+            // Remove enemy mesh
+            scene.remove(enemy.mesh)
+            disposeEnemyShip(enemy)
+            enemy = null
+            onEnemyDestroyed?.()
+          }
+        }
+      }
+
+      // --- Update Enemy Projectiles ---
+      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+        const alive = updateEnemyProjectile(enemyProjectiles[i], dt)
+        if (!alive) {
+          scene.remove(enemyProjectiles[i].mesh)
+          disposeEnemyProjectile(enemyProjectiles[i])
+          enemyProjectiles.splice(i, 1)
+        }
+      }
+
+      // --- Enemy Projectile → Player Collision ---
+      if (enemyProjectiles.length > 0) {
+        const hitIdSet = new Set(checkEnemyProjectilePlayerCollisions(enemyProjectiles, ship))
+        if (hitIdSet.size > 0) {
+          for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+            const proj = enemyProjectiles[i]
+            if (!hitIdSet.has(proj.id)) continue
+
+            // Spawn small explosion at hit position
+            const hitExplosion = createExplosion(proj.x, proj.y)
+            scene.add(hitExplosion.group)
+            explosions.push(hitExplosion)
+
+            scene.remove(proj.mesh)
+            disposeEnemyProjectile(proj)
+            enemyProjectiles.splice(i, 1)
+
+            // Apply damage to player
+            playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
+
+            fireEnemyNearby()
+          }
+          onPlayerDamage?.(playerHp)
+        }
+      }
+
+      // --- Update Shipwreck Debris ---
+      for (let i = shipwreckDebrisList.length - 1; i >= 0; i--) {
+        const alive = updateShipwreckDebris(shipwreckDebrisList[i], dt)
+        if (!alive) {
+          scene.remove(shipwreckDebrisList[i].group)
+          disposeShipwreckDebris(shipwreckDebrisList[i])
+          shipwreckDebrisList.splice(i, 1)
+        }
+      }
+
+      // --- Update Scrap Boxes ---
+      for (let i = scrapBoxes.length - 1; i >= 0; i--) {
+        const box = scrapBoxes[i]
+        updateScrapBox(box, dt)
+
+        if (collecting) {
+          const collected = attractScrapBoxToShip(box, ship, dt)
+          if (collected) {
+            scene.remove(box.mesh)
+            disposeScrapBox(box)
+            scrapBoxes.splice(i, 1)
+            playCollectPling()
+            onScrapCollect?.(SCRAP_BOX_VALUE)
+            onScrapCollected?.()
+            continue
+          }
+        }
+      }
+
       // --- Update Explosions ---
       for (let i = explosions.length - 1; i >= 0; i--) {
         const alive = updateExplosion(explosions[i], dt)
@@ -477,6 +679,9 @@ export function createGameScene(
             disposeMetalChunk(metal)
             metalChunks.splice(i, 1)
             playCollectPling()
+            if (firstMetalCollectedTime === null) {
+              firstMetalCollectedTime = now
+            }
             onCollect?.(variant)
 
             // Tutorial: detect metal collection
@@ -562,6 +767,23 @@ export function createGameScene(
       disposeMetalChunk(m)
     }
     metalChunks.length = 0
+
+    // Clean up enemy
+    if (enemy) {
+      disposeEnemyShip(enemy)
+    }
+    for (const ep of enemyProjectiles) {
+      disposeEnemyProjectile(ep)
+    }
+    enemyProjectiles.length = 0
+    for (const wd of shipwreckDebrisList) {
+      disposeShipwreckDebris(wd)
+    }
+    shipwreckDebrisList.length = 0
+    for (const sb of scrapBoxes) {
+      disposeScrapBox(sb)
+    }
+    scrapBoxes.length = 0
 
     // Clean up collector VFX & audio
     disposeCollectorVfx(collectorVfx)

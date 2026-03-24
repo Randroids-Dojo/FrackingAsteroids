@@ -18,7 +18,18 @@ export default function Home() {
   const [screen, setScreen] = useState<Screen>('start')
   const [activeSlot, setActiveSlot] = useState<SaveSlotId | null>(null)
   const [isNewGame, setIsNewGame] = useState(false)
-  const { paused, scrap, cargo, upgrades, togglePause, onCollect } = useGameState()
+  const {
+    paused,
+    scrap,
+    cargo,
+    upgrades,
+    playerHp,
+    playerMaxHp,
+    togglePause,
+    onCollect,
+    onPlayerDamage,
+    onScrapCollect,
+  } = useGameState()
   const tutorial = useTutorial(isNewGame && screen === 'game')
 
   const handleNewGame = useCallback((slotId: SaveSlotId) => {
@@ -49,14 +60,34 @@ export default function Home() {
     <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
       <GameCanvas
         paused={paused}
+        frozen={tutorial.frozen}
         onCollect={onCollect}
         onShipMoved={tutorial.onShipMoved}
         onAsteroidHit={tutorial.onAsteroidHit}
         onMetalSpawned={tutorial.onMetalSpawned}
         onMetalCollected={tutorial.onMetalCollected}
+        onPlayerDamage={onPlayerDamage}
+        onScrapCollect={onScrapCollect}
+        onEnemyNearby={tutorial.onEnemyNearby}
+        onEnemyDestroyed={tutorial.onEnemyDestroyed}
+        onScrapCollected={tutorial.onScrapCollected}
       />
-      <HUD scrap={scrap} cargo={cargo} upgrades={upgrades} onPause={togglePause} />
-      {tutorial.active && <TutorialOverlay step={tutorial.step} onSkip={tutorial.skip} />}
+      <HUD
+        scrap={scrap}
+        cargo={cargo}
+        upgrades={upgrades}
+        playerHp={playerHp}
+        playerMaxHp={playerMaxHp}
+        onPause={togglePause}
+      />
+      {tutorial.active && (
+        <TutorialOverlay
+          step={tutorial.step}
+          frozen={tutorial.frozen}
+          onSkip={tutorial.skip}
+          onDismiss={tutorial.unfreeze}
+        />
+      )}
       {paused && <FeedbackFab />}
     </main>
   )
