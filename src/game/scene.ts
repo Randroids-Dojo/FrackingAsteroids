@@ -69,6 +69,10 @@ export type MetalVariant = 'silver' | 'gold'
 
 export interface GameSceneOptions {
   onCollect?: (variant: MetalVariant) => void
+  onShipMoved?: () => void
+  onAsteroidHit?: () => void
+  onMetalSpawned?: () => void
+  onMetalCollected?: () => void
 }
 
 export interface GameScene {
@@ -85,6 +89,11 @@ export function createGameScene(
   options?: GameSceneOptions,
 ): GameScene {
   const onCollect = options?.onCollect
+  const onShipMoved = options?.onShipMoved
+  const onAsteroidHit = options?.onAsteroidHit
+  const onMetalSpawned = options?.onMetalSpawned
+  const onMetalCollected = options?.onMetalCollected
+
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -315,6 +324,11 @@ export function createGameScene(
 
       updateShip(ship, inputState, dt, rotation)
 
+      // Tutorial: detect ship movement
+      if (Math.sqrt(ship.x * ship.x + ship.y * ship.y) > 2) {
+        onShipMoved?.()
+      }
+
       // --- Ship-Asteroid Collision ---
       for (const a of asteroids) {
         if (a.hp > 0) {
@@ -367,6 +381,11 @@ export function createGameScene(
       if (projectiles.length > 0 && liveAsteroids.length > 0) {
         const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
 
+        // Tutorial: detect asteroid hit
+        if (hits.length > 0) {
+          onAsteroidHit?.()
+        }
+
         // Remove hit projectile models, spawn explosions and debris
         for (const hit of hits) {
           removeProjectileModel(hit.projectileId)
@@ -407,6 +426,9 @@ export function createGameScene(
               const metal = createMetalChunk(hit.x, hit.y, nx, ny)
               scene.add(metal.mesh)
               metalChunks.push(metal)
+
+              // Tutorial: detect metal spawn
+              onMetalSpawned?.()
             }
           }
         }
@@ -456,6 +478,9 @@ export function createGameScene(
             metalChunks.splice(i, 1)
             playCollectPling()
             onCollect?.(variant)
+
+            // Tutorial: detect metal collection
+            onMetalCollected?.()
             continue
           }
         }
