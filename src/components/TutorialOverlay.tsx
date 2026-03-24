@@ -40,8 +40,7 @@ const STEPS: {
 ]
 
 function StepDots({ step }: { step: TutorialStep }) {
-  const stepIndex =
-    step === 'move' ? 0 : step === 'shoot' ? 1 : step === 'collect' ? 2 : 3
+  const stepIndex = step === 'move' ? 0 : step === 'shoot' ? 1 : step === 'collect' ? 2 : 3
 
   return (
     <div className="flex gap-2 justify-center mb-3" aria-label="Tutorial progress">

@@ -2,7 +2,13 @@
 
 import { useState, useCallback, useEffect } from 'react'
 
-export type TutorialStep = 'move' | 'shoot' | 'wait-for-metal' | 'collect' | 'destroy-enemy' | 'done'
+export type TutorialStep =
+  | 'move'
+  | 'shoot'
+  | 'wait-for-metal'
+  | 'collect'
+  | 'destroy-enemy'
+  | 'done'
 
 export type TutorialEvent =
   | 'ship-moved'
