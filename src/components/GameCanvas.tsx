@@ -1,21 +1,27 @@
 'use client'
 
 import { useRef, useEffect, useCallback } from 'react'
-import type { GameScene } from '@/game/scene'
+import type { GameScene, MetalVariant } from '@/game/scene'
 
 interface GameCanvasProps {
   paused: boolean
+  onCollect?: (variant: MetalVariant) => void
 }
 
-export function GameCanvas({ paused }: GameCanvasProps) {
+export function GameCanvas({ paused, onCollect }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
   const pausedRef = useRef(paused)
+  const onCollectRef = useRef(onCollect)
 
-  // Keep pausedRef in sync so the game loop can read it without re-renders
+  // Keep refs in sync so the game loop can read them without re-renders
   useEffect(() => {
     pausedRef.current = paused
   }, [paused])
+
+  useEffect(() => {
+    onCollectRef.current = onCollect
+  }, [onCollect])
 
   const getPaused = useCallback(() => pausedRef.current, [])
 
@@ -28,7 +34,9 @@ export function GameCanvas({ paused }: GameCanvasProps) {
     import('@/game/scene')
       .then(({ createGameScene }) => {
         if (disposed) return
-        sceneRef.current = createGameScene(el, getPaused)
+        sceneRef.current = createGameScene(el, getPaused, {
+          onCollect: (variant) => onCollectRef.current?.(variant),
+        })
       })
       .catch((err: unknown) => {
         console.error('Failed to load game scene:', err)

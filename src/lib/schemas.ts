@@ -19,6 +19,8 @@ export type Upgrades = z.infer<typeof UpgradesSchema>
 export const CargoSchema = z.object({
   scrap: z.number().min(0),
   fragments: z.number().min(0),
+  silver: z.number().int().min(0),
+  gold: z.number().int().min(0),
   capacity: z.number().int().min(1),
 })
 export type Cargo = z.infer<typeof CargoSchema>
@@ -53,7 +55,7 @@ export function defaultGameState(): GameState {
   return {
     ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
     upgrades: { blaster: 1, collector: 1, storage: 1 },
-    cargo: { scrap: 0, fragments: 0, capacity: 50 },
+    cargo: { scrap: 0, fragments: 0, silver: 0, gold: 0, capacity: 50 },
     score: 0,
     wave: 1,
     timestamp: Date.now(),

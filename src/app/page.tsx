@@ -15,7 +15,7 @@ const ACTIVE_SLOT_KEY = 'fracking-asteroids-active-slot'
 export default function Home() {
   const [screen, setScreen] = useState<Screen>('start')
   const [activeSlot, setActiveSlot] = useState<SaveSlotId | null>(null)
-  const { paused, scrap, cargo, upgrades, togglePause } = useGameState()
+  const { paused, scrap, cargo, upgrades, togglePause, onCollect } = useGameState()
 
   const handleNewGame = useCallback((slotId: SaveSlotId) => {
     localStorage.setItem(ACTIVE_SLOT_KEY, slotId)
@@ -41,7 +41,7 @@ export default function Home() {
 
   return (
     <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
-      <GameCanvas paused={paused} />
+      <GameCanvas paused={paused} onCollect={onCollect} />
       <HUD scrap={scrap} cargo={cargo} upgrades={upgrades} onPause={togglePause} />
       {paused && <FeedbackFab />}
     </main>
