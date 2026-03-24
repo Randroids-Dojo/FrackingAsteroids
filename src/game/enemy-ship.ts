@@ -43,7 +43,7 @@ const ENEMY_PROJECTILE_LIFETIME = 2.0
 const ENEMY_PROJECTILE_RADIUS = 0.8
 
 /** Orbit distance — enemy tries to stay roughly this far from player. */
-const ORBIT_DISTANCE = 30
+export const ORBIT_DISTANCE = 30
 
 /** Colors for the enemy ship. */
 const ENEMY_COLORS = {

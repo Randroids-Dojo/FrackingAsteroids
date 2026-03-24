@@ -3,6 +3,9 @@
 import { useEffect } from 'react'
 import type { TutorialStep } from '@/hooks/useTutorial'
 
+/** Grace period before dismiss listeners activate, so in-flight inputs don't instantly close. */
+const DISMISS_GRACE_MS = 400
+
 interface TutorialOverlayProps {
   step: TutorialStep
   frozen: boolean
@@ -75,25 +78,24 @@ function getPromptText(step: TutorialStep): string {
 }
 
 export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOverlayProps) {
-  // When frozen, any key or touch dismisses the overlay (after a short grace period
-  // so in-flight input events don't instantly close it).
+  // When frozen, any key or touch dismisses the overlay after a grace period
+  // so in-flight input events don't instantly close it.
   useEffect(() => {
     if (!frozen) return
 
-    const handleKey = () => onDismiss()
-    const handleTouch = () => onDismiss()
+    const handleDismiss = () => onDismiss()
 
     const timerId = setTimeout(() => {
-      window.addEventListener('keydown', handleKey, { once: true })
-      window.addEventListener('touchstart', handleTouch, { once: true })
-      window.addEventListener('mousedown', handleTouch, { once: true })
-    }, 400)
+      window.addEventListener('keydown', handleDismiss, { once: true })
+      window.addEventListener('touchstart', handleDismiss, { once: true })
+      window.addEventListener('mousedown', handleDismiss, { once: true })
+    }, DISMISS_GRACE_MS)
 
     return () => {
       clearTimeout(timerId)
-      window.removeEventListener('keydown', handleKey)
-      window.removeEventListener('touchstart', handleTouch)
-      window.removeEventListener('mousedown', handleTouch)
+      window.removeEventListener('keydown', handleDismiss)
+      window.removeEventListener('touchstart', handleDismiss)
+      window.removeEventListener('mousedown', handleDismiss)
     }
   }, [frozen, onDismiss])
 

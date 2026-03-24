@@ -55,6 +55,7 @@ import {
   updateShipwreckDebris,
   disposeShipwreckDebris,
   ENEMY_PROJECTILE_DAMAGE,
+  ORBIT_DISTANCE,
 } from './enemy-ship'
 import type { EnemyShip, EnemyProjectile, ShipwreckDebris } from './enemy-ship'
 import {
@@ -86,9 +87,6 @@ function disposeMesh(obj: THREE.Object3D): void {
 const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
-
-/** Delay before enemy spawns after first metal chunk collection (seconds). */
-const ENEMY_SPAWN_DELAY = 0
 
 /** Distance at which enemy triggers the tutorial freeze. */
 const ENEMY_NEARBY_DISTANCE = 22
@@ -225,6 +223,12 @@ export function createGameScene(
   let firstMetalCollectedTime: number | null = null
   let enemySpawned = false
   let enemyNearbyFired = false
+
+  function fireEnemyNearby() {
+    if (enemyNearbyFired) return
+    enemyNearbyFired = true
+    onEnemyNearby?.()
+  }
 
   // --- Collector VFX ---
   const collectorVfx = createCollectorVfx()
@@ -490,18 +494,12 @@ export function createGameScene(
       // Hide asteroid model if destroyed
       asteroidModel.visible = a0.hp > 0
 
-      // --- Enemy Spawn Timer ---
-      if (
-        !enemySpawned &&
-        firstMetalCollectedTime !== null &&
-        now - firstMetalCollectedTime >= ENEMY_SPAWN_DELAY * 1000
-      ) {
+      // --- Enemy Spawn ---
+      if (!enemySpawned && firstMetalCollectedTime !== null) {
         enemySpawned = true
-        // Spawn enemy at a random offset from the player
         const spawnAngle = Math.random() * Math.PI * 2
-        const spawnDist = 30
-        const ex = ship.x + Math.cos(spawnAngle) * spawnDist
-        const ey = ship.y + Math.sin(spawnAngle) * spawnDist
+        const ex = ship.x + Math.cos(spawnAngle) * ORBIT_DISTANCE
+        const ey = ship.y + Math.sin(spawnAngle) * ORBIT_DISTANCE
         enemy = createEnemyShip(ex, ey)
         scene.add(enemy.mesh)
 
@@ -519,8 +517,7 @@ export function createGameScene(
           const edy = enemy.y - ship.y
           const eDist = Math.sqrt(edx * edx + edy * edy)
           if (eDist <= ENEMY_NEARBY_DISTANCE) {
-            enemyNearbyFired = true
-            onEnemyNearby?.()
+            fireEnemyNearby()
           }
         }
 
@@ -608,11 +605,7 @@ export function createGameScene(
             // Apply damage to player
             playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
 
-            // Trigger enemy tutorial if player gets hit before enemy was in range
-            if (!enemyNearbyFired) {
-              enemyNearbyFired = true
-              onEnemyNearby?.()
-            }
+            fireEnemyNearby()
           }
           onPlayerDamage?.(playerHp)
         }
