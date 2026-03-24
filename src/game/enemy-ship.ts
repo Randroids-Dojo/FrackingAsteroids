@@ -16,10 +16,13 @@ export const ENEMY_COLLISION_RADIUS = 3
 export const ENEMY_MAX_HP = 3
 
 /** Enemy movement speed (units/sec). */
-const ENEMY_SPEED = 30
+const ENEMY_SPEED = 25
 
-/** How often the enemy changes direction (seconds). */
-const ENEMY_DIRECTION_CHANGE_INTERVAL = 2.0
+/** Maximum turn rate (radians/sec) — controls how sharply the enemy can steer. */
+const ENEMY_TURN_RATE = 1.8
+
+/** How often the enemy picks a new strafe direction (seconds). */
+const ENEMY_STRAFE_CHANGE_INTERVAL = 3.0
 
 /** How often the enemy shoots (average seconds between shots). */
 const ENEMY_SHOOT_INTERVAL = 3
@@ -86,12 +89,14 @@ export interface EnemyShip {
   hp: number
   maxHp: number
   alive: boolean
-  /** Time until next direction change. */
-  dirTimer: number
+  /** Current heading angle (radians) — smoothly steered toward desired. */
+  heading: number
+  /** Timer for switching strafe direction (CW vs CCW). */
+  strafeTimer: number
+  /** +1 or -1 — current tangential strafe direction around the player. */
+  strafeDir: number
   /** Time until next shot. */
   shootTimer: number
-  /** Current target movement angle. */
-  moveAngle: number
 }
 
 export interface EnemyProjectile {
@@ -215,9 +220,10 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
     hp: ENEMY_MAX_HP,
     maxHp: ENEMY_MAX_HP,
     alive: true,
-    dirTimer: 0,
+    heading: Math.random() * Math.PI * 2,
+    strafeTimer: ENEMY_STRAFE_CHANGE_INTERVAL * (0.5 + Math.random() * 0.5),
+    strafeDir: Math.random() < 0.5 ? 1 : -1,
     shootTimer: ENEMY_SHOOT_INTERVAL * 0.5, // first shot comes quicker
-    moveAngle: Math.random() * Math.PI * 2,
   }
 }
 
@@ -226,7 +232,16 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
 // ---------------------------------------------------------------------------
 
 /**
- * Update enemy ship AI — orbits the player and sporadically shoots.
+ * Normalise an angle to the range (-PI, PI].
+ */
+function normaliseAngle(a: number): number {
+  while (a > Math.PI) a -= Math.PI * 2
+  while (a <= -Math.PI) a += Math.PI * 2
+  return a
+}
+
+/**
+ * Update enemy ship AI — smoothly orbits the player like a dogfight.
  * Returns new projectiles spawned this frame (if any).
  */
 export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): EnemyProjectile[] {
@@ -234,33 +249,58 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
 
   const newProjectiles: EnemyProjectile[] = []
 
-  // --- Direction change timer ---
-  enemy.dirTimer -= dt
-  if (enemy.dirTimer <= 0) {
-    enemy.dirTimer = ENEMY_DIRECTION_CHANGE_INTERVAL * (0.7 + Math.random() * 0.6)
+  // --- Compute desired heading based on distance to player ---
+  const dx = player.x - enemy.x
+  const dy = player.y - enemy.y
+  const dist = Math.sqrt(dx * dx + dy * dy)
+  const toPlayer = Math.atan2(dy, dx)
 
-    // Pick new movement direction — bias toward orbiting the player
-    const dx = player.x - enemy.x
-    const dy = player.y - enemy.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-
-    if (dist < ORBIT_DISTANCE * 0.6) {
-      // Too close — move away
-      enemy.moveAngle = Math.atan2(-dy, -dx) + (Math.random() - 0.5) * 1.5
-    } else if (dist > ORBIT_DISTANCE * 1.4) {
-      // Too far — move toward
-      enemy.moveAngle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.0
-    } else {
-      // In orbit range — circle around
-      const toPlayer = Math.atan2(dy, dx)
-      const tangent = toPlayer + (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2)
-      enemy.moveAngle = tangent + (Math.random() - 0.5) * 0.8
-    }
+  // Blend a radial component (toward/away from player) with a tangential
+  // component (circling around player). The blend depends on distance.
+  let radialWeight: number
+  if (dist < ORBIT_DISTANCE * 0.7) {
+    // Too close — push away
+    radialWeight = -0.8
+  } else if (dist > ORBIT_DISTANCE * 1.3) {
+    // Too far — pull in
+    radialWeight = 0.8
+  } else {
+    // In the sweet spot — mostly tangential with slight pull toward orbit
+    const t = (dist - ORBIT_DISTANCE) / (ORBIT_DISTANCE * 0.3)
+    radialWeight = t * 0.3 // gentle correction
   }
 
-  // --- Move ---
-  enemy.vx = Math.cos(enemy.moveAngle) * ENEMY_SPEED
-  enemy.vy = Math.sin(enemy.moveAngle) * ENEMY_SPEED
+  // Strafe timer — occasionally flip circling direction
+  enemy.strafeTimer -= dt
+  if (enemy.strafeTimer <= 0) {
+    enemy.strafeTimer = ENEMY_STRAFE_CHANGE_INTERVAL * (0.7 + Math.random() * 0.6)
+    enemy.strafeDir = -enemy.strafeDir
+  }
+
+  const tangentAngle = toPlayer + enemy.strafeDir * Math.PI / 2
+  const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
+  const absRadial = Math.abs(radialWeight)
+
+  // Weighted blend of radial and tangent via atan2 of combined vector
+  const desiredX =
+    Math.cos(tangentAngle) * (1 - absRadial) + Math.cos(radialAngle) * absRadial
+  const desiredY =
+    Math.sin(tangentAngle) * (1 - absRadial) + Math.sin(radialAngle) * absRadial
+  const desiredAngle = Math.atan2(desiredY, desiredX)
+
+  // --- Smoothly steer heading toward desired angle ---
+  const angleDiff = normaliseAngle(desiredAngle - enemy.heading)
+  const maxTurn = ENEMY_TURN_RATE * dt
+  if (Math.abs(angleDiff) <= maxTurn) {
+    enemy.heading = desiredAngle
+  } else {
+    enemy.heading += Math.sign(angleDiff) * maxTurn
+  }
+  enemy.heading = normaliseAngle(enemy.heading)
+
+  // --- Move along current heading ---
+  enemy.vx = Math.cos(enemy.heading) * ENEMY_SPEED
+  enemy.vy = Math.sin(enemy.heading) * ENEMY_SPEED
   enemy.x += enemy.vx * dt
   enemy.y += enemy.vy * dt
 
@@ -276,12 +316,12 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     enemy.shootTimer =
       ENEMY_SHOOT_MIN_INTERVAL + Math.random() * (ENEMY_SHOOT_INTERVAL - ENEMY_SHOOT_MIN_INTERVAL)
 
-    // Fire toward player (reuse direction from facing calc)
+    // Fire toward player
     if (toPlayerDist > 0.1) {
       const nx = toPlayerDx / toPlayerDist
       const ny = toPlayerDy / toPlayerDist
       const proj = createEnemyProjectile(
-        enemy.x + nx * 4, // spawn slightly ahead
+        enemy.x + nx * 4,
         enemy.y + ny * 4,
         nx * ENEMY_PROJECTILE_SPEED,
         ny * ENEMY_PROJECTILE_SPEED,
