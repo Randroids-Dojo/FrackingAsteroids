@@ -97,6 +97,7 @@ export function createGameScene(
   let asteroidHitFired = false
   let metalSpawnedFired = false
   let metalCollectedFired = false
+
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export type TutorialStep = 'move' | 'shoot' | 'wait-for-metal' | 'collect' | 'done'
 
@@ -68,12 +68,17 @@ export interface TutorialHook {
 }
 
 export function useTutorial(enabled: boolean): TutorialHook {
-  const shouldActivate = enabled && !isTutorialDone()
+  const [state, setState] = useState<TutorialState>({
+    active: false,
+    step: 'done',
+  })
 
-  const [state, setState] = useState<TutorialState>(() => ({
-    active: shouldActivate,
-    step: shouldActivate ? 'move' : 'done',
-  }))
+  // Activate when enabled becomes true (e.g. after NEW GAME click)
+  useEffect(() => {
+    if (enabled && !isTutorialDone()) {
+      setState({ active: true, step: 'move' })
+    }
+  }, [enabled])
 
   const dispatch = useCallback((event: TutorialEvent) => {
     setState((prev) => {
@@ -90,16 +95,13 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onMetalCollected = useCallback(() => dispatch('metal-collected'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
-  return useMemo(
-    () => ({
-      active: state.active,
-      step: state.step,
-      onShipMoved,
-      onAsteroidHit,
-      onMetalSpawned,
-      onMetalCollected,
-      skip,
-    }),
-    [state.active, state.step, onShipMoved, onAsteroidHit, onMetalSpawned, onMetalCollected, skip],
-  )
+  return {
+    active: state.active,
+    step: state.step,
+    onShipMoved,
+    onAsteroidHit,
+    onMetalSpawned,
+    onMetalCollected,
+    skip,
+  }
 }
