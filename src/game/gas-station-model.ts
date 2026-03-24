@@ -2,30 +2,40 @@ import * as THREE from 'three'
 
 /**
  * Rick-and-Morty-style space gas station color palette.
- * Neon greens, pinks, and teals against grimy metal.
- * Designed for TOP-DOWN visibility (camera at z=150 looking down).
+ * Inspired by Moon's Drive-In — teal/turquoise dominant, neon pink signage.
+ * Model is tilted ~35° so the front facade is visible from the top-down camera.
  */
 export const GAS_STATION_COLORS = {
-  // Structure surfaces (visible from above as the "floor plan")
-  metalDark: 0x3a4a55,
-  metalLight: 0x7a8a99,
-  grime: 0x3d3d44,
-  // Neon signage (Rick & Morty portal palette)
-  neonGreen: 0x39ff14,
+  // Main structure (teal/turquoise like Moon's Drive-In)
+  teal: 0x2dd4a8,
+  tealDark: 0x1a9e7e,
+  tealLight: 0x5eeacc,
+  // Darker accents
+  darkTrim: 0x1a3a4a,
+  grime: 0x2a3a3a,
+  // Platform / base
+  platform: 0x556677,
+  platformDark: 0x3a4a55,
+  platformEdge: 0x44556a,
+  // Neon signage
   neonPink: 0xff1493,
-  neonTeal: 0x00f5ff,
+  neonRed: 0xff2244,
   neonYellow: 0xffe500,
-  neonOrange: 0xff6622,
-  // Fuel pumps (from above: colored dots)
+  neonGreen: 0x39ff14,
+  neonTeal: 0x00f5ff,
+  // Windows
+  windowGlow: 0xffcc44,
+  windowDark: 0x443300,
+  // Fuel pumps
   pumpRed: 0xcc2233,
-  pumpScreen: 0x22ff66,
-  // Canopy
-  canopy: 0x4a5568,
-  canopyStripe: 0xcc3355,
+  pumpBody: 0xaa3344,
+  pumpNozzle: 0x888888,
+  // Roof
+  roofDark: 0x1a6655,
 } as const
 
-/** Voxel size for the gas station — same scale as asteroids for visibility. */
-const GS_VOXEL = 2.0
+/** Voxel size — same as asteroids for proper scale at camera height. */
+const V = 2.0
 
 function addVoxel(
   group: THREE.Group,
@@ -36,7 +46,7 @@ function addVoxel(
   emissive?: number,
   emissiveIntensity?: number,
 ): void {
-  const geo = new THREE.BoxGeometry(GS_VOXEL, GS_VOXEL, GS_VOXEL)
+  const geo = new THREE.BoxGeometry(V, V, V)
   const mat = new THREE.MeshStandardMaterial({
     color,
     flatShading: true,
@@ -44,32 +54,52 @@ function addVoxel(
     emissiveIntensity: emissiveIntensity ?? 0,
   })
   const mesh = new THREE.Mesh(geo, mat)
-  mesh.position.set(x * GS_VOXEL, y * GS_VOXEL, z * GS_VOXEL)
+  mesh.position.set(x * V, y * V, z * V)
   group.add(mesh)
 }
 
 /**
- * Build a voxel-style space gas station for TOP-DOWN camera.
- * All visual detail is on the roof/top surface since the camera looks straight down.
- * Rick & Morty aesthetic: neon outlines, grimy surfaces, portal colors.
+ * Build a Rick-and-Morty-style space gas station (Moon's Drive-In inspired).
+ * The model is built in local coords then tilted ~35° around X so the
+ * top-down camera sees both the roof and the front facade.
  *
- * Layout (seen from above):
- * - Main building (north): rectangle with neon border and "GAS" painted on roof
- * - Canopy (south): open structure with fuel pump islands and neon edge lighting
- * - Portal ring: glowing circle on the roof
+ * Structure:
+ * - Floating platform base
+ * - Main diner building (teal, wide, retro)
+ * - Large front windows with warm glow
+ * - Neon "GAS" sign on the front facade
+ * - Horizontal neon accent stripes
+ * - Canopy wing extending to the right with fuel pumps
+ * - Rooftop antenna / portal dish
  */
 export function createGasStationModel(): {
   group: THREE.Group
   neonMeshes: THREE.Mesh[]
 } {
-  const station = new THREE.Group()
+  // Inner group holds the actual geometry — we tilt this
+  const inner = new THREE.Group()
+  // Outer group stays upright at world position
+  const outer = new THREE.Group()
+
   const neonMeshes: THREE.Mesh[] = []
 
-  const { metalDark, metalLight, grime, canopy, canopyStripe, pumpRed, pumpScreen } =
-    GAS_STATION_COLORS
-  const { neonGreen, neonPink, neonTeal, neonYellow, neonOrange } = GAS_STATION_COLORS
+  const {
+    teal,
+    tealDark,
+    tealLight,
+    darkTrim,
+    grime,
+    platform,
+    platformDark,
+    platformEdge,
+    windowGlow,
+    windowDark,
+    pumpRed,
+    pumpBody,
+    roofDark,
+  } = GAS_STATION_COLORS
+  const { neonPink, neonRed, neonYellow, neonGreen, neonTeal } = GAS_STATION_COLORS
 
-  // Helper to add a neon voxel (tracked for flicker animation)
   function addNeonVoxel(
     x: number,
     y: number,
@@ -77,7 +107,7 @@ export function createGasStationModel(): {
     color: number,
     intensity: number = 0.9,
   ): void {
-    const geo = new THREE.BoxGeometry(GS_VOXEL, GS_VOXEL, GS_VOXEL)
+    const geo = new THREE.BoxGeometry(V, V, V)
     const mat = new THREE.MeshStandardMaterial({
       color,
       flatShading: true,
@@ -85,161 +115,217 @@ export function createGasStationModel(): {
       emissiveIntensity: intensity,
     })
     const mesh = new THREE.Mesh(geo, mat)
-    mesh.position.set(x * GS_VOXEL, y * GS_VOXEL, z * GS_VOXEL)
-    station.add(mesh)
+    mesh.position.set(x * V, y * V, z * V)
+    inner.add(mesh)
     neonMeshes.push(mesh)
   }
 
-  // Everything sits at z=0 (ground) and z=1 (roof surface).
-  // Neon sits at z=1 so it's the top-most visible layer.
-
   // =====================
-  // MAIN BUILDING — north section (y: 1 to 6)
-  // 10 wide × 6 deep, viewed from above
+  // FLOATING PLATFORM (z: -1 to 0)
+  // Wide oval-ish base the station sits on
   // =====================
-
-  // Building base (z=0, gives the structure a little depth)
-  for (let x = -5; x <= 5; x++) {
-    for (let y = 1; y <= 6; y++) {
-      addVoxel(station, x, y, 0, metalDark)
+  for (let x = -7; x <= 8; x++) {
+    for (let y = -3; y <= 3; y++) {
+      const dist = Math.abs(x * 0.4) + Math.abs(y)
+      if (dist <= 3.5) {
+        addVoxel(inner, x, y, -1, x % 2 === 0 ? platform : platformDark)
+      }
+    }
+  }
+  // Platform rim — neon underglow
+  for (let x = -7; x <= 8; x++) {
+    for (let y = -3; y <= 3; y++) {
+      const dist = Math.abs(x * 0.4) + Math.abs(y)
+      if (dist > 2.8 && dist <= 3.5) {
+        addNeonVoxel(x, y, -2, neonTeal, 0.5)
+      }
     }
   }
 
-  // Roof surface (z=1) — grimy metal with some variation
-  for (let x = -4; x <= 4; x++) {
-    for (let y = 2; y <= 5; y++) {
-      const color = (x + y) % 3 === 0 ? grime : metalLight
-      addVoxel(station, x, y, 1, color)
+  // =====================
+  // MAIN BUILDING (z: 0 to 4)
+  // Wide retro diner — x: -5 to 3, y: -2 to 2
+  // =====================
+
+  // Ground floor walls (z: 0 to 2)
+  for (let z = 0; z <= 2; z++) {
+    // Back wall (y=2)
+    for (let x = -5; x <= 3; x++) {
+      addVoxel(inner, x, 2, z, tealDark)
+    }
+    // Left wall (x=-5)
+    for (let y = -1; y <= 1; y++) {
+      addVoxel(inner, -5, y, z, teal)
+    }
+    // Right wall (x=3)
+    for (let y = -1; y <= 1; y++) {
+      addVoxel(inner, 3, y, z, teal)
     }
   }
 
-  // Neon border around the building roof (z=1)
-  // Top edge (north)
-  for (let x = -5; x <= 5; x++) {
-    addNeonVoxel(x, 6, 1, neonPink, 0.8)
+  // Front facade (y=-2) — the star of the show, visible when tilted
+  // Bottom row: dark trim
+  for (let x = -5; x <= 3; x++) {
+    addVoxel(inner, x, -2, 0, darkTrim)
   }
-  // Bottom edge (south side of building)
-  for (let x = -5; x <= 5; x++) {
-    addNeonVoxel(x, 1, 1, neonPink, 0.8)
-  }
-  // Left edge
-  for (let y = 2; y <= 5; y++) {
-    addNeonVoxel(-5, y, 1, neonTeal, 0.7)
-  }
-  // Right edge
-  for (let y = 2; y <= 5; y++) {
-    addNeonVoxel(5, y, 1, neonTeal, 0.7)
-  }
-
-  // =====================
-  // "GAS" NEON SIGN painted on the roof (z=2, above roof)
-  // Letters run along X axis, "written" in Y height (3 tall)
-  // Visible from directly above
-  // =====================
-
-  // "G" — x: -4 to -2, y: 3 to 5
-  addNeonVoxel(-4, 5, 2, neonGreen, 1.0) // top-left
-  addNeonVoxel(-3, 5, 2, neonGreen, 1.0) // top-mid
-  addNeonVoxel(-2, 5, 2, neonGreen, 1.0) // top-right
-  addNeonVoxel(-4, 4, 2, neonGreen, 1.0) // mid-left
-  addNeonVoxel(-4, 3, 2, neonGreen, 1.0) // bot-left
-  addNeonVoxel(-3, 3, 2, neonGreen, 1.0) // bot-mid
-  addNeonVoxel(-2, 3, 2, neonGreen, 1.0) // bot-right
-  addNeonVoxel(-2, 4, 2, neonGreen, 1.0) // mid-right (shelf of G)
-
-  // "A" — x: 0 to 2, y: 3 to 5
-  addNeonVoxel(0, 5, 2, neonPink, 1.0) // top-left
-  addNeonVoxel(1, 5, 2, neonPink, 1.0) // top-mid
-  addNeonVoxel(2, 5, 2, neonPink, 1.0) // top-right
-  addNeonVoxel(0, 4, 2, neonPink, 1.0) // mid-left
-  addNeonVoxel(1, 4, 2, neonPink, 1.0) // mid-bar
-  addNeonVoxel(2, 4, 2, neonPink, 1.0) // mid-right
-  addNeonVoxel(0, 3, 2, neonPink, 1.0) // bot-left
-  addNeonVoxel(2, 3, 2, neonPink, 1.0) // bot-right (no bottom bar)
-
-  // "S" — x: 4 (single column, so shift) → x: 3 to 5 would be off edge
-  // Use x: 3 to 4, y: 3 to 5 (compact S)
-  addNeonVoxel(4, 5, 2, neonTeal, 1.0) // top-right
-  addNeonVoxel(3, 5, 2, neonTeal, 1.0) // top-left (top bar)
-  addNeonVoxel(3, 4, 2, neonTeal, 1.0) // mid-left
-  addNeonVoxel(4, 4, 2, neonTeal, 1.0) // mid-right (mid bar)
-  addNeonVoxel(4, 3, 2, neonTeal, 1.0) // bot-right
-  addNeonVoxel(3, 3, 2, neonTeal, 1.0) // bot-left (bottom bar)
-
-  // =====================
-  // CANOPY — south section (y: -6 to 0)
-  // Open-air fuel pump area with a thin roof
-  // =====================
-
-  // Canopy roof surface (z=0, slightly lower than building)
-  for (let x = -5; x <= 5; x++) {
-    for (let y = -6; y <= 0; y++) {
-      const isStripe = y === -3 // center racing stripe
-      addVoxel(station, x, y, 0, isStripe ? canopyStripe : canopy)
+  // Middle rows: windows with warm glow + teal pillars
+  for (let x = -5; x <= 3; x++) {
+    if (x === -5 || x === -1 || x === 3) {
+      // Structural pillars
+      addVoxel(inner, x, -2, 1, teal)
+      addVoxel(inner, x, -2, 2, teal)
+    } else {
+      // Windows — warm yellow glow
+      addVoxel(inner, x, -2, 1, windowDark, windowGlow, 0.6)
+      addVoxel(inner, x, -2, 2, windowDark, windowGlow, 0.4)
     }
   }
 
-  // Neon edge around canopy (z=1, sits on top)
-  // South edge (front of station — what you fly toward)
-  for (let x = -5; x <= 5; x++) {
-    addNeonVoxel(x, -6, 1, neonYellow, 1.0)
-  }
-  // Left & right canopy edges
-  for (let y = -5; y <= 0; y++) {
-    addNeonVoxel(-5, y, 1, neonOrange, 0.6)
-    addNeonVoxel(5, y, 1, neonOrange, 0.6)
+  // Upper facade (z=3) — solid teal with neon stripe
+  for (let x = -5; x <= 3; x++) {
+    addVoxel(inner, x, -2, 3, tealLight)
   }
 
-  // =====================
-  // FUEL PUMP ISLANDS (on canopy, visible as colored blocks from above)
-  // Two pump islands, each 1×3, with neon screens
-  // =====================
+  // Neon stripe across the front facade (z=3, the sign band)
+  addNeonVoxel(-5, -2, 4, neonPink, 1.0)
+  for (let x = -4; x <= 2; x++) {
+    addNeonVoxel(x, -2, 4, neonPink, 0.9)
+  }
+  addNeonVoxel(3, -2, 4, neonPink, 1.0)
 
-  // Left pump island
-  addVoxel(station, -2, -2, 1, pumpRed)
-  addNeonVoxel(-2, -1, 1, pumpScreen, 0.8)
-  addVoxel(station, -2, -4, 1, pumpRed)
-  addNeonVoxel(-2, -5, 1, pumpScreen, 0.8)
-
-  // Right pump island
-  addVoxel(station, 2, -2, 1, pumpRed)
-  addNeonVoxel(2, -1, 1, pumpScreen, 0.8)
-  addVoxel(station, 2, -4, 1, pumpRed)
-  addNeonVoxel(2, -5, 1, pumpScreen, 0.8)
-
-  // Fuel hose lines (thin neon strips between pumps)
-  addNeonVoxel(-2, -3, 1, neonYellow, 0.4)
-  addNeonVoxel(2, -3, 1, neonYellow, 0.4)
+  // Second neon stripe lower on facade
+  addNeonVoxel(-5, -2, 2.5, neonTeal, 0.5)
+  addNeonVoxel(3, -2, 2.5, neonTeal, 0.5)
 
   // =====================
-  // PORTAL RING on building roof (z=2)
-  // Interdimensional portal antenna — very R&M, glowing ring from above
+  // ROOF (z: 3-4)
+  // Flat with slight overhang
   // =====================
-  // Ring of 8 voxels around center
-  addNeonVoxel(-1, 4, 2, neonGreen, 1.2)
-  addNeonVoxel(0, 4, 2, neonTeal, 1.0)
-  addNeonVoxel(1, 4, 2, neonPink, 1.2)
-  // Center glow
-  addNeonVoxel(0, 3, 2, neonGreen, 1.5)
+  for (let x = -6; x <= 4; x++) {
+    for (let y = -3; y <= 2; y++) {
+      const color = (x + y) % 3 === 0 ? grime : roofDark
+      addVoxel(inner, x, y, 3, color)
+    }
+  }
+  // Roof overhang front edge — visible from angle
+  for (let x = -6; x <= 4; x++) {
+    addVoxel(inner, x, -3, 3, tealLight)
+  }
 
   // =====================
-  // CORNER ACCENT LIGHTS — little neon dots at building corners
+  // "GAS" NEON SIGN on front facade (z=4-5, y=-3, sticking out front)
+  // Big blocky neon letters — the marquee
   // =====================
-  addNeonVoxel(-5, 6, 2, neonGreen, 1.0)
-  addNeonVoxel(5, 6, 2, neonGreen, 1.0)
-  addNeonVoxel(-5, 1, 2, neonPink, 1.0)
-  addNeonVoxel(5, 1, 2, neonPink, 1.0)
+
+  // "G" — x: -4 to -2
+  addNeonVoxel(-4, -3, 5, neonRed, 1.2)
+  addNeonVoxel(-3, -3, 5, neonRed, 1.2)
+  addNeonVoxel(-2, -3, 5, neonRed, 1.2)
+  addNeonVoxel(-4, -3, 4, neonRed, 1.2)
+  addNeonVoxel(-4, -3, 3, neonRed, 1.0)
+  addNeonVoxel(-3, -3, 3, neonRed, 1.0)
+  addNeonVoxel(-2, -3, 3, neonRed, 1.0)
+  addNeonVoxel(-2, -3, 4, neonRed, 1.0) // shelf
+
+  // "A" — x: -1 to 1
+  addNeonVoxel(-1, -3, 5, neonYellow, 1.2)
+  addNeonVoxel(0, -3, 5, neonYellow, 1.2)
+  addNeonVoxel(1, -3, 5, neonYellow, 1.2)
+  addNeonVoxel(-1, -3, 4, neonYellow, 1.2)
+  addNeonVoxel(1, -3, 4, neonYellow, 1.2)
+  addNeonVoxel(0, -3, 4, neonYellow, 1.0) // crossbar
+  addNeonVoxel(-1, -3, 3, neonYellow, 1.0)
+  addNeonVoxel(1, -3, 3, neonYellow, 1.0)
+
+  // "S" — x: 2 to 4
+  addNeonVoxel(2, -3, 5, neonGreen, 1.2)
+  addNeonVoxel(3, -3, 5, neonGreen, 1.2)
+  addNeonVoxel(4, -3, 5, neonGreen, 1.2)
+  addNeonVoxel(2, -3, 4, neonGreen, 1.2)
+  addNeonVoxel(3, -3, 4, neonGreen, 1.0)
+  addNeonVoxel(4, -3, 4, neonGreen, 1.0)
+  addNeonVoxel(4, -3, 3, neonGreen, 1.0)
+  addNeonVoxel(3, -3, 3, neonGreen, 1.0)
+  addNeonVoxel(2, -3, 3, neonGreen, 1.0)
 
   // =====================
-  // LANDING PAD MARKERS (south of canopy, guide the player in)
-  // Small neon dots like runway lights
+  // CANOPY WING (extends right, x: 4 to 8)
+  // Open-air fuel pump area with roof overhang
   // =====================
-  addNeonVoxel(-3, -7, 0, neonYellow, 0.5)
-  addNeonVoxel(3, -7, 0, neonYellow, 0.5)
-  addNeonVoxel(-3, -8, 0, neonOrange, 0.4)
-  addNeonVoxel(3, -8, 0, neonOrange, 0.4)
 
-  return { group: station, neonMeshes }
+  // Canopy roof
+  for (let x = 4; x <= 8; x++) {
+    for (let y = -2; y <= 2; y++) {
+      addVoxel(inner, x, y, 3, x % 2 === 0 ? tealDark : teal)
+    }
+  }
+
+  // Support pillars (z: 0-2)
+  for (let z = 0; z <= 2; z++) {
+    addVoxel(inner, 5, -2, z, platformEdge)
+    addVoxel(inner, 8, -2, z, platformEdge)
+    addVoxel(inner, 5, 2, z, platformEdge)
+    addVoxel(inner, 8, 2, z, platformEdge)
+  }
+
+  // Canopy front neon strip
+  for (let x = 4; x <= 8; x++) {
+    addNeonVoxel(x, -2, 3, neonPink, 0.7)
+  }
+
+  // =====================
+  // FUEL PUMPS (under canopy, z: 0-2)
+  // =====================
+  // Pump 1
+  addVoxel(inner, 6, -1, 0, pumpBody)
+  addVoxel(inner, 6, -1, 1, pumpRed)
+  addNeonVoxel(6, -1, 2, neonGreen, 0.8) // screen
+
+  // Pump 2
+  addVoxel(inner, 6, 1, 0, pumpBody)
+  addVoxel(inner, 6, 1, 1, pumpRed)
+  addNeonVoxel(6, 1, 2, neonGreen, 0.8)
+
+  // Pump 3
+  addVoxel(inner, 8, 0, 0, pumpBody)
+  addVoxel(inner, 8, 0, 1, pumpRed)
+  addNeonVoxel(8, 0, 2, neonGreen, 0.8)
+
+  // =====================
+  // ROOFTOP ANTENNA / PORTAL DISH
+  // =====================
+  addVoxel(inner, -2, 0, 4, darkTrim)
+  addVoxel(inner, -2, 0, 5, darkTrim)
+  addNeonVoxel(-2, 0, 6, neonGreen, 1.5) // glowing tip
+  addNeonVoxel(-3, 0, 5, neonTeal, 0.8) // dish arms
+  addNeonVoxel(-1, 0, 5, neonTeal, 0.8)
+
+  // =====================
+  // NEON UNDERGLOW on front overhang (very visible when tilted)
+  // =====================
+  for (let x = -6; x <= 4; x += 2) {
+    addNeonVoxel(x, -3, 2, neonPink, 0.6)
+  }
+
+  // =====================
+  // PARKED "SHIPS" on platform (small colored blobs, R&M style)
+  // =====================
+  addVoxel(inner, -6, -1, 0, 0xff6600) // orange car
+  addVoxel(inner, -6, 1, 0, 0xcc0044) // red car
+  addVoxel(inner, -7, 0, 0, 0x4488ff) // blue car
+
+  // =====================
+  // TILT the inner group so the facade is visible from above
+  // ~35° around X axis tilts the front face toward the camera
+  // =====================
+  inner.rotation.x = -Math.PI * 0.19 // ~34 degrees
+
+  // Shift down slightly to compensate for tilt lifting the model
+  inner.position.y = -2
+
+  outer.add(inner)
+
+  return { group: outer, neonMeshes }
 }
 
 /**
