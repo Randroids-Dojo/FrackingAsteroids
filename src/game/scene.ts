@@ -55,7 +55,7 @@ import {
   updateShipwreckDebris,
   disposeShipwreckDebris,
   ENEMY_PROJECTILE_DAMAGE,
-  ORBIT_DISTANCE,
+  ENEMY_SPAWN_DISTANCE,
 } from './enemy-ship'
 import type { EnemyShip, EnemyProjectile, ShipwreckDebris } from './enemy-ship'
 import {
@@ -89,7 +89,7 @@ const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
 
 /** Distance at which enemy triggers the tutorial freeze. */
-const ENEMY_NEARBY_DISTANCE = 22
+const ENEMY_NEARBY_DISTANCE = 60
 
 /** Player max health. */
 export const PLAYER_MAX_HP = 100
@@ -502,8 +502,8 @@ export function createGameScene(
       if (!enemySpawned && firstMetalCollectedTime !== null) {
         enemySpawned = true
         const spawnAngle = Math.random() * Math.PI * 2
-        const ex = ship.x + Math.cos(spawnAngle) * ORBIT_DISTANCE
-        const ey = ship.y + Math.sin(spawnAngle) * ORBIT_DISTANCE
+        const ex = ship.x + Math.cos(spawnAngle) * ENEMY_SPAWN_DISTANCE
+        const ey = ship.y + Math.sin(spawnAngle) * ENEMY_SPAWN_DISTANCE
         enemy = createEnemyShip(ex, ey)
         scene.add(enemy.mesh)
 

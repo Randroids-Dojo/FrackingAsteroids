@@ -16,7 +16,7 @@ export const ENEMY_COLLISION_RADIUS = 3
 export const ENEMY_MAX_HP = 3
 
 /** Enemy movement speed (units/sec). */
-const ENEMY_SPEED = 25
+const ENEMY_SPEED = 18
 
 /** Maximum turn rate (radians/sec) — controls how sharply the enemy can steer. */
 const ENEMY_TURN_RATE = 1.8
@@ -25,9 +25,9 @@ const ENEMY_TURN_RATE = 1.8
 const ENEMY_STRAFE_CHANGE_INTERVAL = 3.0
 
 /** Duration of idle (drifting) periods when in orbit sweet spot. */
-const ENEMY_IDLE_DURATION = 2.0
+const ENEMY_IDLE_DURATION = 3.0
 /** Interval between idle periods. */
-const ENEMY_IDLE_INTERVAL = 4.0
+const ENEMY_IDLE_INTERVAL = 3.0
 
 /** How often the enemy shoots (average seconds between shots). */
 const ENEMY_SHOOT_INTERVAL = 3
@@ -48,7 +48,10 @@ const ENEMY_PROJECTILE_LIFETIME = 2.0
 const ENEMY_PROJECTILE_RADIUS = 0.8
 
 /** Orbit distance — enemy tries to stay roughly this far from player. */
-export const ORBIT_DISTANCE = 30
+export const ORBIT_DISTANCE = 50
+
+/** How far from the player the enemy spawns. */
+export const ENEMY_SPAWN_DISTANCE = 120
 
 /** Colors for the enemy ship. */
 const ENEMY_COLORS = {
@@ -307,9 +310,11 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
   const absRadial = Math.abs(radialWeight)
 
-  // Weighted blend of radial and tangent via atan2 of combined vector
-  const desiredX = Math.cos(tangentAngle) * (1 - absRadial) + Math.cos(radialAngle) * absRadial
-  const desiredY = Math.sin(tangentAngle) * (1 - absRadial) + Math.sin(radialAngle) * absRadial
+  // When in the sweet spot, use only a small tangential component so the
+  // enemy mostly holds position instead of constantly circling the player.
+  const tangentWeight = absRadial > 0.3 ? 1 - absRadial : 0.25
+  const desiredX = Math.cos(tangentAngle) * tangentWeight + Math.cos(radialAngle) * absRadial
+  const desiredY = Math.sin(tangentAngle) * tangentWeight + Math.sin(radialAngle) * absRadial
   const desiredAngle = Math.atan2(desiredY, desiredX)
 
   // --- Smoothly steer heading toward desired angle ---
