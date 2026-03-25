@@ -65,14 +65,17 @@ export default function Home() {
   const handleBuy = useCallback(
     (type: keyof Upgrades, cost: number) => {
       const purchased = buyUpgrade(type, cost)
-      if (purchased && type === 'blaster') {
+      if (!purchased) return
+      if (type === 'blaster') {
         // Apply 10% fire rate boost in the game engine
         gameCanvasRef.current?.setFireRateBonus(1.1)
+      }
+      if (tutorial.active) {
         tutorial.onBoughtUpgrade()
         setTradeMenuOpen(false)
       }
     },
-    [buyUpgrade, tutorial.onBoughtUpgrade],
+    [buyUpgrade, tutorial.active, tutorial.onBoughtUpgrade],
   )
 
   const handleCloseTradeMenu = useCallback(() => {

@@ -7,7 +7,7 @@ import { SILVER_SCRAP_VALUE, GOLD_SCRAP_VALUE } from '@/hooks/useGameState'
 
 /** Upgrade catalog available at the trade station. */
 const UPGRADE_CATALOG = [
-  { type: 'blaster' as const, label: 'Fire Rate Boost', cost: 20, description: '+10% fire rate' },
+  { type: 'blaster' as const, label: 'Fire Rate Boost', cost: 10, description: '+10% fire rate' },
   {
     type: 'collector' as const,
     label: 'Collector Range',
@@ -60,14 +60,12 @@ export function TradeMenu({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-hud-green/30">
           <h2 className="text-hud-green text-lg font-bold tracking-wider">TRADE STATION</h2>
-          {!isTutorial && (
-            <button
-              onClick={onClose}
-              className="text-white/40 hover:text-white/80 text-xl transition-colors"
-            >
-              X
-            </button>
-          )}
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white/80 text-xl transition-colors"
+          >
+            X
+          </button>
         </div>
 
         {/* Tab bar */}
