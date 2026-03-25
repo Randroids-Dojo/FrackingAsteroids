@@ -1,11 +1,17 @@
 'use client'
 
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
 import type { GameScene, MetalVariant } from '@/game/scene'
+import type { TutorialStep } from '@/hooks/useTutorial'
+
+export interface GameCanvasHandle {
+  setFireRateBonus: (multiplier: number) => void
+}
 
 interface GameCanvasProps {
   paused: boolean
   frozen: boolean
+  tutorialStep: TutorialStep
   onCollect?: (variant: MetalVariant) => void
   onShipMoved?: () => void
   onAsteroidHit?: () => void
@@ -16,26 +22,35 @@ interface GameCanvasProps {
   onEnemyNearby?: () => void
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
+  onNearStation?: () => void
+  onEnteredStation?: () => void
 }
 
-export function GameCanvas({
-  paused,
-  frozen,
-  onCollect,
-  onShipMoved,
-  onAsteroidHit,
-  onMetalSpawned,
-  onMetalCollected,
-  onPlayerDamage,
-  onScrapCollect,
-  onEnemyNearby,
-  onEnemyDestroyed,
-  onScrapCollected,
-}: GameCanvasProps) {
+export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
+  {
+    paused,
+    frozen,
+    tutorialStep,
+    onCollect,
+    onShipMoved,
+    onAsteroidHit,
+    onMetalSpawned,
+    onMetalCollected,
+    onPlayerDamage,
+    onScrapCollect,
+    onEnemyNearby,
+    onEnemyDestroyed,
+    onScrapCollected,
+    onNearStation,
+    onEnteredStation,
+  },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
   const pausedRef = useRef(paused)
   const frozenRef = useRef(frozen)
+  const tutorialStepRef = useRef(tutorialStep)
   const onCollectRef = useRef(onCollect)
   const onShipMovedRef = useRef(onShipMoved)
   const onAsteroidHitRef = useRef(onAsteroidHit)
@@ -46,6 +61,14 @@ export function GameCanvas({
   const onEnemyNearbyRef = useRef(onEnemyNearby)
   const onEnemyDestroyedRef = useRef(onEnemyDestroyed)
   const onScrapCollectedRef = useRef(onScrapCollected)
+  const onNearStationRef = useRef(onNearStation)
+  const onEnteredStationRef = useRef(onEnteredStation)
+
+  useImperativeHandle(ref, () => ({
+    setFireRateBonus: (multiplier: number) => {
+      sceneRef.current?.setFireRateBonus(multiplier)
+    },
+  }))
 
   // Keep refs in sync so the game loop can read them without re-renders
   useEffect(() => {
@@ -55,6 +78,10 @@ export function GameCanvas({
   useEffect(() => {
     frozenRef.current = frozen
   }, [frozen])
+
+  useEffect(() => {
+    tutorialStepRef.current = tutorialStep
+  }, [tutorialStep])
 
   useEffect(() => {
     onCollectRef.current = onCollect
@@ -96,6 +123,14 @@ export function GameCanvas({
     onScrapCollectedRef.current = onScrapCollected
   }, [onScrapCollected])
 
+  useEffect(() => {
+    onNearStationRef.current = onNearStation
+  }, [onNearStation])
+
+  useEffect(() => {
+    onEnteredStationRef.current = onEnteredStation
+  }, [onEnteredStation])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -107,7 +142,7 @@ export function GameCanvas({
     import('@/game/scene')
       .then(({ createGameScene }) => {
         if (disposed) return
-        sceneRef.current = createGameScene(el, getPaused, {
+        sceneRef.current = createGameScene(el, getPaused, () => tutorialStepRef.current, {
           onCollect: (variant) => onCollectRef.current?.(variant),
           onShipMoved: () => onShipMovedRef.current?.(),
           onAsteroidHit: () => onAsteroidHitRef.current?.(),
@@ -118,6 +153,8 @@ export function GameCanvas({
           onEnemyNearby: () => onEnemyNearbyRef.current?.(),
           onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
           onScrapCollected: () => onScrapCollectedRef.current?.(),
+          onNearStation: () => onNearStationRef.current?.(),
+          onEnteredStation: () => onEnteredStationRef.current?.(),
         })
       })
       .catch((err: unknown) => {
@@ -134,4 +171,4 @@ export function GameCanvas({
   return (
     <div ref={containerRef} id="game-canvas" className="absolute inset-0" data-paused={paused} />
   )
-}
+})

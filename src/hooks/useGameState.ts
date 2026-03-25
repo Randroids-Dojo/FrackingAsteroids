@@ -1,10 +1,15 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { defaultGameState } from '@/lib/schemas'
 import type { Cargo, Upgrades } from '@/lib/schemas'
 import type { MetalVariant } from '@/game/scene'
 import { PLAYER_MAX_HP } from '@/game/scene'
+
+/** Scrap value per unit of silver ore. */
+export const SILVER_SCRAP_VALUE = 5
+/** Scrap value per unit of gold ore. */
+export const GOLD_SCRAP_VALUE = 15
 
 export interface GameStateHook {
   paused: boolean
@@ -17,6 +22,8 @@ export interface GameStateHook {
   onCollect: (variant: MetalVariant) => void
   onPlayerDamage: (hp: number) => void
   onScrapCollect: (amount: number) => void
+  sellMaterials: () => number
+  buyUpgrade: (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void) => void
 }
 
 export function useGameState(): GameStateHook {
@@ -24,7 +31,7 @@ export function useGameState(): GameStateHook {
   const [cargo, setCargo] = useState(() => defaultGameState().cargo)
   const [scrap, setScrap] = useState(0)
   const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP)
-  const upgrades = useMemo(() => defaultGameState().upgrades, [])
+  const [upgrades, setUpgrades] = useState(() => defaultGameState().upgrades)
 
   const togglePause = useCallback(() => {
     setPaused((p) => !p)
@@ -47,6 +54,41 @@ export function useGameState(): GameStateHook {
     setScrap((prev) => prev + amount)
   }, [])
 
+  /** Sell all silver and gold for scrap. Returns scrap earned. */
+  const sellMaterials = useCallback((): number => {
+    let earned = 0
+    setCargo((prev) => {
+      earned = prev.silver * SILVER_SCRAP_VALUE + prev.gold * GOLD_SCRAP_VALUE
+      return { ...prev, silver: 0, gold: 0, fragments: 0 }
+    })
+    setScrap((prev) => prev + earned)
+    return earned
+  }, [])
+
+  /**
+   * Buy an upgrade. Calls onPurchased(true) if successful, onPurchased(false) if not.
+   * Uses callback to avoid synchronous-return-from-setState issues.
+   */
+  const buyUpgrade = useCallback(
+    (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void): void => {
+      setScrap((prevScrap) => {
+        if (prevScrap < cost) {
+          // Can't afford — schedule callback outside setState
+          setTimeout(() => onPurchased?.(false), 0)
+          return prevScrap
+        }
+        // Can afford — also bump the upgrade level
+        setUpgrades((prev) => ({
+          ...prev,
+          [type]: Math.min(prev[type] + 1, 5),
+        }))
+        setTimeout(() => onPurchased?.(true), 0)
+        return prevScrap - cost
+      })
+    },
+    [],
+  )
+
   return {
     paused,
     scrap,
@@ -58,5 +100,7 @@ export function useGameState(): GameStateHook {
     onCollect,
     onPlayerDamage,
     onScrapCollect,
+    sellMaterials,
+    buyUpgrade,
   }
 }
