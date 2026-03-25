@@ -55,12 +55,12 @@ export default function Home() {
   const handleEnteredStation = useCallback(() => {
     tutorial.onEnteredStation()
     setTradeMenuOpen(true)
-  }, [tutorial.onEnteredStation])
+  }, [tutorial])
 
   const handleSell = useCallback(() => {
     sellMaterials()
     tutorial.onSoldMaterials()
-  }, [sellMaterials, tutorial.onSoldMaterials])
+  }, [sellMaterials, tutorial])
 
   const handleBuy = useCallback(
     (type: keyof Upgrades, cost: number) => {
@@ -75,7 +75,7 @@ export default function Home() {
         }
       })
     },
-    [buyUpgrade, tutorial.active, tutorial.onBoughtUpgrade],
+    [buyUpgrade, tutorial],
   )
 
   const handleCloseTradeMenu = useCallback(() => {
