@@ -16,6 +16,7 @@ describe('createInputState', () => {
     assert.equal(state.down, false)
     assert.equal(state.left, false)
     assert.equal(state.right, false)
+    assert.equal(state.joystickAngle, null)
   })
 })
 

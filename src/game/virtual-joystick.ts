@@ -95,6 +95,7 @@ export function createVirtualJoystick(
       inputState.down = false
       inputState.left = false
       inputState.right = false
+      inputState.joystickAngle = null
       return
     }
 
@@ -107,6 +108,11 @@ export function createVirtualJoystick(
     inputState.left = nx < -0.3
     inputState.down = ny > 0.3 // screen Y is inverted vs game Y
     inputState.up = ny < -0.3
+
+    // Store precise angle for smooth 360° ship rotation.
+    // Screen coords: dx is right, dy is down. Game coords: +Y is up.
+    // Ship rotation formula: atan2(-game_dx, game_dy) = atan2(-dx, -dy)
+    inputState.joystickAngle = Math.atan2(-dx, -dy)
   }
 
   function onTouchStart(e: TouchEvent): void {
@@ -145,6 +151,7 @@ export function createVirtualJoystick(
     inputState.down = false
     inputState.left = false
     inputState.right = false
+    inputState.joystickAngle = null
     overlay.hide()
   }
 
@@ -176,6 +183,7 @@ export function createVirtualJoystick(
       inputState.down = false
       inputState.left = false
       inputState.right = false
+      inputState.joystickAngle = null
       overlay.destroy()
     },
   }

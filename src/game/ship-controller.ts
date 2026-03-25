@@ -79,9 +79,11 @@ export function updateShip(
   ship.x += ship.velocityX * dt
   ship.y += ship.velocityY * dt
 
-  // Update rotation: prefer aim target, fall back to input direction
+  // Update rotation: prefer aim target, then joystick angle, fall back to cardinal direction
   if (aimRotation != null) {
     ship.rotation = aimRotation
+  } else if (input.joystickAngle != null) {
+    ship.rotation = input.joystickAngle
   } else if (dx !== 0 || dy !== 0) {
     ship.rotation = Math.atan2(-dx, dy)
   }
