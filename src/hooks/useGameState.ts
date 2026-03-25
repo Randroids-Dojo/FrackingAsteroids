@@ -23,7 +23,7 @@ export interface GameStateHook {
   onPlayerDamage: (hp: number) => void
   onScrapCollect: (amount: number) => void
   sellMaterials: () => number
-  buyUpgrade: (type: keyof Upgrades, cost: number) => boolean
+  buyUpgrade: (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void) => void
 }
 
 export function useGameState(): GameStateHook {
@@ -65,24 +65,29 @@ export function useGameState(): GameStateHook {
     return earned
   }, [])
 
-  /** Buy an upgrade if player has enough scrap. Returns true if purchased. */
-  const buyUpgrade = useCallback((type: keyof Upgrades, cost: number): boolean => {
-    let purchased = false
-    setScrap((prev) => {
-      if (prev >= cost) {
-        purchased = true
-        return prev - cost
-      }
-      return prev
-    })
-    if (purchased) {
-      setUpgrades((prev) => ({
-        ...prev,
-        [type]: Math.min(prev[type] + 1, 5),
-      }))
-    }
-    return purchased
-  }, [])
+  /**
+   * Buy an upgrade. Calls onPurchased(true) if successful, onPurchased(false) if not.
+   * Uses callback to avoid synchronous-return-from-setState issues.
+   */
+  const buyUpgrade = useCallback(
+    (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void): void => {
+      setScrap((prevScrap) => {
+        if (prevScrap < cost) {
+          // Can't afford — schedule callback outside setState
+          setTimeout(() => onPurchased?.(false), 0)
+          return prevScrap
+        }
+        // Can afford — also bump the upgrade level
+        setUpgrades((prev) => ({
+          ...prev,
+          [type]: Math.min(prev[type] + 1, 5),
+        }))
+        setTimeout(() => onPurchased?.(true), 0)
+        return prevScrap - cost
+      })
+    },
+    [],
+  )
 
   return {
     paused,
