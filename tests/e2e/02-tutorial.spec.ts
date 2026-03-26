@@ -8,12 +8,24 @@ test.describe('Tutorial', () => {
     await expect(page.getByTestId('tutorial-overlay')).toBeVisible()
   })
 
-  test('skip button dismisses tutorial', async ({ page }) => {
+  test('skip button shows confirmation before dismissing tutorial', async ({ page }) => {
     await page.goto('/')
     await page.locator('button', { hasText: 'NEW GAME' }).click()
     await page.locator('button', { hasText: 'SLOT 1' }).click()
     await expect(page.getByTestId('tutorial-overlay')).toBeVisible()
+
+    // First click shows confirmation
     await page.getByTestId('tutorial-skip').click()
+    await expect(page.getByTestId('tutorial-skip-confirm')).toBeVisible()
+
+    // Clicking NO cancels and returns to SKIP button
+    await page.getByTestId('tutorial-skip-no').click()
+    await expect(page.getByTestId('tutorial-skip-confirm')).not.toBeVisible()
+    await expect(page.getByTestId('tutorial-skip')).toBeVisible()
+
+    // Click SKIP again, then YES to actually skip
+    await page.getByTestId('tutorial-skip').click()
+    await page.getByTestId('tutorial-skip-yes').click()
     await expect(page.getByTestId('tutorial-overlay')).not.toBeVisible()
   })
 
