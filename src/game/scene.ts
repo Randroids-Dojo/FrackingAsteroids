@@ -214,6 +214,7 @@ export function createGameScene(
   // --- Directional Arrow (hidden until go-to-station tutorial step) ---
   const arrowGroup = new THREE.Group()
   arrowGroup.visible = false
+  arrowGroup.scale.setScalar(0.35)
   scene.add(arrowGroup)
   // Chevron shape: 2 angled bars forming a ">" pointing right (rotated later)
   const arrowMat = new THREE.MeshStandardMaterial({
@@ -814,7 +815,7 @@ export function createGameScene(
       if (showArrow) {
         // Position arrow ahead of ship, pointing toward station
         const angle = Math.atan2(dy, dx)
-        const arrowDist = 25 // distance from ship to arrow
+        const arrowDist = 15 // distance from ship to arrow
         arrowGroup.position.set(
           ship.x + Math.cos(angle) * arrowDist,
           ship.y + Math.sin(angle) * arrowDist,
