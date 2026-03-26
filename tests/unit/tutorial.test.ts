@@ -35,10 +35,10 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'destroy-enemy', frozen: true })
   })
 
-  it('destroy-enemy transitions to collect-scrap on unfreeze', () => {
+  it('destroy-enemy unfreezes but stays on same step', () => {
     const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: true }
     const next = advanceTutorial(state, 'unfreeze')
-    assert.deepStrictEqual(next, { active: true, step: 'collect-scrap', frozen: false })
+    assert.deepStrictEqual(next, { active: true, step: 'destroy-enemy', frozen: false })
   })
 
   it('destroy-enemy transitions to collect-scrap on enemy-destroyed', () => {
@@ -445,8 +445,10 @@ describe('advanceTutorial', () => {
     assert.equal(state.step, 'destroy-enemy')
     assert.equal(state.frozen, true)
     state = advanceTutorial(state, 'unfreeze')
-    assert.equal(state.step, 'collect-scrap')
+    assert.equal(state.step, 'destroy-enemy')
     assert.equal(state.frozen, false)
+    state = advanceTutorial(state, 'enemy-destroyed')
+    assert.equal(state.step, 'collect-scrap')
     state = advanceTutorial(state, 'scrap-collected')
     assert.equal(state.step, 'go-to-station')
     state = advanceTutorial(state, 'near-station')

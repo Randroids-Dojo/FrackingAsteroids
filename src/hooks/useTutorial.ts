@@ -65,8 +65,7 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       return state
     case 'destroy-enemy':
       if (event === 'enemy-nearby' && !state.frozen) return { ...state, frozen: true }
-      if (event === 'unfreeze' && state.frozen)
-        return { ...state, step: 'collect-scrap', frozen: false }
+      if (event === 'unfreeze' && state.frozen) return { ...state, frozen: false }
       if (event === 'enemy-destroyed') return { ...state, step: 'collect-scrap' }
       return state
     case 'collect-scrap':

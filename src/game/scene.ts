@@ -1090,6 +1090,10 @@ export function createGameScene(
     }
     shipwreckDebrisList.length = 0
 
+    // Sync ship model to new position immediately so it's not visible at the old spot
+    shipModel.position.set(ship.x, ship.y, 0)
+    rechargeMeter.position.set(ship.x, ship.y, 0)
+
     // Snap camera to station immediately
     camera.position.x = ship.x
     camera.position.y = ship.y
