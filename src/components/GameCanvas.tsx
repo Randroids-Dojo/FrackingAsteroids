@@ -6,6 +6,7 @@ import type { TutorialStep } from '@/hooks/useTutorial'
 
 export interface GameCanvasHandle {
   setFireRateBonus: (multiplier: number) => void
+  resetShipToStation: () => void
 }
 
 interface GameCanvasProps {
@@ -25,6 +26,7 @@ interface GameCanvasProps {
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
+  onPlayerKilled?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -45,6 +47,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onNearStation,
     onStationRange,
     onStationDriveThrough,
+    onPlayerKilled,
   },
   ref,
 ) {
@@ -66,10 +69,14 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onNearStationRef = useRef(onNearStation)
   const onStationRangeRef = useRef(onStationRange)
   const onStationDriveThroughRef = useRef(onStationDriveThrough)
+  const onPlayerKilledRef = useRef(onPlayerKilled)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
       sceneRef.current?.setFireRateBonus(multiplier)
+    },
+    resetShipToStation: () => {
+      sceneRef.current?.resetShipToStation()
     },
   }))
 
@@ -138,6 +145,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onStationDriveThroughRef.current = onStationDriveThrough
   }, [onStationDriveThrough])
 
+  useEffect(() => {
+    onPlayerKilledRef.current = onPlayerKilled
+  }, [onPlayerKilled])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -163,6 +174,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onNearStation: () => onNearStationRef.current?.(),
           onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
           onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
+          onPlayerKilled: () => onPlayerKilledRef.current?.(),
         })
       })
       .catch((err: unknown) => {

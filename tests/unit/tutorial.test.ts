@@ -35,10 +35,10 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'destroy-enemy', frozen: true })
   })
 
-  it('destroy-enemy transitions to collect-scrap on unfreeze', () => {
+  it('destroy-enemy unfreezes but stays on same step', () => {
     const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: true }
     const next = advanceTutorial(state, 'unfreeze')
-    assert.deepStrictEqual(next, { active: true, step: 'collect-scrap', frozen: false })
+    assert.deepStrictEqual(next, { active: true, step: 'destroy-enemy', frozen: false })
   })
 
   it('destroy-enemy transitions to collect-scrap on enemy-destroyed', () => {
@@ -77,9 +77,21 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'drive-through', frozen: false })
   })
 
-  it('drive-through completes on drove-through-station', () => {
+  it('drive-through transitions to ambush on drove-through-station', () => {
     const state: TutorialState = { active: true, step: 'drive-through', frozen: false }
     const next = advanceTutorial(state, 'drove-through-station')
+    assert.deepStrictEqual(next, { active: true, step: 'ambush', frozen: false })
+  })
+
+  it('ambush transitions to ambush-fade on player-killed', () => {
+    const state: TutorialState = { active: true, step: 'ambush', frozen: false }
+    const next = advanceTutorial(state, 'player-killed')
+    assert.deepStrictEqual(next, { active: true, step: 'ambush-fade', frozen: true })
+  })
+
+  it('ambush-fade completes on ambush-complete', () => {
+    const state: TutorialState = { active: true, step: 'ambush-fade', frozen: true }
+    const next = advanceTutorial(state, 'ambush-complete')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
@@ -172,6 +184,18 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
+  it('skip from ambush', () => {
+    const state: TutorialState = { active: true, step: 'ambush', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  })
+
+  it('skip from ambush-fade', () => {
+    const state: TutorialState = { active: true, step: 'ambush-fade', frozen: true }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  })
+
   it('returns same reference for no-op transitions', () => {
     const steps: TutorialState['step'][] = [
       'move',
@@ -185,6 +209,8 @@ describe('advanceTutorial', () => {
       'trade-sell',
       'trade-buy',
       'drive-through',
+      'ambush',
+      'ambush-fade',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
       move: [
@@ -199,6 +225,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       shoot: [
@@ -213,6 +241,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'wait-for-metal': [
@@ -227,6 +257,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       collect: [
@@ -241,6 +273,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'destroy-enemy': [
@@ -254,6 +288,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
       ],
       'collect-scrap': [
         'ship-moved',
@@ -267,6 +303,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'go-to-station': [
@@ -281,6 +319,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'approach-station': [
@@ -295,6 +335,8 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'trade-sell': [
@@ -309,6 +351,8 @@ describe('advanceTutorial', () => {
         'entered-station',
         'bought-upgrade',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'trade-buy': [
@@ -323,6 +367,8 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'drove-through-station',
+        'player-killed',
+        'ambush-complete',
         'unfreeze',
       ],
       'drive-through': [
@@ -337,6 +383,40 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'player-killed',
+        'ambush-complete',
+        'unfreeze',
+      ],
+      ambush: [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'near-station',
+        'entered-station',
+        'sold-materials',
+        'bought-upgrade',
+        'drove-through-station',
+        'ambush-complete',
+        'unfreeze',
+      ],
+      'ambush-fade': [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'near-station',
+        'entered-station',
+        'sold-materials',
+        'bought-upgrade',
+        'drove-through-station',
+        'player-killed',
         'unfreeze',
       ],
     }
@@ -365,8 +445,10 @@ describe('advanceTutorial', () => {
     assert.equal(state.step, 'destroy-enemy')
     assert.equal(state.frozen, true)
     state = advanceTutorial(state, 'unfreeze')
-    assert.equal(state.step, 'collect-scrap')
+    assert.equal(state.step, 'destroy-enemy')
     assert.equal(state.frozen, false)
+    state = advanceTutorial(state, 'enemy-destroyed')
+    assert.equal(state.step, 'collect-scrap')
     state = advanceTutorial(state, 'scrap-collected')
     assert.equal(state.step, 'go-to-station')
     state = advanceTutorial(state, 'near-station')
@@ -378,6 +460,12 @@ describe('advanceTutorial', () => {
     state = advanceTutorial(state, 'bought-upgrade')
     assert.equal(state.step, 'drive-through')
     state = advanceTutorial(state, 'drove-through-station')
+    assert.equal(state.step, 'ambush')
+    assert.equal(state.active, true)
+    state = advanceTutorial(state, 'player-killed')
+    assert.equal(state.step, 'ambush-fade')
+    assert.equal(state.frozen, true)
+    state = advanceTutorial(state, 'ambush-complete')
     assert.equal(state.step, 'done')
     assert.equal(state.active, false)
     assert.equal(state.frozen, false)

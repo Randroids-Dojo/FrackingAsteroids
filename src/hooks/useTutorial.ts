@@ -14,6 +14,8 @@ export type TutorialStep =
   | 'trade-sell'
   | 'trade-buy'
   | 'drive-through'
+  | 'ambush'
+  | 'ambush-fade'
   | 'done'
 
 export type TutorialEvent =
@@ -29,6 +31,8 @@ export type TutorialEvent =
   | 'sold-materials'
   | 'bought-upgrade'
   | 'drove-through-station'
+  | 'player-killed'
+  | 'ambush-complete'
   | 'unfreeze'
   | 'skip'
 
@@ -61,8 +65,7 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       return state
     case 'destroy-enemy':
       if (event === 'enemy-nearby' && !state.frozen) return { ...state, frozen: true }
-      if (event === 'unfreeze' && state.frozen)
-        return { ...state, step: 'collect-scrap', frozen: false }
+      if (event === 'unfreeze' && state.frozen) return { ...state, frozen: false }
       if (event === 'enemy-destroyed') return { ...state, step: 'collect-scrap' }
       return state
     case 'collect-scrap':
@@ -81,7 +84,13 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'bought-upgrade') return { ...state, step: 'drive-through' }
       return state
     case 'drive-through':
-      if (event === 'drove-through-station') return { active: false, step: 'done', frozen: false }
+      if (event === 'drove-through-station') return { ...state, step: 'ambush' }
+      return state
+    case 'ambush':
+      if (event === 'player-killed') return { ...state, step: 'ambush-fade', frozen: true }
+      return state
+    case 'ambush-fade':
+      if (event === 'ambush-complete') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -104,6 +113,8 @@ export interface TutorialHook {
   onSoldMaterials: () => void
   onBoughtUpgrade: () => void
   onDroveThroughStation: () => void
+  onPlayerKilled: () => void
+  onAmbushComplete: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -142,6 +153,8 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onSoldMaterials = useCallback(() => dispatch('sold-materials'), [dispatch])
   const onBoughtUpgrade = useCallback(() => dispatch('bought-upgrade'), [dispatch])
   const onDroveThroughStation = useCallback(() => dispatch('drove-through-station'), [dispatch])
+  const onPlayerKilled = useCallback(() => dispatch('player-killed'), [dispatch])
+  const onAmbushComplete = useCallback(() => dispatch('ambush-complete'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -161,6 +174,8 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onSoldMaterials,
     onBoughtUpgrade,
     onDroveThroughStation,
+    onPlayerKilled,
+    onAmbushComplete,
     unfreeze,
     skip,
   }

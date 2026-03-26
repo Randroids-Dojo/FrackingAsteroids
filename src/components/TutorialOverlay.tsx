@@ -166,6 +166,9 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
   // Hide tutorial overlay when trade menu is handling the interaction
   if (step === 'trade-sell' || step === 'trade-buy') return null
 
+  // Hide overlay during ambush sequence (fade overlay handles this)
+  if (step === 'ambush' || step === 'ambush-fade') return null
+
   const text = getPromptText(step)
 
   return (
