@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { TutorialStep } from '@/hooks/useTutorial'
 
 /** Grace period before dismiss listeners activate, so in-flight inputs don't instantly close. */
@@ -112,6 +112,25 @@ function getPromptText(step: TutorialStep): string {
 }
 
 export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOverlayProps) {
+  const [confirming, setConfirming] = useState(false)
+
+  // Reset confirmation state when the step changes
+  useEffect(() => {
+    setConfirming(false)
+  }, [step])
+
+  const handleSkipClick = useCallback(() => {
+    if (confirming) {
+      onSkip()
+    } else {
+      setConfirming(true)
+    }
+  }, [confirming, onSkip])
+
+  const handleCancelSkip = useCallback(() => {
+    setConfirming(false)
+  }, [])
+
   // When frozen, any key or touch dismisses the overlay after a grace period
   // so in-flight input events don't instantly close it.
   useEffect(() => {
@@ -145,21 +164,45 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
 
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="tutorial-overlay">
-      {/* Bottom-center prompt panel */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-auto max-w-sm px-6 py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
+      {/* Bottom-center prompt panel — left-aligned to avoid mobile action buttons on the right */}
+      <div className="absolute bottom-16 sm:bottom-20 left-2 sm:left-1/2 sm:-translate-x-1/2 w-auto max-w-[60vw] sm:max-w-sm px-4 sm:px-6 py-3 sm:py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
         <StepDots step={step} />
-        <p className="text-hud-green text-sm md:text-base">{text}</p>
+        <p className="text-hud-green text-xs sm:text-sm md:text-base">{text}</p>
         {frozen && (
           <p className="text-white/50 text-xs mt-2 animate-pulse">Press any key to continue</p>
         )}
-        {!frozen && (
+        {!frozen && !confirming && (
           <button
-            onClick={onSkip}
+            onClick={handleSkipClick}
             className="pointer-events-auto mt-3 text-white/40 hover:text-white/70 text-xs transition-colors"
             data-testid="tutorial-skip"
           >
             SKIP
           </button>
+        )}
+        {!frozen && confirming && (
+          <div
+            className="mt-3 flex flex-col items-center gap-2"
+            data-testid="tutorial-skip-confirm"
+          >
+            <p className="text-white/60 text-xs">Skip the tutorial?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSkipClick}
+                className="pointer-events-auto px-3 py-1 text-hud-red text-xs border border-hud-red/40 rounded hover:bg-hud-red/20 transition-colors"
+                data-testid="tutorial-skip-yes"
+              >
+                YES
+              </button>
+              <button
+                onClick={handleCancelSkip}
+                className="pointer-events-auto px-3 py-1 text-white/50 text-xs border border-white/20 rounded hover:bg-white/10 transition-colors"
+                data-testid="tutorial-skip-no"
+              >
+                NO
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

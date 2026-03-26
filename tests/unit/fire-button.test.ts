@@ -113,11 +113,13 @@ function setupDocument(): void {
       return createMockElement()
     },
   }
+  g.window = { innerWidth: 375, innerHeight: 667 }
 }
 
 function teardownDocument(): void {
   const g = globalThis as Record<string, unknown>
   delete g.document
+  delete g.window
 }
 
 describe('createFireButton', () => {

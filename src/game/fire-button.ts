@@ -1,6 +1,10 @@
-const BUTTON_SIZE = 80
+function getButtonSize(): number {
+  const vw = Math.min(window.innerWidth, window.innerHeight)
+  return Math.max(56, Math.min(80, Math.round(vw * 0.12)))
+}
+
 const BORDER_WIDTH = 3
-const BUTTON_GAP = 24
+const BUTTON_GAP = 16
 
 export interface ActionButton {
   attach: () => void
@@ -32,18 +36,21 @@ function createButtonOverlay(
   setPressed: (pressed: boolean) => void
   destroy: () => void
 } {
+  const size = getButtonSize()
+  const rightMargin = Math.max(16, Math.round(size * 0.4))
   const button = document.createElement('div')
   button.setAttribute('aria-label', label)
   button.setAttribute('role', 'button')
   button.style.cssText =
-    `position:absolute;bottom:${bottomOffset};right:32px;width:${BUTTON_SIZE}px;height:${BUTTON_SIZE}px;` +
+    `position:absolute;bottom:${bottomOffset};right:${rightMargin}px;width:${size}px;height:${size}px;` +
     `border-radius:50%;border:${BORDER_WIDTH}px solid ${rgba(style, 0.6)};` +
     `background:${rgba(style, 0.15)};z-index:10;touch-action:none;` +
     `display:flex;align-items:center;justify-content:center;`
 
+  const innerSize = Math.round(size * 0.4)
   const inner = document.createElement('div')
   inner.style.cssText =
-    `width:${BUTTON_SIZE * 0.4}px;height:${BUTTON_SIZE * 0.4}px;` +
+    `width:${innerSize}px;height:${innerSize}px;` +
     `border-radius:50%;background:${rgba(style, 0.4)};pointer-events:none;`
 
   button.appendChild(inner)
@@ -121,17 +128,22 @@ function createActionButton(
   }
 }
 
-// Fire button position: bottom 25%
-const FIRE_BOTTOM = '25%'
-// Collect button position: fire button + button size + gap
-const COLLECT_BOTTOM = `calc(25% + ${BUTTON_SIZE + BUTTON_GAP}px)`
+function getFireBottom(): string {
+  return window.innerHeight < 600 ? '18%' : '25%'
+}
+
+function getCollectBottom(): string {
+  const size = getButtonSize()
+  const base = window.innerHeight < 600 ? '18%' : '25%'
+  return `calc(${base} + ${size + BUTTON_GAP}px)`
+}
 
 /**
  * Creates a visible fire button on the bottom-right of the screen for mobile.
  * Calls `onFire` on each touchstart.
  */
 export function createFireButton(container: HTMLElement, onFire: () => void): ActionButton {
-  return createActionButton(container, STYLE_FIRE, FIRE_BOTTOM, 'Fire', onFire)
+  return createActionButton(container, STYLE_FIRE, getFireBottom(), 'Fire', onFire)
 }
 
 /**
@@ -143,5 +155,12 @@ export function createCollectButton(
   onPress: () => void,
   onRelease: () => void,
 ): ActionButton {
-  return createActionButton(container, STYLE_COLLECT, COLLECT_BOTTOM, 'Collect', onPress, onRelease)
+  return createActionButton(
+    container,
+    STYLE_COLLECT,
+    getCollectBottom(),
+    'Collect',
+    onPress,
+    onRelease,
+  )
 }

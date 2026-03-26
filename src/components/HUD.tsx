@@ -57,54 +57,60 @@ export function HUD({ scrap, cargo, upgrades, playerHp, playerMaxHp, onPause }: 
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Top-left: Resources */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 text-sm md:text-base">
-        <div className="text-hud-amber font-mono font-bold">SCRAP: {scrap}</div>
-        <div className="text-hud-blue font-mono">
-          CARGO: {cargo.fragments}/{cargo.capacity} ({cargoPercent}%)
-        </div>
-        <div className="flex items-center gap-3 font-mono text-xs md:text-sm">
-          <span className="flex items-center gap-1" style={{ color: '#c0c0c0' }}>
-            <SilverIcon size={14} />
-            {cargo.silver}
-          </span>
-          <span className="flex items-center gap-1" style={{ color: '#ffd700' }}>
-            <GoldIcon size={14} />
-            {cargo.gold}
-          </span>
-        </div>
-        {showHealth && (
-          <div className="flex flex-col gap-1">
-            <div className="font-mono text-xs" style={{ color: hpColor }}>
-              HULL: {hpPercent}%
-            </div>
-            <div
-              className="w-32 h-2 rounded-sm overflow-hidden"
-              style={{ backgroundColor: '#333344' }}
-            >
-              <div
-                className="h-full transition-all duration-200"
-                style={{ width: `${hpPercent}%`, backgroundColor: hpColor }}
-              />
-            </div>
+      {/* Top bar: flex row with resources left, upgrades+pause right */}
+      <div className="absolute top-0 left-0 right-0 flex items-start justify-between p-2 sm:p-3 md:p-4 gap-2 sm:gap-4">
+        {/* Left: Resources */}
+        <div className="flex flex-col gap-1 sm:gap-2 text-[clamp(0.625rem,2vw,0.875rem)] min-w-0">
+          <div className="text-hud-amber font-mono font-bold truncate">SCRAP: {scrap}</div>
+          <div className="text-hud-blue font-mono truncate">
+            CARGO: {cargo.fragments}/{cargo.capacity} ({cargoPercent}%)
           </div>
-        )}
-      </div>
-
-      {/* Top-right: Upgrades + Pause */}
-      <div className="absolute top-4 right-4 flex items-start gap-4">
-        <div className="flex flex-col gap-1 text-xs md:text-sm font-mono text-right">
-          <div className="text-hud-red">BLASTER Mk{upgrades.blaster}</div>
-          <div className="text-hud-green">COLLECTOR Mk{upgrades.collector}</div>
-          <div className="text-hud-blue">STORAGE Mk{upgrades.storage}</div>
+          <div className="flex items-center gap-2 sm:gap-3 font-mono text-[clamp(0.5rem,1.5vw,0.8125rem)]">
+            <span className="flex items-center gap-1" style={{ color: '#c0c0c0' }}>
+              <SilverIcon size={14} />
+              {cargo.silver}
+            </span>
+            <span className="flex items-center gap-1" style={{ color: '#ffd700' }}>
+              <GoldIcon size={14} />
+              {cargo.gold}
+            </span>
+          </div>
+          {showHealth && (
+            <div className="flex flex-col gap-1">
+              <div
+                className="font-mono text-[clamp(0.5rem,1.5vw,0.75rem)]"
+                style={{ color: hpColor }}
+              >
+                HULL: {hpPercent}%
+              </div>
+              <div
+                className="w-20 sm:w-32 h-1.5 sm:h-2 rounded-sm overflow-hidden"
+                style={{ backgroundColor: '#333344' }}
+              >
+                <div
+                  className="h-full transition-all duration-200"
+                  style={{ width: `${hpPercent}%`, backgroundColor: hpColor }}
+                />
+              </div>
+            </div>
+          )}
         </div>
-        <button
-          onClick={onPause}
-          className="pointer-events-auto px-3 py-2 bg-space-800/80 border border-hud-green/30 rounded text-hud-green text-sm hover:bg-space-700/80 active:scale-95 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="Pause game"
-        >
-          II
-        </button>
+
+        {/* Right: Upgrades + Pause */}
+        <div className="flex items-start gap-2 sm:gap-4 shrink-0">
+          <div className="flex flex-col gap-0.5 sm:gap-1 text-[clamp(0.5rem,1.8vw,0.8125rem)] font-mono text-right">
+            <div className="text-hud-red">BLASTER Mk{upgrades.blaster}</div>
+            <div className="text-hud-green">COLLECTOR Mk{upgrades.collector}</div>
+            <div className="text-hud-blue">STORAGE Mk{upgrades.storage}</div>
+          </div>
+          <button
+            onClick={onPause}
+            className="pointer-events-auto px-2 py-1.5 sm:px-3 sm:py-2 bg-space-800/80 border border-hud-green/30 rounded text-hud-green text-xs sm:text-sm hover:bg-space-700/80 active:scale-95 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Pause game"
+          >
+            II
+          </button>
+        </div>
       </div>
     </div>
   )
