@@ -347,38 +347,68 @@ export function createGameScene(
   // --- Fire handlers ---
   let fireTarget: { x: number; y: number } | null = null
 
+  // Detect touch support to decide between mobile buttons and mouse controls
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
   function onMouseDown(e: MouseEvent): void {
     resumeAudio()
     if (getPaused()) return
-    const rect = renderer.domElement.getBoundingClientRect()
-    const sx = e.clientX - rect.left
-    const sy = e.clientY - rect.top
-    fireTarget = screenToWorld(sx, sy)
+    if (e.button === 0) {
+      // Left-click: fire weapon
+      const rect = renderer.domElement.getBoundingClientRect()
+      const sx = e.clientX - rect.left
+      const sy = e.clientY - rect.top
+      fireTarget = screenToWorld(sx, sy)
+    } else if (e.button === 2) {
+      // Right-click: activate collector/magnet
+      mouseCollecting = true
+      collecting = true
+    }
+  }
+
+  function onMouseUp(e: MouseEvent): void {
+    if (e.button === 2) {
+      mouseCollecting = false
+      if (!collectKeyDown && (fireButton === null || !fireButton.isPressed())) collecting = false
+    }
+  }
+
+  function onContextMenu(e: Event): void {
+    e.preventDefault()
   }
 
   renderer.domElement.addEventListener('mousedown', onMouseDown)
+  renderer.domElement.addEventListener('mouseup', onMouseUp)
+  renderer.domElement.addEventListener('contextmenu', onContextMenu)
 
-  // --- Mobile Fire Button ---
-  const fireButton = createFireButton(container, () => {
-    if (getPaused()) return
-    const angle = ship.rotation + Math.PI / 2
-    fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
-  })
-  fireButton.attach()
+  // --- Mobile Fire & Collect Buttons (touch devices only) ---
+  let fireButton: ReturnType<typeof createFireButton> | null = null
+  let collectButton: ReturnType<typeof createCollectButton> | null = null
 
-  // --- Collect (mobile button + keyboard) ---
+  if (hasTouch) {
+    fireButton = createFireButton(container, () => {
+      if (getPaused()) return
+      const angle = ship.rotation + Math.PI / 2
+      fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
+    })
+    fireButton.attach()
+
+    collectButton = createCollectButton(
+      container,
+      () => {
+        collecting = true
+      },
+      () => {
+        if (!collectKeyDown && !mouseCollecting) collecting = false
+      },
+    )
+    collectButton.attach()
+  }
+
+  // --- Collect (mouse right-click + keyboard + mobile button) ---
   let collecting = false
   let collectKeyDown = false
-  const collectButton = createCollectButton(
-    container,
-    () => {
-      collecting = true
-    },
-    () => {
-      if (!collectKeyDown) collecting = false
-    },
-  )
-  collectButton.attach()
+  let mouseCollecting = false
 
   function onCollectKeyDown(e: KeyboardEvent): void {
     if (e.code === 'KeyE' || e.code === 'Space') {
@@ -392,7 +422,8 @@ export function createGameScene(
   function onCollectKeyUp(e: KeyboardEvent): void {
     if (e.code === 'KeyE' || e.code === 'Space') {
       collectKeyDown = false
-      if (!collectButton.isPressed()) collecting = false
+      if (!mouseCollecting && (collectButton === null || !collectButton.isPressed()))
+        collecting = false
     }
   }
   window.addEventListener('keydown', onCollectKeyDown)
@@ -863,9 +894,11 @@ export function createGameScene(
     inputHandler.detach()
     aimHandler.detach()
     joystick.detach()
-    fireButton.detach()
-    collectButton.detach()
+    if (fireButton) fireButton.detach()
+    if (collectButton) collectButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
+    renderer.domElement.removeEventListener('mouseup', onMouseUp)
+    renderer.domElement.removeEventListener('contextmenu', onContextMenu)
     container.removeEventListener('touchstart', onTouchStartSwallow)
     window.removeEventListener('keydown', onCollectKeyDown)
     window.removeEventListener('keyup', onCollectKeyUp)
