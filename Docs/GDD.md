@@ -14,22 +14,6 @@
 
 Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship's blaster, collector, and storage systems. A tight arcade loop with strategic depth — every destroyed asteroid is an investment opportunity.
 
-### Target Audience
-
-- Casual gamers who enjoy arcade shooters with progression
-- Players who like incremental upgrade systems
-- Mobile and desktop browser gamers
-
-## 2. Core Concept
-
-### Theme
-
-Deep-space asteroid mining operation. You're a freelance miner turning space rocks into profit.
-
-### Player Fantasy
-
-Pilot a scrappy mining ship, blasting apart asteroids and hoovering up the valuable fragments to build the ultimate mining rig.
-
 ### Core Loop
 
 ```
@@ -45,11 +29,7 @@ BLAST → COLLECT → SCRAP → UPGRADE → repeat
 
 Reach maximum upgrade tier across all three systems (blaster, collector, storage).
 
-### Loss Condition
-
-None — the game is an endless progression loop. Ship is never destroyed (no health system in v1). Players set their own goals.
-
-## 3. Game Mechanics
+## 2. Game Mechanics
 
 ### Ship Systems
 
@@ -91,18 +71,24 @@ claim, reinforcing the mining fantasy.
 | 4    | 500      | 35%         |
 | 5    | 1000     | 50%         |
 
+### Player HP
+
+The player ship has 100 HP. HP is lost when hit by enemy projectiles. HP is restored to full
+when passing through the gas station (drive-through repair). HP is persisted across saves.
+
 ### Asteroids
 
-| Type     | Size   | Fragments | Scrap Value | HP  |
-|----------|--------|-----------|-------------|-----|
-| Common   | Large  | 4–6       | 1 each      | 3   |
-| Dense    | Medium | 3–4       | 3 each      | 5   |
-| Precious | Small  | 2–3       | 8 each      | 2   |
-| Comet    | Varies | 5–8       | 5 each      | 4   |
+| Type     | Size   | Color Palette        | HP  |
+|----------|--------|----------------------|-----|
+| Common   | Large  | Brown / blue crystal | 15  |
+| Dense    | Medium | Gray-purple / violet | 14  |
+| Precious | Small  | Gold / yellow accent | 6   |
+| Comet    | Varies | Blue-teal / cyan     | 10  |
 
-- Asteroids drift across the screen at varying speeds and angles
-- Large asteroids split into smaller ones when destroyed
-- Asteroid spawn rate increases gradually over time
+- Four types with distinct color palettes and sizes
+- Asteroids drift across the field at varying speeds and angles
+- Spawned in a ring around the gas station after the tutorial
+- Voxel models with seeded shapes for visual variety
 
 ### Controls
 
@@ -110,25 +96,27 @@ claim, reinforcing the mining fantasy.
 - WASD or Arrow Keys — move ship (twin-stick: movement independent of aim)
 - Mouse cursor — aim ship (ship rotates to face cursor)
 - Mouse click — fire blaster toward cursor
+- Right-click — hold to activate collector
+- E or Space — hold to activate collector
 - Space — pause (reveals Feedback FAB)
 
 **Mobile:**
 - Left thumb virtual joystick — move (fixed position, left half of screen)
 - Fire button — visible circular amber button on bottom-right, fires in the direction the ship is facing
-- Collect button — visible circular blue button above fire button, hold to activate metal attractor that pulls nearby metal chunks toward the ship
-- Pause button in HUD — pause (reveals Feedback FAB)
+- Collect button — visible circular blue button above fire button, hold to activate metal attractor
+- Pause button in HUD
 
 **Design Notes:**
-- Ship rotation is decoupled from movement direction — the ship always faces the aim target (mouse cursor on desktop, last tap on mobile)
-- When no aim target is active (e.g. mouse hasn't entered canvas), ship faces movement direction as fallback
+- Ship rotation is decoupled from movement direction — the ship always faces the aim target
+- When no aim target is active, ship faces movement direction as fallback
 - Virtual joystick uses a fixed dead zone of 10px to prevent drift
 
-## 4. World & Setting
+## 3. World & Setting
 
 ### Visual Style
 
 - **Voxel art** — chunky, colorful 3D blocks
-- **Orthographic or slight perspective camera** — top-down view of the asteroid field
+- **Perspective camera** — top-down view of the asteroid field
 - **Color palette:**
   - Deep space background: dark navy/black with subtle star particles
   - Asteroids: earthy browns, grays, with gold/crystal highlights for precious types
@@ -138,26 +126,24 @@ claim, reinforcing the mining fantasy.
 
 ### Camera
 
-- Fixed top-down (or slight isometric tilt) view
+- Fixed top-down view
 - Camera follows ship with smooth lerp
-- Slight zoom out as speed increases
 
-## 5. Technical Design
+### Gas Station
+
+- Located north of the starting area
+- Drive-through repair: restores HP to full when passing close
+- Trade menu: sell materials for scrap, buy upgrades
+
+## 4. Technical Design
 
 ### Data Models (Zod Schemas)
 
 ```typescript
-// Ship state
 Ship { x, y, rotation, velocityX, velocityY }
-
-// Upgrade levels (1–5 each)
 Upgrades { blaster: number, collector: number, storage: number }
-
-// Player resources
-Cargo { scrap: number, fragments: number, capacity: number }
-
-// Full game state (persisted to KV)
-GameState { ship, upgrades, cargo, score, wave, timestamp }
+Cargo { scrap: number, fragments: number, silver: number, gold: number, capacity: number }
+GameState { ship, upgrades, cargo, hp, timestamp }
 ```
 
 ### State Management
@@ -165,7 +151,7 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - Game state lives in the Three.js render loop (60fps)
 - React state for UI/HUD via `useGameState` hook
 - Persistence via `useGamePersistence` hook → Upstash Redis
-- Auto-save every 30 seconds + on pause
+- Auto-save on: resource collection, selling, buying, station repair
 
 ### API Routes
 
@@ -177,37 +163,25 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 | `/api/version`      | GET    | Current build version      |
 | `/api/feedback`     | POST   | Submit player feedback     |
 
-## 6. User Interface
+## 5. User Interface
 
 ### HUD (always visible during gameplay)
 
 - **Scrap counter** — top-left, shows current scrap amount
 - **Cargo bar** — top-left below scrap, shows fragments/capacity
 - **Upgrade indicators** — top-right, shows current tier for each system
-- **Recharge meter** — small horizontal bar below ship, shows blaster cooldown progress. Amber while charging, turns green at 90%+, hidden when fully charged. Scales with blaster tier fire rate.
-- **Wave counter** — top-center
+- **Recharge meter** — small horizontal bar below ship, shows blaster cooldown progress
+- **Health bar** — shown when HP is below max
 - **Pause button** — top-right corner (mobile: larger touch target)
-
-### Upgrade Panel
-
-- Opens from HUD when player taps upgrade indicators
-- Shows three upgrade paths with costs and current/next tier stats
-- "Buy" button grayed out if insufficient scrap
-- Visual preview of upgrade effect
 
 ### Start Screen
 
-- Full-screen menu shown on app launch (before gameplay)
+- Full-screen menu shown on app launch
 - Title "FRACKING ASTEROIDS" with tagline
 - **New Game** button — opens save slot picker (3 slots)
-  - If selected slot has saved data, confirm overwrite before starting
-  - Creates fresh default game state in chosen slot
 - **Load Game** button — opens save slot picker (3 slots)
-  - Only populated slots are selectable
-  - Disabled entirely if no saves exist
-- Each save slot shows: wave number, score, and last-save timestamp
+- Each save slot shows last-save timestamp
 - Save slot summaries stored in localStorage for instant display
-- Decorative starfield background with space theme
 
 ### Pause Overlay
 
@@ -216,19 +190,13 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 - Resume button
 - **Feedback FAB** appears (floating action button, bottom-right)
 
-### Update Banner
-
-- Slim banner at top of screen
-- "New version available — tap to refresh"
-- Non-intrusive, auto-dismissible
-
-## 7. Art & Audio Direction
+## 6. Art & Audio Direction
 
 ### Art Style: Voxel
 
 - All game objects built from voxel-style geometry
 - Ship: ~8x8x4 voxel block ship with engine glow
-- Asteroids: irregular voxel clusters, procedurally varied
+- Asteroids: irregular voxel clusters, procedurally varied per type
 - Fragments: small 1-2 voxel glowing cubes
 - Projectiles: bright amber elongated voxel pulses (mining laser bolts)
 - Background: particle-based star field
@@ -236,32 +204,24 @@ GameState { ship, upgrades, cargo, score, wave, timestamp }
 ### Color Palette
 
 - Space: `#0a0a1a` to `#111133` gradient
-- Asteroids: `#8B6914`, `#6B6B6B`, `#FFD700`
+- Asteroids: brown (common), gray-purple (dense), gold (precious), blue-teal (comet)
 - Mining laser: `#FFAA00` (amber bolt), `#FFDD44` (bright core)
 - HUD: `#00FF88` (green), `#00AAFF` (blue), `#FF4444` (red), `#FFAA00` (amber)
 
-### Audio (Future)
+### Audio
 
-- Placeholder for sound effects (blaster, collection, upgrade)
-- No audio in v1 — visual feedback only
+- Collector hum when active
+- Collection plings on pickup
+- Placeholder for additional sound effects
 
-## 8. Milestones
+## 7. Milestones
 
 - [x] **M1: Skeleton** — Project setup, build pipeline, deploy to Vercel
 - [x] **M2: Flight** — Ship rendering and movement (desktop + mobile)
-- [ ] **M3: Combat** — Blaster firing, asteroid spawning, collision detection
-  - [x] Mining laser system (fire, cooldown, tier-based spread)
-  - [x] Projectile rendering and lifecycle (amber voxel bolts)
-  - [x] Desktop (mouse click) and mobile (right-half tap) fire input
-  - [x] Recharge meter (cooldown bar below ship)
-  - [ ] Asteroid spawning and wave system
-  - [x] Projectile–asteroid collision detection
-  - [x] Asteroid damage with health meter display
-  - [x] Ship–asteroid collision (no clipping)
-  - [x] Projectile explosion effect on asteroid hit
-  - [ ] Asteroid destruction and fragment spawning
-- [ ] **M4: Economy** — Fragment collection, scrap conversion, cargo system
-- [ ] **M5: Upgrades** — Upgrade panel, tier progression, stat scaling
-- [ ] **M6: Persistence** — KV save/load, auto-save, game state recovery
-- [ ] **M7: Polish** — Voxel art pass, particles, screen shake, mobile refinement
-- [ ] **M8: Feedback** — Pause overlay, Feedback FAB, update banner
+- [x] **M3: Mining** — Blaster firing, asteroid collision, debris and metal spawning
+- [x] **M4: Economy** — Metal collection, scrap conversion, trade menu at station
+- [x] **M5: Upgrades** — Upgrade purchasing at station, tier progression
+- [x] **M6: Tutorial** — Guided onboarding with tutorial state machine
+- [x] **M7: Asteroid Field** — Multiple asteroid types/sizes spawned after tutorial
+- [x] **M8: Persistence** — Auto-save on game events, KV backend storage
+- [ ] **M9: Polish** — Voxel art pass, particles, screen shake, mobile refinement

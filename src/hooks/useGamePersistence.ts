@@ -38,8 +38,6 @@ export function useGamePersistence(slotId: SaveSlotId | null) {
         })
         saveSlotSummary({
           slotId,
-          score: state.score,
-          wave: state.wave,
           timestamp: state.timestamp,
         })
       } catch {

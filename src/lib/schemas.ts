@@ -29,8 +29,7 @@ export const GameStateSchema = z.object({
   ship: ShipSchema,
   upgrades: UpgradesSchema,
   cargo: CargoSchema,
-  score: z.number().int().min(0),
-  wave: z.number().int().min(1),
+  hp: z.number().int().min(0).max(100),
   timestamp: z.number(),
 })
 export type GameState = z.infer<typeof GameStateSchema>
@@ -40,8 +39,6 @@ export type SaveSlotId = (typeof SAVE_SLOT_IDS)[number]
 
 export const SaveSlotSummarySchema = z.object({
   slotId: z.enum(SAVE_SLOT_IDS),
-  score: z.number().int().min(0),
-  wave: z.number().int().min(1),
   timestamp: z.number(),
 })
 export type SaveSlotSummary = z.infer<typeof SaveSlotSummarySchema>
@@ -56,8 +53,7 @@ export function defaultGameState(): GameState {
     ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
     upgrades: { blaster: 1, collector: 1, storage: 1 },
     cargo: { scrap: 0, fragments: 0, silver: 0, gold: 0, capacity: 50 },
-    score: 0,
-    wave: 1,
+    hp: 100,
     timestamp: Date.now(),
   }
 }

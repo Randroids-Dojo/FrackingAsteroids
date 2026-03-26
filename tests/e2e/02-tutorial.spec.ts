@@ -35,7 +35,7 @@ test.describe('Tutorial', () => {
     await page.evaluate(() => {
       localStorage.setItem(
         'fracking-asteroids-slot-summaries',
-        JSON.stringify([{ slotId: 'save-1', wave: 1, score: 0, timestamp: Date.now() }]),
+        JSON.stringify([{ slotId: 'save-1', timestamp: Date.now() }]),
       )
     })
     await page.goto('/')

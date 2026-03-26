@@ -10,6 +10,7 @@ import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { TradeMenu } from '@/components/TradeMenu'
 import { ShopFab } from '@/components/ShopFab'
 import { useGameState } from '@/hooks/useGameState'
+import { useGamePersistence } from '@/hooks/useGamePersistence'
 import { useTutorial } from '@/hooks/useTutorial'
 import type { Upgrades, SaveSlotId } from '@/lib/schemas'
 
@@ -38,7 +39,29 @@ export default function Home() {
     sellMaterials,
     buyUpgrade,
   } = useGameState()
+  const { save } = useGamePersistence(activeSlot)
   const tutorial = useTutorial(isNewGame && screen === 'game')
+
+  // --- Auto-save on state changes triggered by game events ---
+  const [saveSeq, setSaveSeq] = useState(0)
+
+  /** Request a save after the current state updates have been applied. */
+  const requestSave = useCallback(() => {
+    setSaveSeq((n) => n + 1)
+  }, [])
+
+  // Persist the snapshot whenever saveSeq increments (driven by game events).
+  // Skip the initial render (saveSeq === 0).
+  useEffect(() => {
+    if (saveSeq === 0) return
+    void save({
+      ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
+      upgrades,
+      cargo: { ...cargo, scrap },
+      hp: playerHp,
+      timestamp: Date.now(),
+    })
+  }, [saveSeq]) // eslint-disable-line react-hooks/exhaustive-deps -- save reads latest state at trigger time
 
   const handleNewGame = useCallback((slotId: SaveSlotId) => {
     localStorage.setItem(ACTIVE_SLOT_KEY, slotId)
@@ -54,6 +77,22 @@ export default function Home() {
     setScreen('game')
   }, [])
 
+  const handleCollect = useCallback(
+    (variant: 'silver' | 'gold') => {
+      onCollect(variant)
+      requestSave()
+    },
+    [onCollect, requestSave],
+  )
+
+  const handleScrapCollect = useCallback(
+    (amount: number) => {
+      onScrapCollect(amount)
+      requestSave()
+    },
+    [onScrapCollect, requestSave],
+  )
+
   const handleStationRange = useCallback((inRange: boolean) => {
     setInStationRange(inRange)
     if (!inRange) setTradeMenuOpen(false)
@@ -67,7 +106,8 @@ export default function Home() {
   const handleSell = useCallback(() => {
     sellMaterials()
     tutorial.onSoldMaterials()
-  }, [sellMaterials, tutorial])
+    requestSave()
+  }, [sellMaterials, tutorial, requestSave])
 
   const handleBuy = useCallback(
     (type: keyof Upgrades, cost: number) => {
@@ -80,9 +120,10 @@ export default function Home() {
           tutorial.onBoughtUpgrade()
           setTradeMenuOpen(false)
         }
+        requestSave()
       })
     },
-    [buyUpgrade, tutorial],
+    [buyUpgrade, tutorial, requestSave],
   )
 
   const handleCloseTradeMenu = useCallback(() => {
@@ -91,7 +132,8 @@ export default function Home() {
 
   const handleStationDriveThrough = useCallback(() => {
     tutorial.onDroveThroughStation()
-  }, [tutorial])
+    requestSave()
+  }, [tutorial, requestSave])
 
   const handlePlayerKilled = useCallback(() => {
     tutorial.onPlayerKilled()
@@ -152,8 +194,6 @@ export default function Home() {
   const shopTutorialFreeze =
     inStationRange && !tradeMenuOpen && tutorial.active && tutorial.step === 'approach-station'
 
-  void activeSlot
-
   if (screen === 'start') {
     return (
       <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
@@ -169,13 +209,13 @@ export default function Home() {
         paused={paused || tradeMenuOpen}
         frozen={tutorial.frozen || shopTutorialFreeze}
         tutorialStep={tutorial.step}
-        onCollect={onCollect}
+        onCollect={handleCollect}
         onShipMoved={tutorial.onShipMoved}
         onAsteroidHit={tutorial.onAsteroidHit}
         onMetalSpawned={tutorial.onMetalSpawned}
         onMetalCollected={tutorial.onMetalCollected}
         onPlayerDamage={onPlayerDamage}
-        onScrapCollect={onScrapCollect}
+        onScrapCollect={handleScrapCollect}
         onEnemyNearby={tutorial.onEnemyNearby}
         onEnemyDestroyed={tutorial.onEnemyDestroyed}
         onScrapCollected={tutorial.onScrapCollected}

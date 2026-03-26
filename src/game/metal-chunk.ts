@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { Ship } from '@/lib/schemas'
 import type { Asteroid } from './types'
 import { SHIP_COLLISION_RADIUS, ASTEROID_COLLISION_RADIUS } from './collision-constants'
+import { ASTEROID_SIZE_RADIUS } from './asteroid-model'
 
 /** Collision radius for metal chunks. */
 export const METAL_CHUNK_RADIUS = 1.5
@@ -167,7 +168,8 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
   const dx = chunk.x - asteroid.x
   const dy = chunk.y - asteroid.y
   const distSq = dx * dx + dy * dy
-  const minDist = METAL_CHUNK_RADIUS + ASTEROID_COLLISION_RADIUS
+  const asteroidRadius = ASTEROID_SIZE_RADIUS[asteroid.size] ?? ASTEROID_COLLISION_RADIUS
+  const minDist = METAL_CHUNK_RADIUS + asteroidRadius
 
   if (distSq >= minDist * minDist) return false
 
