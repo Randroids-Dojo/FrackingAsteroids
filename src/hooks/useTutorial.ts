@@ -13,6 +13,7 @@ export type TutorialStep =
   | 'approach-station'
   | 'trade-sell'
   | 'trade-buy'
+  | 'drive-through'
   | 'done'
 
 export type TutorialEvent =
@@ -27,6 +28,7 @@ export type TutorialEvent =
   | 'entered-station'
   | 'sold-materials'
   | 'bought-upgrade'
+  | 'drove-through-station'
   | 'unfreeze'
   | 'skip'
 
@@ -76,7 +78,10 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'sold-materials') return { ...state, step: 'trade-buy' }
       return state
     case 'trade-buy':
-      if (event === 'bought-upgrade') return { active: false, step: 'done', frozen: false }
+      if (event === 'bought-upgrade') return { ...state, step: 'drive-through' }
+      return state
+    case 'drive-through':
+      if (event === 'drove-through-station') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -98,6 +103,7 @@ export interface TutorialHook {
   onEnteredStation: () => void
   onSoldMaterials: () => void
   onBoughtUpgrade: () => void
+  onDroveThroughStation: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -135,6 +141,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onEnteredStation = useCallback(() => dispatch('entered-station'), [dispatch])
   const onSoldMaterials = useCallback(() => dispatch('sold-materials'), [dispatch])
   const onBoughtUpgrade = useCallback(() => dispatch('bought-upgrade'), [dispatch])
+  const onDroveThroughStation = useCallback(() => dispatch('drove-through-station'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -153,6 +160,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onEnteredStation,
     onSoldMaterials,
     onBoughtUpgrade,
+    onDroveThroughStation,
     unfreeze,
     skip,
   }

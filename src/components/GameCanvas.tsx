@@ -23,7 +23,8 @@ interface GameCanvasProps {
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
   onNearStation?: () => void
-  onEnteredStation?: () => void
+  onStationRange?: (inRange: boolean) => void
+  onStationDriveThrough?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -42,7 +43,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onEnemyDestroyed,
     onScrapCollected,
     onNearStation,
-    onEnteredStation,
+    onStationRange,
+    onStationDriveThrough,
   },
   ref,
 ) {
@@ -62,7 +64,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onEnemyDestroyedRef = useRef(onEnemyDestroyed)
   const onScrapCollectedRef = useRef(onScrapCollected)
   const onNearStationRef = useRef(onNearStation)
-  const onEnteredStationRef = useRef(onEnteredStation)
+  const onStationRangeRef = useRef(onStationRange)
+  const onStationDriveThroughRef = useRef(onStationDriveThrough)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -128,8 +131,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   }, [onNearStation])
 
   useEffect(() => {
-    onEnteredStationRef.current = onEnteredStation
-  }, [onEnteredStation])
+    onStationRangeRef.current = onStationRange
+  }, [onStationRange])
+
+  useEffect(() => {
+    onStationDriveThroughRef.current = onStationDriveThrough
+  }, [onStationDriveThrough])
 
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
@@ -154,7 +161,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
           onScrapCollected: () => onScrapCollectedRef.current?.(),
           onNearStation: () => onNearStationRef.current?.(),
-          onEnteredStation: () => onEnteredStationRef.current?.(),
+          onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
+          onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
         })
       })
       .catch((err: unknown) => {

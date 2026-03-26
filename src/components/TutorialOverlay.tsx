@@ -26,6 +26,7 @@ const STEPS: {
     | 'approach-station'
     | 'trade-sell'
     | 'trade-buy'
+    | 'drive-through'
   desktop: string
   mobile: string
 }[] = [
@@ -61,8 +62,8 @@ const STEPS: {
   },
   {
     key: 'approach-station',
-    desktop: 'Drive into the station!',
-    mobile: 'Drive into the station!',
+    desktop: 'Click the shop icon when it appears!',
+    mobile: 'Tap the shop icon when it appears!',
   },
   {
     key: 'trade-sell',
@@ -73,6 +74,11 @@ const STEPS: {
     key: 'trade-buy',
     desktop: 'Buy the Fire Rate upgrade!',
     mobile: 'Buy the Fire Rate upgrade!',
+  },
+  {
+    key: 'drive-through',
+    desktop: 'Drive through the station for a free ship repair!',
+    mobile: 'Drive through the station for a free ship repair!',
   },
 ]
 
@@ -164,8 +170,8 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
 
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="tutorial-overlay">
-      {/* Bottom-center prompt panel — left-aligned to avoid mobile action buttons on the right */}
-      <div className="absolute bottom-16 sm:bottom-20 left-2 sm:left-1/2 sm:-translate-x-1/2 w-auto max-w-[60vw] sm:max-w-sm px-4 sm:px-6 py-3 sm:py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
+      {/* Top-center prompt panel — sits below the HUD, clear of mobile controls at the bottom */}
+      <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-sm px-4 sm:px-6 py-3 sm:py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
         <StepDots step={step} />
         <p className="text-hud-green text-xs sm:text-sm md:text-base">{text}</p>
         {frozen && (

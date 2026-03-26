@@ -8,6 +8,7 @@ import { FeedbackFab } from '@/components/FeedbackFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { TradeMenu } from '@/components/TradeMenu'
+import { ShopFab } from '@/components/ShopFab'
 import { useGameState } from '@/hooks/useGameState'
 import { useTutorial } from '@/hooks/useTutorial'
 import type { Upgrades, SaveSlotId } from '@/lib/schemas'
@@ -21,6 +22,7 @@ export default function Home() {
   const [activeSlot, setActiveSlot] = useState<SaveSlotId | null>(null)
   const [isNewGame, setIsNewGame] = useState(false)
   const [tradeMenuOpen, setTradeMenuOpen] = useState(false)
+  const [inStationRange, setInStationRange] = useState(false)
   const gameCanvasRef = useRef<GameCanvasHandle>(null)
   const {
     paused,
@@ -52,7 +54,12 @@ export default function Home() {
     setScreen('game')
   }, [])
 
-  const handleEnteredStation = useCallback(() => {
+  const handleStationRange = useCallback((inRange: boolean) => {
+    setInStationRange(inRange)
+    if (!inRange) setTradeMenuOpen(false)
+  }, [])
+
+  const handleShopFabClick = useCallback(() => {
     tutorial.onEnteredStation()
     setTradeMenuOpen(true)
   }, [tutorial])
@@ -82,6 +89,15 @@ export default function Home() {
     setTradeMenuOpen(false)
   }, [])
 
+  const handleStationDriveThrough = useCallback(() => {
+    tutorial.onDroveThroughStation()
+  }, [tutorial])
+
+  // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
+  // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
+  const shopTutorialFreeze =
+    inStationRange && !tradeMenuOpen && tutorial.active && tutorial.step === 'approach-station'
+
   void activeSlot
 
   if (screen === 'start') {
@@ -97,7 +113,7 @@ export default function Home() {
       <GameCanvas
         ref={gameCanvasRef}
         paused={paused || tradeMenuOpen}
-        frozen={tutorial.frozen}
+        frozen={tutorial.frozen || shopTutorialFreeze}
         tutorialStep={tutorial.step}
         onCollect={onCollect}
         onShipMoved={tutorial.onShipMoved}
@@ -110,7 +126,8 @@ export default function Home() {
         onEnemyDestroyed={tutorial.onEnemyDestroyed}
         onScrapCollected={tutorial.onScrapCollected}
         onNearStation={tutorial.onNearStation}
-        onEnteredStation={handleEnteredStation}
+        onStationRange={handleStationRange}
+        onStationDriveThrough={handleStationDriveThrough}
       />
       <HUD
         scrap={scrap}
@@ -126,6 +143,12 @@ export default function Home() {
           frozen={tutorial.frozen}
           onSkip={tutorial.skip}
           onDismiss={tutorial.unfreeze}
+        />
+      )}
+      {inStationRange && !tradeMenuOpen && (
+        <ShopFab
+          highlight={tutorial.active && tutorial.step === 'approach-station'}
+          onClick={handleShopFabClick}
         />
       )}
       {tradeMenuOpen && (
