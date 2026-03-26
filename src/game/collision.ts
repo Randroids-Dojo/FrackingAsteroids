@@ -9,6 +9,7 @@ import {
   ASTEROID_COLLISION_RADIUS,
   COLLISION_PUSH_BUFFER,
 } from './collision-constants'
+import { ASTEROID_SIZE_RADIUS } from './asteroid-model'
 
 /**
  * Check if two circles overlap.
@@ -36,7 +37,8 @@ export function resolveShipAsteroidCollision(ship: Ship, asteroid: Asteroid): bo
   const dx = ship.x - asteroid.x
   const dy = ship.y - asteroid.y
   const distSq = dx * dx + dy * dy
-  const minDist = SHIP_COLLISION_RADIUS + ASTEROID_COLLISION_RADIUS
+  const asteroidRadius = ASTEROID_SIZE_RADIUS[asteroid.size] ?? ASTEROID_COLLISION_RADIUS
+  const minDist = SHIP_COLLISION_RADIUS + asteroidRadius
 
   if (distSq >= minDist * minDist) return false
 
@@ -93,7 +95,8 @@ export function checkProjectileAsteroidCollisions(
     let hitSomething = false
     for (const a of asteroids) {
       if (a.hp <= 0) continue
-      if (circlesOverlap(p.x, p.y, PROJECTILE_RADIUS, a.x, a.y, ASTEROID_COLLISION_RADIUS)) {
+      const aRadius = ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS
+      if (circlesOverlap(p.x, p.y, PROJECTILE_RADIUS, a.x, a.y, aRadius)) {
         a.hp = Math.max(0, a.hp - p.damage)
         hits.push({
           projectileId: p.id,

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
-import { createLargeAsteroidModel } from './asteroid-model'
+import { createLargeAsteroidModel, createAsteroidModel } from './asteroid-model'
+import { spawnAsteroidField } from './asteroid-spawner'
 import {
   createGasStationModel,
   initGasStationNeon,
@@ -210,14 +211,21 @@ export function createGameScene(
   const rechargeMeter = createRechargeMeter()
   scene.add(rechargeMeter)
 
-  // --- Asteroid ---
-  const asteroidModel = createLargeAsteroidModel()
-  asteroidModel.position.set(30, 30, 0)
-  scene.add(asteroidModel)
+  // --- Asteroids ---
+  // Tutorial asteroid (single, hardcoded)
+  const tutorialAsteroidModel = createLargeAsteroidModel()
+  tutorialAsteroidModel.position.set(30, 30, 0)
+  scene.add(tutorialAsteroidModel)
 
-  // --- Asteroid Health Meter ---
-  const asteroidHealthMeter = createHealthMeter()
-  asteroidModel.add(asteroidHealthMeter)
+  const tutorialHealthMeter = createHealthMeter()
+  tutorialAsteroidModel.add(tutorialHealthMeter)
+
+  // Map of asteroid id → { model, healthMeter } for all asteroids in the world
+  const asteroidModels = new Map<string, { model: THREE.Group; healthMeter: THREE.Group }>()
+  asteroidModels.set('asteroid-0', {
+    model: tutorialAsteroidModel,
+    healthMeter: tutorialHealthMeter,
+  })
 
   // --- Space Gas Station (several screens north of asteroid) ---
   const GAS_STATION_X = 30
@@ -513,6 +521,18 @@ export function createGameScene(
         onShipMoved?.()
       }
 
+      // --- Update Asteroid Drift ---
+      for (const a of asteroids) {
+        if (a.velocityX !== 0 || a.velocityY !== 0) {
+          a.x += a.velocityX * dt
+          a.y += a.velocityY * dt
+          const entry = asteroidModels.get(a.id)
+          if (entry) {
+            entry.model.position.set(a.x, a.y, 0)
+          }
+        }
+      }
+
       // --- Ship-Asteroid Collision ---
       for (const a of asteroids) {
         if (a.hp > 0) {
@@ -599,12 +619,9 @@ export function createGameScene(
           asteroidHitCounts.set(hit.asteroidId, newHits)
 
           if (newHits % HITS_PER_BREAK === 0) {
-            const chunks = breakChunks(
-              asteroidModel,
-              hit.x,
-              hit.y,
-              2 + Math.floor(Math.random() * 2),
-            )
+            const hitModel = asteroidModels.get(hit.asteroidId)?.model
+            if (!hitModel) continue
+            const chunks = breakChunks(hitModel, hit.x, hit.y, 2 + Math.floor(Math.random() * 2))
             for (const chunk of chunks) {
               scene.add(chunk.mesh)
               debrisChunks.push(chunk)
@@ -633,12 +650,14 @@ export function createGameScene(
         projectiles = surviving
       }
 
-      // --- Update Asteroid Health Meter ---
-      const a0 = asteroids[0]
-      updateHealthMeter(asteroidHealthMeter, a0.hp, a0.maxHp)
-
-      // Hide asteroid model if destroyed
-      asteroidModel.visible = a0.hp > 0
+      // --- Update Asteroid Health Meters & Visibility ---
+      for (const a of asteroids) {
+        const entry = asteroidModels.get(a.id)
+        if (entry) {
+          updateHealthMeter(entry.healthMeter, a.hp, a.maxHp)
+          entry.model.visible = a.hp > 0
+        }
+      }
 
       // --- Enemy Spawn ---
       if (!enemySpawned && firstMetalCollectedTime !== null) {
@@ -1033,6 +1052,9 @@ export function createGameScene(
     }
     scrapBoxes.length = 0
 
+    // Clean up asteroid models
+    asteroidModels.clear()
+
     // Clean up collector VFX & audio
     disposeCollectorVfx(collectorVfx)
     disposeAudio()
@@ -1090,6 +1112,32 @@ export function createGameScene(
     }
     shipwreckDebrisList.length = 0
 
+    // --- Spawn asteroid field around the station ---
+    // Remove old asteroid models from scene
+    for (const [, entry] of asteroidModels) {
+      scene.remove(entry.model)
+      entry.model.traverse(disposeMesh)
+    }
+    asteroidModels.clear()
+    asteroidHitCounts.clear()
+
+    // Clear old asteroid data and generate new field
+    asteroids.length = 0
+    const newAsteroids = spawnAsteroidField(GAS_STATION_X, GAS_STATION_Y)
+    for (const a of newAsteroids) {
+      asteroids.push(a)
+
+      // Create a visually unique model for each asteroid
+      const model = createAsteroidModel(a.type, a.size, hashString(a.id))
+      model.position.set(a.x, a.y, 0)
+      scene.add(model)
+
+      const hm = createHealthMeter()
+      model.add(hm)
+      asteroidModels.set(a.id, { model, healthMeter: hm })
+      asteroidHitCounts.set(a.id, 0)
+    }
+
     // Sync ship model to new position immediately so it's not visible at the old spot
     shipModel.position.set(ship.x, ship.y, 0)
     rechargeMeter.position.set(ship.x, ship.y, 0)
@@ -1097,6 +1145,15 @@ export function createGameScene(
     // Snap camera to station immediately
     camera.position.x = ship.x
     camera.position.y = ship.y
+  }
+
+  /** Simple string hash for deterministic asteroid shape seeds. */
+  function hashString(str: string): number {
+    let hash = 5381
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash * 33 + str.charCodeAt(i)) % 2147483647
+    }
+    return hash
   }
 
   return { dispose, setFireRateBonus, resetShipToStation }
