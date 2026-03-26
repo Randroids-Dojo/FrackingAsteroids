@@ -1076,6 +1076,20 @@ export function createGameScene(
     }
     enemyProjectiles.length = 0
 
+    // Clear all explosions
+    for (let i = explosions.length - 1; i >= 0; i--) {
+      scene.remove(explosions[i].group)
+      disposeExplosion(explosions[i])
+    }
+    explosions.length = 0
+
+    // Clear shipwreck debris
+    for (let i = shipwreckDebrisList.length - 1; i >= 0; i--) {
+      scene.remove(shipwreckDebrisList[i].group)
+      disposeShipwreckDebris(shipwreckDebrisList[i])
+    }
+    shipwreckDebrisList.length = 0
+
     // Snap camera to station immediately
     camera.position.x = ship.x
     camera.position.y = ship.y
