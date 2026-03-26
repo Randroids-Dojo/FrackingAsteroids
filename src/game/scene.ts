@@ -346,6 +346,7 @@ export function createGameScene(
 
   // --- Fire handlers ---
   let fireTarget: { x: number; y: number } | null = null
+  let mouseHoldingFire = false
 
   // Detect touch support to decide between mobile buttons and mouse controls
   const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
@@ -354,7 +355,8 @@ export function createGameScene(
     resumeAudio()
     if (getPaused()) return
     if (e.button === 0) {
-      // Left-click: fire weapon
+      // Left-click: fire weapon (and track hold for auto-fire)
+      mouseHoldingFire = true
       const rect = renderer.domElement.getBoundingClientRect()
       const sx = e.clientX - rect.left
       const sy = e.clientY - rect.top
@@ -367,7 +369,9 @@ export function createGameScene(
   }
 
   function onMouseUp(e: MouseEvent): void {
-    if (e.button === 2) {
+    if (e.button === 0) {
+      mouseHoldingFire = false
+    } else if (e.button === 2) {
       mouseCollecting = false
       if (!collectKeyDown && (fireButton === null || !fireButton.isPressed())) collecting = false
     }
@@ -495,6 +499,15 @@ export function createGameScene(
       // --- Blaster ---
       updateBlasterCooldown(blasterState, dt)
       updateRechargeMeter(rechargeMeter, blasterState, blasterTier)
+
+      // Hold-to-fire: re-set fireTarget each frame while button is held
+      if (mouseHoldingFire && aimState.active) {
+        fireTarget = screenToWorld(aimState.screenX, aimState.screenY)
+      }
+      if (fireButton && fireButton.isPressed()) {
+        const angle = ship.rotation + Math.PI / 2
+        fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
+      }
 
       // Fire if player clicked/tapped
       if (fireTarget) {
