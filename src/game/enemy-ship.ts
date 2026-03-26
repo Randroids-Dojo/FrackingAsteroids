@@ -109,6 +109,8 @@ export interface EnemyShip {
   idleTimer: number
   /** Whether the enemy is currently drifting idle. */
   idling: boolean
+  /** Target cardinal angle (0, π/2, π, -π/2) the enemy is steering toward. */
+  targetCardinal: number
 }
 
 export interface EnemyProjectile {
@@ -222,6 +224,10 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
   const mesh = createEnemyShipModel()
   mesh.position.set(x, y, 0)
 
+  // Pick the nearest cardinal angle based on spawn position relative to origin
+  const spawnAngle = Math.atan2(y, x)
+  const initialCardinal = nearestCardinal(spawnAngle)
+
   return {
     mesh,
     x,
@@ -238,6 +244,7 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
     shootTimer: ENEMY_SHOOT_INTERVAL * 0.5, // first shot comes quicker
     idleTimer: ENEMY_IDLE_INTERVAL * (0.5 + Math.random() * 0.5),
     idling: false,
+    targetCardinal: initialCardinal,
   }
 }
 
@@ -252,6 +259,50 @@ function normaliseAngle(a: number): number {
   while (a > Math.PI) a -= Math.PI * 2
   while (a <= -Math.PI) a += Math.PI * 2
   return a
+}
+
+/** The four cardinal angles (12, 3, 6, 9 o'clock). */
+const CARDINAL_ANGLES = [
+  Math.PI / 2, // 12 o'clock (up / +Y)
+  0, // 3 o'clock (right / +X)
+  -Math.PI / 2, // 6 o'clock (down / -Y)
+  Math.PI, // 9 o'clock (left / -X)
+] as const
+
+/**
+ * Return the cardinal angle (0, π/2, π, -π/2) closest to the given angle.
+ */
+function nearestCardinal(angle: number): number {
+  let best = CARDINAL_ANGLES[0]
+  let bestDiff = Math.abs(normaliseAngle(angle - best))
+  for (let i = 1; i < CARDINAL_ANGLES.length; i++) {
+    const diff = Math.abs(normaliseAngle(angle - CARDINAL_ANGLES[i]))
+    if (diff < bestDiff) {
+      bestDiff = diff
+      best = CARDINAL_ANGLES[i]
+    }
+  }
+  return best
+}
+
+/**
+ * Return the next cardinal angle in the given direction (+1 = CCW, -1 = CW).
+ */
+function nextCardinal(current: number, direction: number): number {
+  // Find current index in CARDINAL_ANGLES (sorted CCW: 90°, 0°, -90°, 180°)
+  // We need to order them by angle for rotation: 0, π/2, π/-π, -π/2
+  const ordered = [0, Math.PI / 2, Math.PI, -Math.PI / 2] // CCW order
+  let idx = 0
+  let bestDiff = Math.abs(normaliseAngle(current - ordered[0]))
+  for (let i = 1; i < ordered.length; i++) {
+    const diff = Math.abs(normaliseAngle(current - ordered[i]))
+    if (diff < bestDiff) {
+      bestDiff = diff
+      idx = i
+    }
+  }
+  const next = (idx + (direction > 0 ? 1 : 3)) % 4
+  return ordered[next]
 }
 
 /**
@@ -269,8 +320,9 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   const dist = Math.sqrt(dx * dx + dy * dy)
   const toPlayer = Math.atan2(dy, dx)
 
-  // Blend a radial component (toward/away from player) with a tangential
-  // component (circling around player). The blend depends on distance.
+  // Blend a radial component (toward/away from player) with a cardinal-
+  // seeking component. The enemy prefers to sit at 90° angles (12/3/6/9
+  // o'clock) from the player at ORBIT_DISTANCE.
   let radialWeight: number
   if (dist < ORBIT_DISTANCE * 0.7) {
     // Too close — push away
@@ -279,19 +331,20 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     // Too far — pull in
     radialWeight = 0.8
   } else {
-    // In the sweet spot — mostly tangential with slight pull toward orbit
+    // In the sweet spot — gentle distance correction
     const t = (dist - ORBIT_DISTANCE) / (ORBIT_DISTANCE * 0.3)
-    radialWeight = t * 0.3 // gentle correction
+    radialWeight = t * 0.3
   }
 
-  // Strafe timer — occasionally flip circling direction
+  // Strafe timer — move to the next cardinal position
   enemy.strafeTimer -= dt
   if (enemy.strafeTimer <= 0) {
     enemy.strafeTimer = ENEMY_STRAFE_CHANGE_INTERVAL * (0.7 + Math.random() * 0.6)
     enemy.strafeDir = -enemy.strafeDir
+    enemy.targetCardinal = nextCardinal(enemy.targetCardinal, enemy.strafeDir)
   }
 
-  // Idle timer — periodically drift to a stop when in the sweet spot
+  // Idle timer — periodically drift to a stop when near target cardinal
   const inSweetSpot = dist >= ORBIT_DISTANCE * 0.7 && dist <= ORBIT_DISTANCE * 1.3
   enemy.idleTimer -= dt
   if (enemy.idleTimer <= 0) {
@@ -303,19 +356,33 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
       enemy.idleTimer = ENEMY_IDLE_DURATION * (0.7 + Math.random() * 0.6)
     }
   }
-  // Only idle when comfortably in the sweet spot
-  const effectivelyIdle = enemy.idling && inSweetSpot
 
-  const tangentAngle = toPlayer + (enemy.strafeDir * Math.PI) / 2
-  const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
+  // The target position on the orbit circle at the desired cardinal angle
+  const targetX = player.x + Math.cos(enemy.targetCardinal) * ORBIT_DISTANCE
+  const targetY = player.y + Math.sin(enemy.targetCardinal) * ORBIT_DISTANCE
+  const toTargetDx = targetX - enemy.x
+  const toTargetDy = targetY - enemy.y
+  const toTargetDist = Math.sqrt(toTargetDx * toTargetDx + toTargetDy * toTargetDy)
+
+  // Only idle when close to the target cardinal and at the right distance
+  const nearCardinal = toTargetDist < ORBIT_DISTANCE * 0.3
+  const effectivelyIdle = enemy.idling && inSweetSpot && nearCardinal
+
+  // Compute desired heading: blend radial correction with cardinal-seeking
+  let desiredAngle: number
   const absRadial = Math.abs(radialWeight)
-
-  // When in the sweet spot, use only a small tangential component so the
-  // enemy mostly holds position instead of constantly circling the player.
-  const tangentWeight = absRadial > 0.3 ? 1 - absRadial : 0.25
-  const desiredX = Math.cos(tangentAngle) * tangentWeight + Math.cos(radialAngle) * absRadial
-  const desiredY = Math.sin(tangentAngle) * tangentWeight + Math.sin(radialAngle) * absRadial
-  const desiredAngle = Math.atan2(desiredY, desiredX)
+  if (absRadial > 0.3) {
+    // Distance correction dominates — move radially with some cardinal pull
+    const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
+    const cardinalAngle = toTargetDist > 0.1 ? Math.atan2(toTargetDy, toTargetDx) : enemy.heading
+    const cardinalWeight = 1 - absRadial
+    const desiredX = Math.cos(radialAngle) * absRadial + Math.cos(cardinalAngle) * cardinalWeight
+    const desiredY = Math.sin(radialAngle) * absRadial + Math.sin(cardinalAngle) * cardinalWeight
+    desiredAngle = Math.atan2(desiredY, desiredX)
+  } else {
+    // In sweet spot — steer toward the target cardinal position
+    desiredAngle = toTargetDist > 0.1 ? Math.atan2(toTargetDy, toTargetDx) : enemy.heading
+  }
 
   // --- Smoothly steer heading toward desired angle ---
   const angleDiff = normaliseAngle(desiredAngle - enemy.heading)
