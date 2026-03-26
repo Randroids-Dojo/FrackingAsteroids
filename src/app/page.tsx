@@ -89,6 +89,11 @@ export default function Home() {
     setTradeMenuOpen(false)
   }, [])
 
+  // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
+  // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
+  const shopTutorialFreeze =
+    inStationRange && !tradeMenuOpen && tutorial.active && tutorial.step === 'approach-station'
+
   void activeSlot
 
   if (screen === 'start') {
@@ -104,7 +109,7 @@ export default function Home() {
       <GameCanvas
         ref={gameCanvasRef}
         paused={paused || tradeMenuOpen}
-        frozen={tutorial.frozen}
+        frozen={tutorial.frozen || shopTutorialFreeze}
         tutorialStep={tutorial.step}
         onCollect={onCollect}
         onShipMoved={tutorial.onShipMoved}

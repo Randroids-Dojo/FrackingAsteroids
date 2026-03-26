@@ -202,7 +202,7 @@ export function createGameScene(
   const GAS_STATION_X = 30
   const GAS_STATION_Y = 350
   const STATION_NEAR_DISTANCE = 80
-  const STATION_ENTER_DISTANCE = 20
+  const STATION_ENTER_DISTANCE = 60
   const gasStation = createGasStationModel()
   gasStation.group.position.set(GAS_STATION_X, GAS_STATION_Y, 0)
   initGasStationNeon(gasStation.neonMeshes)
