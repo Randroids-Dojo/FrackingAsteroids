@@ -102,14 +102,14 @@ export const PLAYER_MAX_HP = 100
 
 export type MetalVariant = 'silver' | 'gold'
 
-/** Damage per ambush enemy projectile — very high to kill quickly. */
-const AMBUSH_PROJECTILE_DAMAGE = 35
+/** Damage per ambush enemy projectile — high but takes ~5 hits to kill. */
+const AMBUSH_PROJECTILE_DAMAGE = 20
 
 /** Number of ambush enemies that spawn. */
 const AMBUSH_ENEMY_COUNT = 3
 
 /** Distance north of player where ambush enemies spawn. */
-const AMBUSH_SPAWN_OFFSET_Y = 50
+const AMBUSH_SPAWN_OFFSET_Y = 100
 
 /** Horizontal spread between ambush enemies. */
 const AMBUSH_SPAWN_SPREAD_X = 25

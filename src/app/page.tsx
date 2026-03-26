@@ -203,12 +203,12 @@ export default function Home() {
       {paused && <FeedbackFab />}
       {ambushFade !== 'none' && (
         <div
-          className={`absolute inset-0 bg-black z-50 transition-opacity ${
+          className={`absolute inset-0 bg-black z-50 flex items-center justify-center ${
             ambushFade === 'fading-in'
-              ? 'opacity-0 animate-[fadeIn_1.5s_ease-in_forwards]'
-              : ambushFade === 'black'
+              ? 'opacity-0'
+              : ambushFade === 'fading-out'
                 ? 'opacity-100'
-                : 'opacity-100 animate-[fadeOut_1.5s_ease-out_forwards]'
+                : 'opacity-100'
           }`}
           style={
             ambushFade === 'fading-in'
@@ -218,7 +218,11 @@ export default function Home() {
                 : undefined
           }
           data-testid="ambush-fade"
-        />
+        >
+          <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
+            {ambushFade === 'fading-out' ? 'Loaded last save' : 'You Died'}
+          </p>
+        </div>
       )}
     </main>
   )
