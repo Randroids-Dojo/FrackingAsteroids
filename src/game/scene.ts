@@ -902,7 +902,8 @@ export function createGameScene(
       }
 
       // --- Tutorial: Ambush ---
-      if (tutStep === 'ambush' && !ambushSpawned) {
+      // Wait until the player has left station range before spawning enemies
+      if (tutStep === 'ambush' && !ambushSpawned && !inStationRange) {
         ambushSpawned = true
         // Spawn 3 enemy ships in a line north of the player
         for (let i = 0; i < AMBUSH_ENEMY_COUNT; i++) {
@@ -1049,11 +1050,11 @@ export function createGameScene(
     fireRateBonus = multiplier
   }
 
-  /** Reset ship to station position with full HP and clear ambush entities. */
+  /** Reset ship to just north of station with full HP and clear ambush entities. */
   function resetShipToStation() {
-    // Move ship to station
+    // Move ship to just north of the station (outside station range)
     ship.x = GAS_STATION_X
-    ship.y = GAS_STATION_Y
+    ship.y = GAS_STATION_Y + STATION_ENTER_DISTANCE + 10
     ship.velocityX = 0
     ship.velocityY = 0
 

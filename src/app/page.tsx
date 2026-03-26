@@ -98,36 +98,46 @@ export default function Home() {
   }, [tutorial])
 
   // --- Ambush fade-to-black and respawn sequence ---
-  const [ambushFade, setAmbushFade] = useState<'none' | 'fading-in' | 'black' | 'fading-out'>(
-    'none',
-  )
+  const [ambushFade, setAmbushFade] = useState<
+    'none' | 'fading-in' | 'black' | 'loaded' | 'fading-out'
+  >('none')
 
   useEffect(() => {
     if (tutorial.step !== 'ambush-fade') return
+    const timers: ReturnType<typeof setTimeout>[] = []
     // Start fade to black
     setAmbushFade('fading-in')
 
-    // After fade-in completes (1.5s), hold black and reset ship
-    const holdTimer = setTimeout(() => {
-      setAmbushFade('black')
-      gameCanvasRef.current?.resetShipToStation()
+    // After fade-in completes (1.5s), hold black with "You Died"
+    timers.push(
+      setTimeout(() => {
+        setAmbushFade('black')
+        gameCanvasRef.current?.resetShipToStation()
 
-      // After a brief hold (1s), fade out and complete tutorial
-      const fadeOutTimer = setTimeout(() => {
-        setAmbushFade('fading-out')
+        // After a hold (1.5s), switch to "Loaded last save" text
+        timers.push(
+          setTimeout(() => {
+            setAmbushFade('loaded')
 
-        const completeTimer = setTimeout(() => {
-          setAmbushFade('none')
-          tutorial.onAmbushComplete()
-        }, 1500)
+            // Hold "Loaded last save" on black (2s), then fade out
+            timers.push(
+              setTimeout(() => {
+                setAmbushFade('fading-out')
 
-        return () => clearTimeout(completeTimer)
-      }, 1000)
+                timers.push(
+                  setTimeout(() => {
+                    setAmbushFade('none')
+                    tutorial.onAmbushComplete()
+                  }, 1500),
+                )
+              }, 2000),
+            )
+          }, 1500),
+        )
+      }, 1500),
+    )
 
-      return () => clearTimeout(fadeOutTimer)
-    }, 1500)
-
-    return () => clearTimeout(holdTimer)
+    return () => timers.forEach(clearTimeout)
   }, [tutorial.step, tutorial])
 
   // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
@@ -203,13 +213,7 @@ export default function Home() {
       {paused && <FeedbackFab />}
       {ambushFade !== 'none' && (
         <div
-          className={`absolute inset-0 bg-black z-50 flex items-center justify-center ${
-            ambushFade === 'fading-in'
-              ? 'opacity-0'
-              : ambushFade === 'fading-out'
-                ? 'opacity-100'
-                : 'opacity-100'
-          }`}
+          className="absolute inset-0 bg-black z-50 flex items-center justify-center"
           style={
             ambushFade === 'fading-in'
               ? { animation: 'fadeIn 1.5s ease-in forwards' }
@@ -219,9 +223,16 @@ export default function Home() {
           }
           data-testid="ambush-fade"
         >
-          <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
-            {ambushFade === 'fading-out' ? 'Loaded last save' : 'You Died'}
-          </p>
+          {(ambushFade === 'fading-in' || ambushFade === 'black') && (
+            <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
+              You Died
+            </p>
+          )}
+          {(ambushFade === 'loaded' || ambushFade === 'fading-out') && (
+            <p className="font-mono text-lg sm:text-2xl tracking-widest text-hud-green/90 animate-pulse">
+              Loaded last save
+            </p>
+          )}
         </div>
       )}
     </main>
