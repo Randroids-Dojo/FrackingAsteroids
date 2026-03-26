@@ -121,12 +121,12 @@ export default function Home() {
         setAmbushFade('black')
         gameCanvasRef.current?.resetShipToStation()
 
-        // After a hold (1.5s), switch to "Loaded last save" text
+        // After a hold (1.5s), switch to "Loading last save" text
         timers.push(
           setTimeout(() => {
             setAmbushFade('loaded')
 
-            // Hold "Loaded last save" on black (2s), then fade out
+            // Hold "Loading last save" on black (2s), then fade out
             timers.push(
               setTimeout(() => {
                 setAmbushFade('fading-out')
@@ -237,7 +237,7 @@ export default function Home() {
           )}
           {(ambushFade === 'loaded' || ambushFade === 'fading-out') && (
             <p className="font-mono text-lg sm:text-2xl tracking-widest text-hud-green/90 animate-pulse">
-              Loaded last save
+              Loading last save
             </p>
           )}
         </div>

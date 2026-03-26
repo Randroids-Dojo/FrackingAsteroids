@@ -109,7 +109,7 @@ const AMBUSH_PROJECTILE_DAMAGE = 20
 const AMBUSH_ENEMY_COUNT = 3
 
 /** Distance north of player where ambush enemies spawn. */
-const AMBUSH_SPAWN_OFFSET_Y = 100
+const AMBUSH_SPAWN_OFFSET_Y = 70
 
 /** Horizontal spread between ambush enemies. */
 const AMBUSH_SPAWN_SPREAD_X = 25
@@ -1054,7 +1054,7 @@ export function createGameScene(
   function resetShipToStation() {
     // Move ship to just north of the station (outside station range)
     ship.x = GAS_STATION_X
-    ship.y = GAS_STATION_Y + STATION_ENTER_DISTANCE + 10
+    ship.y = GAS_STATION_Y + STATION_ENTER_DISTANCE - 10
     ship.velocityX = 0
     ship.velocityY = 0
 
