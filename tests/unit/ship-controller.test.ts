@@ -154,6 +154,40 @@ describe('updateShip', () => {
     }
     assert.ok(Math.abs(ship.rotation) < 0.001, 'should face up (rotation ~0)')
   })
+
+  it('uses joystickAngle for rotation when no aim rotation', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.up = true
+    input.joystickAngle = 0.789
+    updateShip(ship, input, 1 / 60, null)
+    assert.ok(
+      Math.abs(ship.rotation - 0.789) < 0.001,
+      'should use joystickAngle instead of cardinal direction',
+    )
+  })
+
+  it('prefers aim rotation over joystickAngle', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.up = true
+    input.joystickAngle = 0.789
+    const aimAngle = 2.345
+    updateShip(ship, input, 1 / 60, aimAngle)
+    assert.equal(ship.rotation, aimAngle, 'aim rotation should take priority over joystickAngle')
+  })
+
+  it('falls back to cardinal direction when joystickAngle is null', () => {
+    const ship = makeShip()
+    const input = createInputState()
+    input.right = true
+    input.joystickAngle = null
+    updateShip(ship, input, 1 / 60, null)
+    assert.ok(
+      Math.abs(ship.rotation - Math.atan2(-1, 0)) < 0.001,
+      'should fall back to cardinal direction',
+    )
+  })
 })
 
 describe('aimToRotation', () => {

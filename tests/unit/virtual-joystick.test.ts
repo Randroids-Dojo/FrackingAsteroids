@@ -314,5 +314,72 @@ describe('createVirtualJoystick', () => {
     assert.equal(state.right, false)
     assert.equal(state.down, false)
     assert.equal(state.left, false)
+    assert.equal(state.joystickAngle, null)
+  })
+
+  it('sets joystickAngle for upward drag', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 100, clientY: 240 }])
+    assert.ok(state.joystickAngle !== null, 'joystickAngle should be set')
+    // Dragging up: screen dx=0, dy=-60 → atan2(-0, -(-60)) = atan2(0, 60) = 0 (faces up)
+    assert.ok(Math.abs(state.joystickAngle) < 0.001, `should face up, got ${state.joystickAngle}`)
+    joystick.detach()
+  })
+
+  it('sets joystickAngle for rightward drag', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 160, clientY: 300 }])
+    assert.ok(state.joystickAngle !== null, 'joystickAngle should be set')
+    // Dragging right: screen dx=60, dy=0 → atan2(-60, 0) = -PI/2 (faces right)
+    assert.ok(
+      Math.abs(state.joystickAngle - -Math.PI / 2) < 0.001,
+      `should face right, got ${state.joystickAngle}`,
+    )
+    joystick.detach()
+  })
+
+  it('sets joystickAngle for arbitrary diagonal drag', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    // Drag at ~30° up-right (not a cardinal or 45° direction)
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 130, clientY: 248 }])
+    assert.ok(state.joystickAngle !== null, 'joystickAngle should be set')
+    // Screen dx=30, dy=-52 → atan2(-30, 52)
+    const expected = Math.atan2(-30, 52)
+    assert.ok(
+      Math.abs(state.joystickAngle - expected) < 0.001,
+      `should be ~${expected}, got ${state.joystickAngle}`,
+    )
+    joystick.detach()
+  })
+
+  it('clears joystickAngle in dead zone', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 105, clientY: 300 }])
+    assert.equal(state.joystickAngle, null, 'joystickAngle should be null in dead zone')
+    joystick.detach()
+  })
+
+  it('clears joystickAngle on touch end', () => {
+    const state = createInputState()
+    const joystick = createVirtualJoystick(state, container as unknown as HTMLElement)
+    joystick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 160, clientY: 240 }])
+    assert.ok(state.joystickAngle !== null)
+    container.fireTouch('touchend', [{ identifier: 1, clientX: 160, clientY: 240 }])
+    assert.equal(state.joystickAngle, null, 'joystickAngle should be null after touch end')
+    joystick.detach()
   })
 })

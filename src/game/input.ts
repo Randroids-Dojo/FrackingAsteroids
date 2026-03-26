@@ -7,6 +7,8 @@ export interface InputState {
   down: boolean
   left: boolean
   right: boolean
+  /** Precise joystick angle in radians (Three.js rotation.z convention), or null when joystick is inactive. */
+  joystickAngle: number | null
 }
 
 /**
@@ -23,14 +25,16 @@ export interface AimState {
 }
 
 export function createInputState(): InputState {
-  return { up: false, down: false, left: false, right: false }
+  return { up: false, down: false, left: false, right: false, joystickAngle: null }
 }
 
 export function createAimState(): AimState {
   return { active: false, screenX: 0, screenY: 0 }
 }
 
-export const KEY_MAP: Record<string, keyof InputState> = {
+export type InputDirection = 'up' | 'down' | 'left' | 'right'
+
+export const KEY_MAP: Record<string, InputDirection> = {
   KeyW: 'up',
   ArrowUp: 'up',
   KeyS: 'down',
