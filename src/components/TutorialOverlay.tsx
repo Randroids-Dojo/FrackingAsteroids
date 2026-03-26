@@ -145,10 +145,10 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
 
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="tutorial-overlay">
-      {/* Bottom-center prompt panel */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-auto max-w-sm px-6 py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
+      {/* Bottom-center prompt panel — left-aligned to avoid mobile action buttons on the right */}
+      <div className="absolute bottom-16 sm:bottom-20 left-2 sm:left-1/2 sm:-translate-x-1/2 w-auto max-w-[60vw] sm:max-w-sm px-4 sm:px-6 py-3 sm:py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
         <StepDots step={step} />
-        <p className="text-hud-green text-sm md:text-base">{text}</p>
+        <p className="text-hud-green text-xs sm:text-sm md:text-base">{text}</p>
         {frozen && (
           <p className="text-white/50 text-xs mt-2 animate-pulse">Press any key to continue</p>
         )}
