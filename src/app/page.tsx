@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { GameCanvas } from '@/components/GameCanvas'
 import type { GameCanvasHandle } from '@/components/GameCanvas'
 import { HUD } from '@/components/HUD'
@@ -93,6 +93,43 @@ export default function Home() {
     tutorial.onDroveThroughStation()
   }, [tutorial])
 
+  const handlePlayerKilled = useCallback(() => {
+    tutorial.onPlayerKilled()
+  }, [tutorial])
+
+  // --- Ambush fade-to-black and respawn sequence ---
+  const [ambushFade, setAmbushFade] = useState<'none' | 'fading-in' | 'black' | 'fading-out'>(
+    'none',
+  )
+
+  useEffect(() => {
+    if (tutorial.step !== 'ambush-fade') return
+    // Start fade to black
+    setAmbushFade('fading-in')
+
+    // After fade-in completes (1.5s), hold black and reset ship
+    const holdTimer = setTimeout(() => {
+      setAmbushFade('black')
+      gameCanvasRef.current?.resetShipToStation()
+
+      // After a brief hold (1s), fade out and complete tutorial
+      const fadeOutTimer = setTimeout(() => {
+        setAmbushFade('fading-out')
+
+        const completeTimer = setTimeout(() => {
+          setAmbushFade('none')
+          tutorial.onAmbushComplete()
+        }, 1500)
+
+        return () => clearTimeout(completeTimer)
+      }, 1000)
+
+      return () => clearTimeout(fadeOutTimer)
+    }, 1500)
+
+    return () => clearTimeout(holdTimer)
+  }, [tutorial.step, tutorial])
+
   // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
   // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
   const shopTutorialFreeze =
@@ -128,6 +165,7 @@ export default function Home() {
         onNearStation={tutorial.onNearStation}
         onStationRange={handleStationRange}
         onStationDriveThrough={handleStationDriveThrough}
+        onPlayerKilled={handlePlayerKilled}
       />
       <HUD
         scrap={scrap}
@@ -163,6 +201,25 @@ export default function Home() {
         />
       )}
       {paused && <FeedbackFab />}
+      {ambushFade !== 'none' && (
+        <div
+          className={`absolute inset-0 bg-black z-50 transition-opacity ${
+            ambushFade === 'fading-in'
+              ? 'opacity-0 animate-[fadeIn_1.5s_ease-in_forwards]'
+              : ambushFade === 'black'
+                ? 'opacity-100'
+                : 'opacity-100 animate-[fadeOut_1.5s_ease-out_forwards]'
+          }`}
+          style={
+            ambushFade === 'fading-in'
+              ? { animation: 'fadeIn 1.5s ease-in forwards' }
+              : ambushFade === 'fading-out'
+                ? { animation: 'fadeOut 1.5s ease-out forwards' }
+                : undefined
+          }
+          data-testid="ambush-fade"
+        />
+      )}
     </main>
   )
 }

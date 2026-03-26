@@ -102,6 +102,22 @@ export const PLAYER_MAX_HP = 100
 
 export type MetalVariant = 'silver' | 'gold'
 
+/** Damage per ambush enemy projectile — very high to kill quickly. */
+const AMBUSH_PROJECTILE_DAMAGE = 35
+
+/** Number of ambush enemies that spawn. */
+const AMBUSH_ENEMY_COUNT = 3
+
+/** Distance north of player where ambush enemies spawn. */
+const AMBUSH_SPAWN_OFFSET_Y = 50
+
+/** Horizontal spread between ambush enemies. */
+const AMBUSH_SPAWN_SPREAD_X = 25
+
+/** Ambush enemies fire every 0.3–0.5 seconds. */
+const AMBUSH_SHOOT_MIN = 0.3
+const AMBUSH_SHOOT_MAX = 0.5
+
 export interface GameSceneOptions {
   onCollect?: (variant: MetalVariant) => void
   onShipMoved?: () => void
@@ -116,11 +132,13 @@ export interface GameSceneOptions {
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
+  onPlayerKilled?: () => void
 }
 
 export interface GameScene {
   dispose: () => void
   setFireRateBonus: (multiplier: number) => void
+  resetShipToStation: () => void
 }
 
 /**
@@ -146,6 +164,7 @@ export function createGameScene(
   const onNearStation = options?.onNearStation
   const onStationRange = options?.onStationRange
   const onStationDriveThrough = options?.onStationDriveThrough
+  const onPlayerKilled = options?.onPlayerKilled
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -297,6 +316,11 @@ export function createGameScene(
   let firstMetalCollectedTime: number | null = null
   let enemySpawned = false
   let enemyNearbyFired = false
+
+  // --- Ambush State ---
+  const ambushEnemies: EnemyShip[] = []
+  let ambushSpawned = false
+  let playerKilledFired = false
 
   function fireEnemyNearby() {
     if (enemyNearbyFired) return
@@ -725,8 +749,11 @@ export function createGameScene(
             disposeEnemyProjectile(proj)
             enemyProjectiles.splice(i, 1)
 
-            // Apply damage to player
-            playerHp = Math.max(0, playerHp - ENEMY_PROJECTILE_DAMAGE)
+            // Apply damage to player (ambush projectiles deal much more)
+            const damage = proj.mesh.userData.ambush
+              ? AMBUSH_PROJECTILE_DAMAGE
+              : ENEMY_PROJECTILE_DAMAGE
+            playerHp = Math.max(0, playerHp - damage)
 
             fireEnemyNearby()
           }
@@ -874,6 +901,50 @@ export function createGameScene(
         arrowGroup.position.z = 5 + Math.sin((now / 1000) * 2.5) * 2
       }
 
+      // --- Tutorial: Ambush ---
+      if (tutStep === 'ambush' && !ambushSpawned) {
+        ambushSpawned = true
+        // Spawn 3 enemy ships in a line north of the player
+        for (let i = 0; i < AMBUSH_ENEMY_COUNT; i++) {
+          const offsetX = (i - 1) * AMBUSH_SPAWN_SPREAD_X // -25, 0, +25
+          const ax = ship.x + offsetX
+          const ay = ship.y + AMBUSH_SPAWN_OFFSET_Y
+          const ae = createEnemyShip(ax, ay)
+          // Override shoot timer for rapid fire
+          ae.shootTimer = AMBUSH_SHOOT_MIN
+          ae.hp = 100 // near invincible
+          ae.maxHp = 100
+          scene.add(ae.mesh)
+          ambushEnemies.push(ae)
+        }
+      }
+
+      // Update ambush enemies
+      if (ambushEnemies.length > 0) {
+        for (const ae of ambushEnemies) {
+          if (!ae.alive) continue
+          const newProjs = updateEnemyShip(ae, ship, dt)
+          // Override shoot timer for rapid fire after each shot
+          if (ae.shootTimer > AMBUSH_SHOOT_MAX) {
+            ae.shootTimer = AMBUSH_SHOOT_MIN + Math.random() * (AMBUSH_SHOOT_MAX - AMBUSH_SHOOT_MIN)
+          }
+          for (const proj of newProjs) {
+            scene.add(proj.mesh)
+            enemyProjectiles.push(proj)
+            // Tag ambush projectiles for higher damage
+            proj.mesh.userData.ambush = true
+          }
+          ae.mesh.position.set(ae.x, ae.y, 0)
+          ae.mesh.rotation.z = ae.rotation
+        }
+      }
+
+      // Detect player death during ambush
+      if (tutStep === 'ambush' && playerHp <= 0 && !playerKilledFired) {
+        playerKilledFired = true
+        onPlayerKilled?.()
+      }
+
       // Sync surviving projectile positions
       for (const p of projectiles) {
         const model = projectileModels.get(p.id)
@@ -944,6 +1015,10 @@ export function createGameScene(
     if (enemy) {
       disposeEnemyShip(enemy)
     }
+    for (const ae of ambushEnemies) {
+      disposeEnemyShip(ae)
+    }
+    ambushEnemies.length = 0
     for (const ep of enemyProjectiles) {
       disposeEnemyProjectile(ep)
     }
@@ -974,5 +1049,36 @@ export function createGameScene(
     fireRateBonus = multiplier
   }
 
-  return { dispose, setFireRateBonus }
+  /** Reset ship to station position with full HP and clear ambush entities. */
+  function resetShipToStation() {
+    // Move ship to station
+    ship.x = GAS_STATION_X
+    ship.y = GAS_STATION_Y
+    ship.velocityX = 0
+    ship.velocityY = 0
+
+    // Restore full HP
+    playerHp = PLAYER_MAX_HP
+    onPlayerDamage?.(playerHp)
+
+    // Remove ambush enemies
+    for (const ae of ambushEnemies) {
+      scene.remove(ae.mesh)
+      disposeEnemyShip(ae)
+    }
+    ambushEnemies.length = 0
+
+    // Remove all enemy projectiles
+    for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+      scene.remove(enemyProjectiles[i].mesh)
+      disposeEnemyProjectile(enemyProjectiles[i])
+    }
+    enemyProjectiles.length = 0
+
+    // Snap camera to station immediately
+    camera.position.x = ship.x
+    camera.position.y = ship.y
+  }
+
+  return { dispose, setFireRateBonus, resetShipToStation }
 }
