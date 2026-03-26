@@ -61,8 +61,8 @@ const STEPS: {
   },
   {
     key: 'approach-station',
-    desktop: 'Drive into the station!',
-    mobile: 'Drive into the station!',
+    desktop: 'Click the shop icon when it appears!',
+    mobile: 'Tap the shop icon when it appears!',
   },
   {
     key: 'trade-sell',

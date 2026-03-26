@@ -8,6 +8,7 @@ import { FeedbackFab } from '@/components/FeedbackFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { TradeMenu } from '@/components/TradeMenu'
+import { ShopFab } from '@/components/ShopFab'
 import { useGameState } from '@/hooks/useGameState'
 import { useTutorial } from '@/hooks/useTutorial'
 import type { Upgrades, SaveSlotId } from '@/lib/schemas'
@@ -21,6 +22,7 @@ export default function Home() {
   const [activeSlot, setActiveSlot] = useState<SaveSlotId | null>(null)
   const [isNewGame, setIsNewGame] = useState(false)
   const [tradeMenuOpen, setTradeMenuOpen] = useState(false)
+  const [inStationRange, setInStationRange] = useState(false)
   const gameCanvasRef = useRef<GameCanvasHandle>(null)
   const {
     paused,
@@ -52,7 +54,12 @@ export default function Home() {
     setScreen('game')
   }, [])
 
-  const handleEnteredStation = useCallback(() => {
+  const handleStationRange = useCallback((inRange: boolean) => {
+    setInStationRange(inRange)
+    if (!inRange) setTradeMenuOpen(false)
+  }, [])
+
+  const handleShopFabClick = useCallback(() => {
     tutorial.onEnteredStation()
     setTradeMenuOpen(true)
   }, [tutorial])
@@ -110,7 +117,7 @@ export default function Home() {
         onEnemyDestroyed={tutorial.onEnemyDestroyed}
         onScrapCollected={tutorial.onScrapCollected}
         onNearStation={tutorial.onNearStation}
-        onEnteredStation={handleEnteredStation}
+        onStationRange={handleStationRange}
       />
       <HUD
         scrap={scrap}
@@ -126,6 +133,12 @@ export default function Home() {
           frozen={tutorial.frozen}
           onSkip={tutorial.skip}
           onDismiss={tutorial.unfreeze}
+        />
+      )}
+      {inStationRange && !tradeMenuOpen && (
+        <ShopFab
+          highlight={tutorial.active && tutorial.step === 'approach-station'}
+          onClick={handleShopFabClick}
         />
       )}
       {tradeMenuOpen && (

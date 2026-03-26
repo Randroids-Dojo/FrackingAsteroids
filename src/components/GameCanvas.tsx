@@ -23,7 +23,7 @@ interface GameCanvasProps {
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
   onNearStation?: () => void
-  onEnteredStation?: () => void
+  onStationRange?: (inRange: boolean) => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -42,7 +42,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onEnemyDestroyed,
     onScrapCollected,
     onNearStation,
-    onEnteredStation,
+    onStationRange,
   },
   ref,
 ) {
@@ -62,7 +62,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onEnemyDestroyedRef = useRef(onEnemyDestroyed)
   const onScrapCollectedRef = useRef(onScrapCollected)
   const onNearStationRef = useRef(onNearStation)
-  const onEnteredStationRef = useRef(onEnteredStation)
+  const onStationRangeRef = useRef(onStationRange)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -128,8 +128,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   }, [onNearStation])
 
   useEffect(() => {
-    onEnteredStationRef.current = onEnteredStation
-  }, [onEnteredStation])
+    onStationRangeRef.current = onStationRange
+  }, [onStationRange])
 
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
@@ -154,7 +154,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onEnemyDestroyed: () => onEnemyDestroyedRef.current?.(),
           onScrapCollected: () => onScrapCollectedRef.current?.(),
           onNearStation: () => onNearStationRef.current?.(),
-          onEnteredStation: () => onEnteredStationRef.current?.(),
+          onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
         })
       })
       .catch((err: unknown) => {

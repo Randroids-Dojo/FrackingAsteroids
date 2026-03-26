@@ -114,7 +114,7 @@ export interface GameSceneOptions {
   onEnemyDestroyed?: () => void
   onScrapCollected?: () => void
   onNearStation?: () => void
-  onEnteredStation?: () => void
+  onStationRange?: (inRange: boolean) => void
 }
 
 export interface GameScene {
@@ -143,7 +143,7 @@ export function createGameScene(
   const onEnemyDestroyed = options?.onEnemyDestroyed
   const onScrapCollected = options?.onScrapCollected
   const onNearStation = options?.onNearStation
-  const onEnteredStation = options?.onEnteredStation
+  const onStationRange = options?.onStationRange
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -248,7 +248,7 @@ export function createGameScene(
   botBar2.rotation.z = 0.5
   arrowGroup.add(botBar2)
   let nearStationFired = false
-  let enteredStationFired = false
+  let wasInStationRange = false
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -776,14 +776,30 @@ export function createGameScene(
       // --- Update Gas Station Neon ---
       updateGasStationNeon(gasStation.neonMeshes, now / 1000)
 
-      // --- Tutorial: Station Arrow & Proximity ---
+      // --- Station Proximity ---
+      const dx = GAS_STATION_X - ship.x
+      const dy = GAS_STATION_Y - ship.y
+      const sDist = Math.sqrt(dx * dx + dy * dy)
+
+      // Fire near-station when within range (one-shot for tutorial arrow)
+      if (!nearStationFired && sDist <= STATION_NEAR_DISTANCE) {
+        nearStationFired = true
+        onNearStation?.()
+      }
+
+      // Continuous enter/leave detection for shop FAB
+      const inStationRange = sDist <= STATION_ENTER_DISTANCE
+      if (inStationRange !== wasInStationRange) {
+        wasInStationRange = inStationRange
+        onStationRange?.(inStationRange)
+      }
+
+      // --- Tutorial: Station Arrow ---
       const tutStep = getTutorialStep()
       const showArrow = tutStep === 'go-to-station' || tutStep === 'approach-station'
-      arrowGroup.visible = showArrow
+      arrowGroup.visible = showArrow && !inStationRange
       if (showArrow) {
         // Position arrow ahead of ship, pointing toward station
-        const dx = GAS_STATION_X - ship.x
-        const dy = GAS_STATION_Y - ship.y
         const angle = Math.atan2(dy, dx)
         const arrowDist = 25 // distance from ship to arrow
         arrowGroup.position.set(
@@ -798,21 +814,6 @@ export function createGameScene(
         arrowMat2.emissiveIntensity = flash * 0.7
         // Bob the arrow up and down
         arrowGroup.position.z = 5 + Math.sin((now / 1000) * 2.5) * 2
-
-        const sDist = Math.sqrt(dx * dx + dy * dy)
-
-        // Fire near-station when within range
-        if (!nearStationFired && sDist <= STATION_NEAR_DISTANCE) {
-          nearStationFired = true
-          onNearStation?.()
-        }
-
-        // Fire entered-station when very close
-        if (!enteredStationFired && sDist <= STATION_ENTER_DISTANCE) {
-          enteredStationFired = true
-          arrowGroup.visible = false
-          onEnteredStation?.()
-        }
       }
 
       // Sync surviving projectile positions
