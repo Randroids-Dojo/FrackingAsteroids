@@ -40,8 +40,6 @@ export interface GameEngine {
   asteroids: Asteroid[]
   fragments: Fragment[]
   projectiles: Projectile[]
-  score: number
-  wave: number
   paused: boolean
   update(dt: number): void
   fire(targetX: number, targetY: number): void

@@ -58,11 +58,10 @@ export default function Home() {
       ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
       upgrades,
       cargo: { ...cargo, scrap },
-      score: 0,
-      wave: 1,
+      hp: playerHp,
       timestamp: Date.now(),
     })
-  }, [saveSeq]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [saveSeq]) // eslint-disable-line react-hooks/exhaustive-deps -- save reads latest state at trigger time
 
   const handleNewGame = useCallback((slotId: SaveSlotId) => {
     localStorage.setItem(ACTIVE_SLOT_KEY, slotId)

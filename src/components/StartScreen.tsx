@@ -154,10 +154,7 @@ export function StartScreen({ onNewGame, onLoadGame }: StartScreenProps) {
               >
                 <SlotLabel index={i} />
                 {summary ? (
-                  <span className="text-white/50 ml-3">
-                    Wave {summary.wave} &middot; Score {summary.score} &middot;{' '}
-                    {formatDate(summary.timestamp)}
-                  </span>
+                  <span className="text-white/50 ml-3">{formatDate(summary.timestamp)}</span>
                 ) : (
                   <span className="text-white/30 ml-3">Empty</span>
                 )}
@@ -214,10 +211,7 @@ export function StartScreen({ onNewGame, onLoadGame }: StartScreenProps) {
               >
                 <SlotLabel index={i} />
                 {summary ? (
-                  <span className="text-white/50 ml-3">
-                    Wave {summary.wave} &middot; Score {summary.score} &middot;{' '}
-                    {formatDate(summary.timestamp)}
-                  </span>
+                  <span className="text-white/50 ml-3">{formatDate(summary.timestamp)}</span>
                 ) : (
                   <span className="text-white/30 ml-3">Empty</span>
                 )}

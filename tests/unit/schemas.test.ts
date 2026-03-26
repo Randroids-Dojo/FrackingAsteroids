@@ -112,7 +112,19 @@ describe('GameStateSchema', () => {
   })
 
   it('rejects partial state', () => {
-    const result = GameStateSchema.safeParse({ score: 5 })
+    const result = GameStateSchema.safeParse({ hp: 100 })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects hp above 100', () => {
+    const state = defaultGameState()
+    const result = GameStateSchema.safeParse({ ...state, hp: 101 })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects negative hp', () => {
+    const state = defaultGameState()
+    const result = GameStateSchema.safeParse({ ...state, hp: -1 })
     assert.equal(result.success, false)
   })
 })
@@ -143,8 +155,6 @@ describe('SaveSlotSummarySchema', () => {
   it('accepts valid save slot summary', () => {
     const result = SaveSlotSummarySchema.safeParse({
       slotId: 'save-1',
-      score: 100,
-      wave: 3,
       timestamp: Date.now(),
     })
     assert.equal(result.success, true)
@@ -153,28 +163,6 @@ describe('SaveSlotSummarySchema', () => {
   it('rejects invalid slot ID', () => {
     const result = SaveSlotSummarySchema.safeParse({
       slotId: 'save-4',
-      score: 0,
-      wave: 1,
-      timestamp: Date.now(),
-    })
-    assert.equal(result.success, false)
-  })
-
-  it('rejects negative score', () => {
-    const result = SaveSlotSummarySchema.safeParse({
-      slotId: 'save-1',
-      score: -1,
-      wave: 1,
-      timestamp: Date.now(),
-    })
-    assert.equal(result.success, false)
-  })
-
-  it('rejects wave 0', () => {
-    const result = SaveSlotSummarySchema.safeParse({
-      slotId: 'save-2',
-      score: 0,
-      wave: 0,
       timestamp: Date.now(),
     })
     assert.equal(result.success, false)
@@ -184,8 +172,6 @@ describe('SaveSlotSummarySchema', () => {
     for (const slotId of SAVE_SLOT_IDS) {
       const result = SaveSlotSummarySchema.safeParse({
         slotId,
-        score: 0,
-        wave: 1,
         timestamp: Date.now(),
       })
       assert.equal(result.success, true, `Expected ${slotId} to be valid`)
@@ -210,9 +196,8 @@ describe('defaultGameState', () => {
     assert.equal(state.cargo.capacity, 50)
   })
 
-  it('starts at wave 1 with score 0', () => {
+  it('starts at full HP', () => {
     const state = defaultGameState()
-    assert.equal(state.wave, 1)
-    assert.equal(state.score, 0)
+    assert.equal(state.hp, 100)
   })
 })
