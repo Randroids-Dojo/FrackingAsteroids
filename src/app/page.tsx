@@ -102,8 +102,15 @@ export default function Home() {
     'none' | 'fading-in' | 'black' | 'loaded' | 'fading-out'
   >('none')
 
+  // Stable ref for the completion callback so the effect doesn't re-trigger
+  const ambushCompleteRef = useRef(tutorial.onAmbushComplete)
   useEffect(() => {
-    if (tutorial.step !== 'ambush-fade') return
+    ambushCompleteRef.current = tutorial.onAmbushComplete
+  }, [tutorial.onAmbushComplete])
+
+  const tutorialStep = tutorial.step
+  useEffect(() => {
+    if (tutorialStep !== 'ambush-fade') return
     const timers: ReturnType<typeof setTimeout>[] = []
     // Start fade to black
     setAmbushFade('fading-in')
@@ -127,7 +134,7 @@ export default function Home() {
                 timers.push(
                   setTimeout(() => {
                     setAmbushFade('none')
-                    tutorial.onAmbushComplete()
+                    ambushCompleteRef.current()
                   }, 1500),
                 )
               }, 2000),
@@ -138,7 +145,7 @@ export default function Home() {
     )
 
     return () => timers.forEach(clearTimeout)
-  }, [tutorial.step, tutorial])
+  }, [tutorialStep])
 
   // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
   // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
