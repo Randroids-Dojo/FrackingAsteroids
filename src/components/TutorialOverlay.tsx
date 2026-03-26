@@ -26,6 +26,7 @@ const STEPS: {
     | 'approach-station'
     | 'trade-sell'
     | 'trade-buy'
+    | 'drive-through'
   desktop: string
   mobile: string
 }[] = [
@@ -73,6 +74,11 @@ const STEPS: {
     key: 'trade-buy',
     desktop: 'Buy the Fire Rate upgrade!',
     mobile: 'Buy the Fire Rate upgrade!',
+  },
+  {
+    key: 'drive-through',
+    desktop: 'Drive through the station for a free ship repair!',
+    mobile: 'Drive through the station for a free ship repair!',
   },
 ]
 

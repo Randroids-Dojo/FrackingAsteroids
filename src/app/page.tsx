@@ -89,6 +89,10 @@ export default function Home() {
     setTradeMenuOpen(false)
   }, [])
 
+  const handleStationDriveThrough = useCallback(() => {
+    tutorial.onDroveThroughStation()
+  }, [tutorial])
+
   // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
   // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
   const shopTutorialFreeze =
@@ -123,6 +127,7 @@ export default function Home() {
         onScrapCollected={tutorial.onScrapCollected}
         onNearStation={tutorial.onNearStation}
         onStationRange={handleStationRange}
+        onStationDriveThrough={handleStationDriveThrough}
       />
       <HUD
         scrap={scrap}

@@ -115,6 +115,7 @@ export interface GameSceneOptions {
   onScrapCollected?: () => void
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
+  onStationDriveThrough?: () => void
 }
 
 export interface GameScene {
@@ -144,6 +145,7 @@ export function createGameScene(
   const onScrapCollected = options?.onScrapCollected
   const onNearStation = options?.onNearStation
   const onStationRange = options?.onStationRange
+  const onStationDriveThrough = options?.onStationDriveThrough
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -203,6 +205,7 @@ export function createGameScene(
   const GAS_STATION_Y = 350
   const STATION_NEAR_DISTANCE = 80
   const STATION_ENTER_DISTANCE = 60
+  const STATION_REPAIR_DISTANCE = 15
   const gasStation = createGasStationModel()
   gasStation.group.position.set(GAS_STATION_X, GAS_STATION_Y, 0)
   initGasStationNeon(gasStation.neonMeshes)
@@ -249,6 +252,7 @@ export function createGameScene(
   arrowGroup.add(botBar2)
   let nearStationFired = false
   let wasInStationRange = false
+  let repairedThisVisit = false
 
   // --- Game State ---
   const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
@@ -792,6 +796,15 @@ export function createGameScene(
       if (inStationRange !== wasInStationRange) {
         wasInStationRange = inStationRange
         onStationRange?.(inStationRange)
+        if (!inStationRange) repairedThisVisit = false
+      }
+
+      // Drive-through repair: heal to full HP when passing close to the station center
+      if (inStationRange && !repairedThisVisit && sDist <= STATION_REPAIR_DISTANCE) {
+        repairedThisVisit = true
+        playerHp = PLAYER_MAX_HP
+        onPlayerDamage?.(playerHp)
+        onStationDriveThrough?.()
       }
 
       // --- Tutorial: Station Arrow ---

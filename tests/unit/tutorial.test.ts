@@ -71,9 +71,15 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'trade-buy', frozen: false })
   })
 
-  it('trade-buy completes on bought-upgrade', () => {
+  it('trade-buy → drive-through on bought-upgrade', () => {
     const state: TutorialState = { active: true, step: 'trade-buy', frozen: false }
     const next = advanceTutorial(state, 'bought-upgrade')
+    assert.deepStrictEqual(next, { active: true, step: 'drive-through', frozen: false })
+  })
+
+  it('drive-through completes on drove-through-station', () => {
+    const state: TutorialState = { active: true, step: 'drive-through', frozen: false }
+    const next = advanceTutorial(state, 'drove-through-station')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
@@ -160,6 +166,12 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
+  it('skip from drive-through', () => {
+    const state: TutorialState = { active: true, step: 'drive-through', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  })
+
   it('returns same reference for no-op transitions', () => {
     const steps: TutorialState['step'][] = [
       'move',
@@ -172,6 +184,7 @@ describe('advanceTutorial', () => {
       'approach-station',
       'trade-sell',
       'trade-buy',
+      'drive-through',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
       move: [
@@ -185,6 +198,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       shoot: [
@@ -198,6 +212,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'wait-for-metal': [
@@ -211,6 +226,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       collect: [
@@ -224,6 +240,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'destroy-enemy': [
@@ -236,6 +253,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
       ],
       'collect-scrap': [
         'ship-moved',
@@ -248,6 +266,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'go-to-station': [
@@ -261,6 +280,7 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'approach-station': [
@@ -274,6 +294,7 @@ describe('advanceTutorial', () => {
         'near-station',
         'sold-materials',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'trade-sell': [
@@ -287,6 +308,7 @@ describe('advanceTutorial', () => {
         'near-station',
         'entered-station',
         'bought-upgrade',
+        'drove-through-station',
         'unfreeze',
       ],
       'trade-buy': [
@@ -300,6 +322,21 @@ describe('advanceTutorial', () => {
         'near-station',
         'entered-station',
         'sold-materials',
+        'drove-through-station',
+        'unfreeze',
+      ],
+      'drive-through': [
+        'ship-moved',
+        'asteroid-hit',
+        'metal-spawned',
+        'metal-collected',
+        'enemy-nearby',
+        'enemy-destroyed',
+        'scrap-collected',
+        'near-station',
+        'entered-station',
+        'sold-materials',
+        'bought-upgrade',
         'unfreeze',
       ],
     }
@@ -339,6 +376,8 @@ describe('advanceTutorial', () => {
     state = advanceTutorial(state, 'sold-materials')
     assert.equal(state.step, 'trade-buy')
     state = advanceTutorial(state, 'bought-upgrade')
+    assert.equal(state.step, 'drive-through')
+    state = advanceTutorial(state, 'drove-through-station')
     assert.equal(state.step, 'done')
     assert.equal(state.active, false)
     assert.equal(state.frozen, false)

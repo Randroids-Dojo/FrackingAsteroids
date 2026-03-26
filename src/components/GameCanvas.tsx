@@ -24,6 +24,7 @@ interface GameCanvasProps {
   onScrapCollected?: () => void
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
+  onStationDriveThrough?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -43,6 +44,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onScrapCollected,
     onNearStation,
     onStationRange,
+    onStationDriveThrough,
   },
   ref,
 ) {
@@ -63,6 +65,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onScrapCollectedRef = useRef(onScrapCollected)
   const onNearStationRef = useRef(onNearStation)
   const onStationRangeRef = useRef(onStationRange)
+  const onStationDriveThroughRef = useRef(onStationDriveThrough)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -131,6 +134,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onStationRangeRef.current = onStationRange
   }, [onStationRange])
 
+  useEffect(() => {
+    onStationDriveThroughRef.current = onStationDriveThrough
+  }, [onStationDriveThrough])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -155,6 +162,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onScrapCollected: () => onScrapCollectedRef.current?.(),
           onNearStation: () => onNearStationRef.current?.(),
           onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
+          onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
         })
       })
       .catch((err: unknown) => {
