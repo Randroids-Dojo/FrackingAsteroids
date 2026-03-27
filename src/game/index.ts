@@ -80,13 +80,22 @@ export {
   playCollectPling,
   disposeAudio,
 } from './audio'
-export { startMusic, setMusicIntensity, updateMusic, disposeMusic } from './music'
+export {
+  startMusic,
+  setMusicIntensity,
+  updateMusic,
+  suspendMusic,
+  resumeMusic,
+  disposeMusic,
+} from './music'
 export {
   playLaserFire,
   playExplosion,
   playPlayerHit,
   startEngineSound,
   updateEngineSound,
+  suspendEngineSound,
+  resumeEngineSound,
   stopEngineSound,
   disposeSfx,
 } from './sfx'

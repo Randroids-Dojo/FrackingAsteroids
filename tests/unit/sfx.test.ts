@@ -6,6 +6,7 @@ import {
   playPlayerHit,
   startEngineSound,
   updateEngineSound,
+  suspendEngineSound,
   stopEngineSound,
   disposeSfx,
 } from '../../src/game/sfx'
@@ -63,6 +64,18 @@ describe('sfx — no AudioContext environment', () => {
       playLaserFire()
       playExplosion()
       playPlayerHit()
+    })
+  })
+
+  it('suspendEngineSound does not throw without AudioContext', () => {
+    assert.doesNotThrow(() => suspendEngineSound())
+  })
+
+  it('suspend then stop engine is safe', () => {
+    assert.doesNotThrow(() => {
+      startEngineSound()
+      suspendEngineSound()
+      stopEngineSound()
     })
   })
 })

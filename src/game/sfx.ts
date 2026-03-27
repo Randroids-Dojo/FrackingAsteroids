@@ -207,6 +207,17 @@ export function updateEngineSound(speedNormalized: number): void {
   engineSound.filter.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.05)
 }
 
+/** Mute the engine loop (e.g. when paused). Keeps source alive for resume. */
+export function suspendEngineSound(): void {
+  if (!engineSound || !audioCtx) return
+  engineSound.gain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05)
+}
+
+/** Unmute the engine loop after suspend. */
+export function resumeEngineSound(): void {
+  // Volume will be set by the next updateEngineSound call, nothing needed here.
+}
+
 export function stopEngineSound(): void {
   if (!engineSound) return
   try {

@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { startMusic, setMusicIntensity, updateMusic, disposeMusic } from '../../src/game/music'
+import {
+  startMusic,
+  setMusicIntensity,
+  updateMusic,
+  suspendMusic,
+  resumeMusic,
+  disposeMusic,
+} from '../../src/game/music'
 
 // Web Audio API is not available in Node.js test environment.
 // These tests verify the functions are resilient when AudioContext is unavailable.
@@ -58,6 +65,23 @@ describe('music — no AudioContext environment', () => {
     assert.doesNotThrow(() => {
       disposeMusic()
       updateMusic(0.016)
+    })
+  })
+
+  it('suspendMusic does not throw without AudioContext', () => {
+    assert.doesNotThrow(() => suspendMusic())
+  })
+
+  it('resumeMusic does not throw without AudioContext', () => {
+    assert.doesNotThrow(() => resumeMusic())
+  })
+
+  it('suspend then resume is safe', () => {
+    assert.doesNotThrow(() => {
+      startMusic()
+      suspendMusic()
+      resumeMusic()
+      disposeMusic()
     })
   })
 })

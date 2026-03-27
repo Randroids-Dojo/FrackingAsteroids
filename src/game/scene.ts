@@ -49,13 +49,21 @@ import {
   playCollectPling,
   disposeAudio,
 } from './audio'
-import { startMusic, setMusicIntensity, updateMusic, disposeMusic } from './music'
+import {
+  startMusic,
+  setMusicIntensity,
+  updateMusic,
+  suspendMusic,
+  resumeMusic,
+  disposeMusic,
+} from './music'
 import {
   playLaserFire,
   playExplosion,
   playPlayerHit,
   startEngineSound,
   updateEngineSound,
+  suspendEngineSound,
   disposeSfx,
 } from './sfx'
 import { createScreenShake, addTrauma, updateScreenShake } from './screen-shake'
@@ -549,6 +557,7 @@ export function createGameScene(
   // --- Game Loop ---
   let prevTime = performance.now()
   let animId = 0
+  let wasPaused = false
 
   function loop(): void {
     animId = requestAnimationFrame(loop)
@@ -557,6 +566,11 @@ export function createGameScene(
     prevTime = now
 
     if (!getPaused()) {
+      // Resume audio if we were just paused
+      if (wasPaused) {
+        resumeMusic()
+      }
+
       // Compute aim rotation (mouse/touch → world → angle)
       const rotation = aimToRotation(ship, aimState, screenToWorld)
 
@@ -1066,6 +1080,16 @@ export function createGameScene(
       // Stars follow camera (parallax)
       stars.position.x = camera.position.x * 0.5
       stars.position.y = camera.position.y * 0.5
+
+      wasPaused = false
+    } else {
+      // --- Paused: mute all looping audio ---
+      if (!wasPaused) {
+        wasPaused = true
+        suspendMusic()
+        suspendEngineSound()
+        stopCollectorHum()
+      }
     }
 
     renderer.render(scene, camera)

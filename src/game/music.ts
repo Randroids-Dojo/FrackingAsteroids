@@ -279,6 +279,18 @@ export function updateMusic(dt: number): void {
   }
 }
 
+/** Mute music (e.g. when paused). Keeps oscillators alive for resume. */
+export function suspendMusic(): void {
+  if (!started || !ctx || !masterGain) return
+  masterGain.gain.setTargetAtTime(0, ctx.currentTime, 0.05)
+}
+
+/** Unmute music after suspend. */
+export function resumeMusic(): void {
+  if (!started || !ctx || !masterGain) return
+  masterGain.gain.setTargetAtTime(0.25 * getMusicVolume(), ctx.currentTime, 0.1)
+}
+
 /** Stop and clean up music. */
 export function disposeMusic(): void {
   if (!started || !ctx) return
