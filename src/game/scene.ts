@@ -49,6 +49,31 @@ import {
   playCollectPling,
   disposeAudio,
 } from './audio'
+import { startMusic, setMusicIntensity, updateMusic, disposeMusic } from './music'
+import {
+  playLaserFire,
+  playExplosion,
+  playPlayerHit,
+  startEngineSound,
+  updateEngineSound,
+  disposeSfx,
+} from './sfx'
+import { createScreenShake, addTrauma, updateScreenShake } from './screen-shake'
+import type { ScreenShake } from './screen-shake'
+import {
+  createTwinkleStars,
+  updateTwinkleStars,
+  disposeTwinkleStars,
+  createNebulaSystem,
+  updateNebulaSystem,
+  disposeNebulaSystem,
+  createBlackHole,
+  updateBlackHole,
+  disposeBlackHole,
+} from './background-effects'
+import type { TwinkleStars, NebulaSystem, BlackHole } from './background-effects'
+import { createEngineTrail, updateEngineTrail, disposeEngineTrail } from './engine-trail'
+import type { EngineTrail } from './engine-trail'
 import {
   createEnemyShip,
   updateEnemyShip,
@@ -340,6 +365,23 @@ export function createGameScene(
   const collectorVfx = createCollectorVfx()
   scene.add(collectorVfx.group)
 
+  // --- Screen Shake ---
+  const screenShake: ScreenShake = createScreenShake()
+
+  // --- Background Effects ---
+  const twinkleStars: TwinkleStars = createTwinkleStars()
+  scene.add(twinkleStars.points)
+
+  const nebulaSystem: NebulaSystem = createNebulaSystem()
+  scene.add(nebulaSystem.group)
+
+  const blackHole: BlackHole = createBlackHole(-200, 200)
+  scene.add(blackHole.group)
+
+  // --- Engine Trail ---
+  const engineTrail: EngineTrail = createEngineTrail()
+  scene.add(engineTrail.group)
+
   // Track cumulative hits on each asteroid for chunk break-off timing
   const asteroidHitCounts = new Map<string, number>()
   asteroidHitCounts.set('asteroid-0', 0)
@@ -385,6 +427,8 @@ export function createGameScene(
 
   function onMouseDown(e: MouseEvent): void {
     resumeAudio()
+    startMusic()
+    startEngineSound()
     if (getPaused()) return
     if (e.button === 0) {
       // Left-click: fire weapon (and track hold for auto-fire)
@@ -469,6 +513,8 @@ export function createGameScene(
   // doesn't synthesize mouse events that rotate the ship or break the joystick.
   function onTouchStartSwallow(e: TouchEvent): void {
     resumeAudio()
+    startMusic()
+    startEngineSound()
     const rect = container.getBoundingClientRect()
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
@@ -566,6 +612,9 @@ export function createGameScene(
         if (newProjectiles.length > 0 && fireRateBonus > 1) {
           blasterState.cooldownRemaining /= fireRateBonus
         }
+        if (newProjectiles.length > 0) {
+          playLaserFire()
+        }
         for (const p of newProjectiles) {
           projectiles.push(p)
           const model = createProjectileModel()
@@ -612,6 +661,7 @@ export function createGameScene(
           const explosion = createExplosion(hit.x, hit.y)
           scene.add(explosion.group)
           explosions.push(explosion)
+          playExplosion()
 
           // Break off asteroid chunks every few hits
           const prevHits = asteroidHitCounts.get(hit.asteroidId) ?? 0
@@ -726,6 +776,7 @@ export function createGameScene(
             const bigExplosion = createExplosion(enemy.x, enemy.y)
             scene.add(bigExplosion.group)
             explosions.push(bigExplosion)
+            playExplosion()
 
             // Drop a scrap box
             const box = createScrapBox(enemy.x, enemy.y)
@@ -773,6 +824,10 @@ export function createGameScene(
               ? AMBUSH_PROJECTILE_DAMAGE
               : ENEMY_PROJECTILE_DAMAGE
             playerHp = Math.max(0, playerHp - damage)
+
+            // Screen shake & hit SFX
+            addTrauma(screenShake, 0.4 + (damage / PLAYER_MAX_HP) * 0.4)
+            playPlayerHit()
 
             fireEnemyNearby()
           }
@@ -870,6 +925,27 @@ export function createGameScene(
 
       // --- Update Gas Station Neon ---
       updateGasStationNeon(gasStation.neonMeshes, now / 1000)
+
+      // --- Music Intensity ---
+      // Combat intensity rises when enemies are present or projectiles are flying
+      const hasEnemies = (enemy && enemy.alive) || ambushEnemies.some((ae) => ae.alive)
+      const hasCombat = hasEnemies || enemyProjectiles.length > 0
+      setMusicIntensity(hasCombat ? 0.8 : 0.15)
+      updateMusic(dt)
+
+      // --- Engine Trail & Sound ---
+      const shipSpeed = Math.sqrt(ship.velocityX * ship.velocityX + ship.velocityY * ship.velocityY)
+      const speedNorm = Math.min(1, shipSpeed / 50) // 50 = SHIP_MAX_SPEED
+      updateEngineTrail(engineTrail, dt, ship.x, ship.y, ship.rotation, speedNorm)
+      updateEngineSound(speedNorm)
+
+      // --- Screen Shake ---
+      updateScreenShake(screenShake, dt, now / 1000)
+
+      // --- Background Effects ---
+      updateTwinkleStars(twinkleStars, now / 1000, camera.position.x, camera.position.y)
+      updateNebulaSystem(nebulaSystem, now / 1000, camera.position.x, camera.position.y)
+      updateBlackHole(blackHole, now / 1000, camera.position.x, camera.position.y)
 
       // --- Station Proximity ---
       const dx = GAS_STATION_X - ship.x
@@ -983,6 +1059,10 @@ export function createGameScene(
       camera.position.x += (ship.x - camera.position.x) * lerpFactor
       camera.position.y += (ship.y - camera.position.y) * lerpFactor
 
+      // Apply screen shake offset
+      camera.position.x += screenShake.offsetX
+      camera.position.y += screenShake.offsetY
+
       // Stars follow camera (parallax)
       stars.position.x = camera.position.x * 0.5
       stars.position.y = camera.position.y * 0.5
@@ -1058,6 +1138,14 @@ export function createGameScene(
     // Clean up collector VFX & audio
     disposeCollectorVfx(collectorVfx)
     disposeAudio()
+    disposeMusic()
+    disposeSfx()
+
+    // Clean up background effects & engine trail
+    disposeTwinkleStars(twinkleStars)
+    disposeNebulaSystem(nebulaSystem)
+    disposeBlackHole(blackHole)
+    disposeEngineTrail(engineTrail)
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)
