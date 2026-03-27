@@ -106,5 +106,6 @@ export {
 export type { TwinkleStars, NebulaSystem, BlackHole } from './background-effects'
 export { createEngineTrail, updateEngineTrail, disposeEngineTrail } from './engine-trail'
 export type { EngineTrail } from './engine-trail'
+export { getSfxVolume, setSfxVolume, getMusicVolume, setMusicVolume } from './volume-control'
 export { createGameScene } from './scene'
 export type { GameScene, MetalVariant, GameSceneOptions } from './scene'

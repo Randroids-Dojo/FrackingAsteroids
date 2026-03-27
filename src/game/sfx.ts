@@ -2,6 +2,8 @@
  * Sound effects using Web Audio API — all procedurally synthesized.
  */
 
+import { getSfxVolume } from './volume-control'
+
 let audioCtx: AudioContext | null = null
 
 function getContext(): AudioContext | null {
@@ -35,7 +37,7 @@ export function playLaserFire(): void {
   osc.frequency.exponentialRampToValueAtTime(220, now + 0.08)
 
   const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.06, now)
+  gain.gain.setValueAtTime(0.06 * getSfxVolume(), now)
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
 
   const filter = ctx.createBiquadFilter()
@@ -78,7 +80,7 @@ export function playExplosion(): void {
   noiseFilter.frequency.exponentialRampToValueAtTime(100, now + 0.3)
 
   const noiseGain = ctx.createGain()
-  noiseGain.gain.setValueAtTime(0.12, now)
+  noiseGain.gain.setValueAtTime(0.12 * getSfxVolume(), now)
   noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
 
   noise.connect(noiseFilter)
@@ -93,7 +95,7 @@ export function playExplosion(): void {
   osc.frequency.exponentialRampToValueAtTime(20, now + 0.2)
 
   const oscGain = ctx.createGain()
-  oscGain.gain.setValueAtTime(0.15, now)
+  oscGain.gain.setValueAtTime(0.15 * getSfxVolume(), now)
   oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
 
   osc.connect(oscGain)
@@ -118,7 +120,7 @@ export function playPlayerHit(): void {
   osc.frequency.exponentialRampToValueAtTime(60, now + 0.15)
 
   const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.12, now)
+  gain.gain.setValueAtTime(0.12 * getSfxVolume(), now)
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2)
 
   const filter = ctx.createBiquadFilter()
@@ -139,7 +141,7 @@ export function playPlayerHit(): void {
   crack.frequency.exponentialRampToValueAtTime(500, now + 0.05)
 
   const crackGain = ctx.createGain()
-  crackGain.gain.setValueAtTime(0.05, now)
+  crackGain.gain.setValueAtTime(0.05 * getSfxVolume(), now)
   crackGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06)
 
   crack.connect(crackGain)
@@ -198,7 +200,7 @@ export function startEngineSound(): void {
 export function updateEngineSound(speedNormalized: number): void {
   if (!engineSound || !audioCtx) return
 
-  const vol = speedNormalized * 0.04
+  const vol = speedNormalized * 0.04 * getSfxVolume()
   const freq = 60 + speedNormalized * 200
 
   engineSound.gain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.05)

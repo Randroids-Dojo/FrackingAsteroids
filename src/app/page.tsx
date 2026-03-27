@@ -5,6 +5,7 @@ import { GameCanvas } from '@/components/GameCanvas'
 import type { GameCanvasHandle } from '@/components/GameCanvas'
 import { HUD } from '@/components/HUD'
 import { FeedbackFab } from '@/components/FeedbackFab'
+import { SoundFab } from '@/components/SoundFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { TradeMenu } from '@/components/TradeMenu'
@@ -258,6 +259,7 @@ export default function Home() {
         />
       )}
       {paused && <FeedbackFab />}
+      {paused && <SoundFab />}
       {ambushFade !== 'none' && (
         <div
           className="absolute inset-0 bg-black z-50 flex items-center justify-center"

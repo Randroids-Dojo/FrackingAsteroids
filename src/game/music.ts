@@ -9,6 +9,8 @@
  *   3 — Percussion pulse (fade in at intensity > 0.6)
  */
 
+import { getMusicVolume } from './volume-control'
+
 let ctx: AudioContext | null = null
 let masterGain: GainNode | null = null
 let layers: MusicLayer[] = []
@@ -251,6 +253,11 @@ export function setMusicIntensity(intensity: number): void {
 /** Update music layers each frame. Call with frame delta time. */
 export function updateMusic(dt: number): void {
   if (!started || !ctx) return
+
+  // Apply music volume to master gain
+  if (masterGain) {
+    masterGain.gain.setTargetAtTime(0.25 * getMusicVolume(), ctx.currentTime, 0.1)
+  }
 
   // Lerp intensity toward target
   const diff = targetIntensity - currentIntensity

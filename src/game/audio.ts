@@ -3,6 +3,8 @@
  * All sounds are synthesized — no external audio files needed.
  */
 
+import { getSfxVolume } from './volume-control'
+
 let audioCtx: AudioContext | null = null
 
 function getContext(): AudioContext | null {
@@ -43,7 +45,7 @@ export function startCollectorHum(): void {
 
   const gain = ctx.createGain()
   gain.gain.setValueAtTime(0, ctx.currentTime)
-  gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.15)
+  gain.gain.linearRampToValueAtTime(0.12 * getSfxVolume(), ctx.currentTime + 0.15)
   gain.connect(ctx.destination)
 
   const oscillators: OscillatorNode[] = []
@@ -122,7 +124,7 @@ export function playCollectPling(): void {
   osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.05)
 
   const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.15, now)
+  gain.gain.setValueAtTime(0.15 * getSfxVolume(), now)
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
 
   osc.connect(gain)
