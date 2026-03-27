@@ -1,87 +1,133 @@
-import { describe, it } from 'node:test'
+import { describe, it, before, after, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  startMusic,
-  setMusicIntensity,
-  updateMusic,
-  suspendMusic,
-  resumeMusic,
-  disposeMusic,
-} from '../../src/game/music'
+import { installMockAudioContext, uninstallMockAudioContext } from './helpers/mock-audio-context'
 
-// Web Audio API is not available in Node.js test environment.
-// These tests verify the functions are resilient when AudioContext is unavailable.
+// Dynamic import so the module picks up the mock AudioContext
+async function loadMusic() {
+  // Each test file gets a fresh module instance by busting the cache
+  const mod = await import('../../src/game/music')
+  return mod
+}
 
-describe('music — no AudioContext environment', () => {
-  it('startMusic does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => startMusic())
+describe('music — with mock AudioContext', () => {
+  before(() => {
+    installMockAudioContext()
   })
 
-  it('setMusicIntensity does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => setMusicIntensity(0.5))
+  after(() => {
+    uninstallMockAudioContext()
   })
 
-  it('updateMusic does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => updateMusic(0.016))
+  // We must use a single import since the module has internal state
+  let music: Awaited<ReturnType<typeof loadMusic>>
+
+  before(async () => {
+    music = await loadMusic()
   })
 
-  it('disposeMusic does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => disposeMusic())
+  beforeEach(() => {
+    music.disposeMusic()
+  })
+
+  it('startMusic initializes without error', () => {
+    assert.doesNotThrow(() => music.startMusic())
+  })
+
+  it('double start is idempotent', () => {
+    music.startMusic()
+    assert.doesNotThrow(() => music.startMusic())
+  })
+
+  it('setMusicIntensity does not throw', () => {
+    assert.doesNotThrow(() => music.setMusicIntensity(0.5))
   })
 
   it('setMusicIntensity clamps to 0–1 range', () => {
     assert.doesNotThrow(() => {
-      setMusicIntensity(-1)
-      setMusicIntensity(2)
-      setMusicIntensity(0)
-      setMusicIntensity(1)
+      music.setMusicIntensity(-1)
+      music.setMusicIntensity(2)
     })
   })
 
-  it('start then dispose is safe', () => {
+  it('updateMusic runs layer logic after start', () => {
+    music.startMusic()
+    music.setMusicIntensity(0.8)
+    // Run enough updates to trigger arpeggio and percussion
     assert.doesNotThrow(() => {
-      startMusic()
-      disposeMusic()
+      for (let i = 0; i < 60; i++) {
+        music.updateMusic(0.016)
+      }
     })
   })
 
-  it('double start is idempotent', () => {
+  it('updateMusic before start is a no-op', () => {
+    assert.doesNotThrow(() => music.updateMusic(0.016))
+  })
+
+  it('updateMusic with intensity 0 keeps layers quiet', () => {
+    music.startMusic()
+    music.setMusicIntensity(0)
+    assert.doesNotThrow(() => music.updateMusic(0.016))
+  })
+
+  it('updateMusic with full intensity activates all layers', () => {
+    music.startMusic()
+    music.setMusicIntensity(1.0)
+    // Run several large updates to ensure arpeggio note change triggers
     assert.doesNotThrow(() => {
-      startMusic()
-      startMusic()
-      disposeMusic()
+      for (let i = 0; i < 120; i++) {
+        music.updateMusic(0.05)
+      }
     })
   })
 
-  it('dispose then start is safe', () => {
+  it('suspendMusic mutes after start', () => {
+    music.startMusic()
+    assert.doesNotThrow(() => music.suspendMusic())
+  })
+
+  it('suspendMusic before start is safe', () => {
+    assert.doesNotThrow(() => music.suspendMusic())
+  })
+
+  it('resumeMusic after suspend works', () => {
+    music.startMusic()
+    music.suspendMusic()
+    assert.doesNotThrow(() => music.resumeMusic())
+  })
+
+  it('resumeMusic before start is safe', () => {
+    assert.doesNotThrow(() => music.resumeMusic())
+  })
+
+  it('disposeMusic cleans up started music', () => {
+    music.startMusic()
+    assert.doesNotThrow(() => music.disposeMusic())
+  })
+
+  it('disposeMusic before start is safe', () => {
+    assert.doesNotThrow(() => music.disposeMusic())
+  })
+
+  it('start after dispose reinitializes', () => {
+    music.startMusic()
+    music.disposeMusic()
     assert.doesNotThrow(() => {
-      disposeMusic()
-      startMusic()
-      disposeMusic()
+      music.startMusic()
+      music.updateMusic(0.016)
+      music.disposeMusic()
     })
   })
 
-  it('update after dispose is safe', () => {
-    assert.doesNotThrow(() => {
-      disposeMusic()
-      updateMusic(0.016)
-    })
-  })
-
-  it('suspendMusic does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => suspendMusic())
-  })
-
-  it('resumeMusic does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => resumeMusic())
-  })
-
-  it('suspend then resume is safe', () => {
-    assert.doesNotThrow(() => {
-      startMusic()
-      suspendMusic()
-      resumeMusic()
-      disposeMusic()
-    })
+  it('full lifecycle: start, intensity, update, suspend, resume, dispose', () => {
+    music.startMusic()
+    music.setMusicIntensity(0.9)
+    for (let i = 0; i < 30; i++) {
+      music.updateMusic(0.016)
+    }
+    music.suspendMusic()
+    music.resumeMusic()
+    music.updateMusic(0.016)
+    music.disposeMusic()
   })
 })

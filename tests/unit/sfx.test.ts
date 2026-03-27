@@ -1,81 +1,145 @@
-import { describe, it } from 'node:test'
+import { describe, it, before, after, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  playLaserFire,
-  playExplosion,
-  playPlayerHit,
-  startEngineSound,
-  updateEngineSound,
-  suspendEngineSound,
-  stopEngineSound,
-  disposeSfx,
-} from '../../src/game/sfx'
+import { installMockAudioContext, uninstallMockAudioContext } from './helpers/mock-audio-context'
 
-// Web Audio API is not available in Node.js test environment.
-// These tests verify the functions are resilient when AudioContext is unavailable.
+async function loadSfx() {
+  return await import('../../src/game/sfx')
+}
 
-describe('sfx — no AudioContext environment', () => {
-  it('playLaserFire does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => playLaserFire())
+describe('sfx — with mock AudioContext', () => {
+  before(() => {
+    installMockAudioContext()
   })
 
-  it('playExplosion does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => playExplosion())
+  after(() => {
+    uninstallMockAudioContext()
   })
 
-  it('playPlayerHit does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => playPlayerHit())
+  let sfx: Awaited<ReturnType<typeof loadSfx>>
+
+  before(async () => {
+    sfx = await loadSfx()
   })
 
-  it('startEngineSound does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => startEngineSound())
+  beforeEach(() => {
+    sfx.disposeSfx()
   })
 
-  it('updateEngineSound does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => updateEngineSound(0.5))
+  // --- One-shot SFX ---
+
+  it('playLaserFire creates and plays oscillator', () => {
+    assert.doesNotThrow(() => sfx.playLaserFire())
   })
 
-  it('stopEngineSound does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => stopEngineSound())
+  it('playExplosion creates noise burst and thump', () => {
+    assert.doesNotThrow(() => sfx.playExplosion())
   })
 
-  it('disposeSfx does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => disposeSfx())
+  it('playPlayerHit creates impact with crack', () => {
+    assert.doesNotThrow(() => sfx.playPlayerHit())
   })
 
-  it('start then stop engine sound is safe', () => {
+  it('multiple rapid SFX calls do not throw', () => {
     assert.doesNotThrow(() => {
-      startEngineSound()
-      stopEngineSound()
+      for (let i = 0; i < 10; i++) {
+        sfx.playLaserFire()
+        sfx.playExplosion()
+        sfx.playPlayerHit()
+      }
     })
+  })
+
+  // --- Engine Sound ---
+
+  it('startEngineSound initializes engine loop', () => {
+    assert.doesNotThrow(() => sfx.startEngineSound())
   })
 
   it('double start engine is idempotent', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.startEngineSound())
+  })
+
+  it('updateEngineSound adjusts volume and filter', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.updateEngineSound(0.5))
+  })
+
+  it('updateEngineSound at zero speed', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.updateEngineSound(0))
+  })
+
+  it('updateEngineSound at full speed', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.updateEngineSound(1.0))
+  })
+
+  it('updateEngineSound before start is safe', () => {
+    assert.doesNotThrow(() => sfx.updateEngineSound(0.5))
+  })
+
+  it('suspendEngineSound mutes engine', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.suspendEngineSound())
+  })
+
+  it('suspendEngineSound before start is safe', () => {
+    assert.doesNotThrow(() => sfx.suspendEngineSound())
+  })
+
+  it('stopEngineSound stops the source', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.stopEngineSound())
+  })
+
+  it('double stop engine is safe', () => {
+    sfx.startEngineSound()
+    sfx.stopEngineSound()
+    assert.doesNotThrow(() => sfx.stopEngineSound())
+  })
+
+  it('stopEngineSound before start is safe', () => {
+    assert.doesNotThrow(() => sfx.stopEngineSound())
+  })
+
+  // --- setSfxContext ---
+
+  it('setSfxContext accepts a context', () => {
+    const ctx = new (globalThis as Record<string, unknown>).AudioContext() as AudioContext
+    assert.doesNotThrow(() => sfx.setSfxContext(ctx))
+  })
+
+  // --- resumeEngineSound ---
+
+  it('resumeEngineSound is a no-op (volume set by next update)', () => {
+    assert.doesNotThrow(() => sfx.resumeEngineSound())
+  })
+
+  // --- Lifecycle ---
+
+  it('disposeSfx cleans up engine sound', () => {
+    sfx.startEngineSound()
+    assert.doesNotThrow(() => sfx.disposeSfx())
+  })
+
+  it('dispose then play one-shot SFX is safe', () => {
+    sfx.disposeSfx()
     assert.doesNotThrow(() => {
-      startEngineSound()
-      startEngineSound()
-      stopEngineSound()
+      sfx.playLaserFire()
+      sfx.playExplosion()
+      sfx.playPlayerHit()
     })
   })
 
-  it('dispose then play is safe', () => {
-    assert.doesNotThrow(() => {
-      disposeSfx()
-      playLaserFire()
-      playExplosion()
-      playPlayerHit()
-    })
-  })
-
-  it('suspendEngineSound does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => suspendEngineSound())
-  })
-
-  it('suspend then stop engine is safe', () => {
-    assert.doesNotThrow(() => {
-      startEngineSound()
-      suspendEngineSound()
-      stopEngineSound()
-    })
+  it('full lifecycle: start engine, update, suspend, stop, play sfx, dispose', () => {
+    sfx.startEngineSound()
+    sfx.updateEngineSound(0.7)
+    sfx.suspendEngineSound()
+    sfx.playLaserFire()
+    sfx.playExplosion()
+    sfx.playPlayerHit()
+    sfx.stopEngineSound()
+    sfx.disposeSfx()
   })
 })
