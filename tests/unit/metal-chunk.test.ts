@@ -156,20 +156,20 @@ describe('attractMetalToShip', () => {
   it('returns false when metal is out of range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE + 10, 0)
     const ship = makeShip(0, 0)
-    assert.equal(attractMetalToShip(chunk, ship, 1 / 60), false)
+    assert.equal(attractMetalToShip(chunk, ship), false)
   })
 
   it('returns true when metal is close enough to collect', () => {
     const minDist = METAL_CHUNK_RADIUS + SHIP_COLLISION_RADIUS
     const chunk = makeMetalChunk(minDist - 0.5, 0)
     const ship = makeShip(0, 0)
-    assert.equal(attractMetalToShip(chunk, ship, 1 / 60), true)
+    assert.equal(attractMetalToShip(chunk, ship), true)
   })
 
   it('pulls metal toward ship when in range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE * 0.5, 0, 0, 0)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunk, ship, 1 / 60)
+    attractMetalToShip(chunk, ship)
     // Should have negative vx (pulled toward ship at origin)
     assert.ok(chunk.vx < 0, `vx should be negative (toward ship), got ${chunk.vx}`)
   })
@@ -181,8 +181,8 @@ describe('attractMetalToShip', () => {
     const chunkFar = makeMetalChunk(farDist, 0, 0, 0)
     const chunkNear = makeMetalChunk(nearDist, 0, 0, 0)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunkFar, ship, 1 / 60)
-    attractMetalToShip(chunkNear, ship, 1 / 60)
+    attractMetalToShip(chunkFar, ship)
+    attractMetalToShip(chunkNear, ship)
     assert.ok(
       Math.abs(chunkNear.vx) > Math.abs(chunkFar.vx),
       'closer chunk should be pulled harder',
@@ -192,7 +192,7 @@ describe('attractMetalToShip', () => {
   it('does not modify velocity when out of range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE + 10, 0, 5, 3)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunk, ship, 1 / 60)
+    attractMetalToShip(chunk, ship)
     assert.equal(chunk.vx, 5)
     assert.equal(chunk.vy, 3)
   })
