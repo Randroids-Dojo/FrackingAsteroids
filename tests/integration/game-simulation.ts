@@ -149,6 +149,9 @@ export class GameSimulation {
   private fireTarget: { x: number; y: number } | null = null
   private mouseHoldingFire = false
   private holdFirePosition: { x: number; y: number } | null = null
+  /** Simulates aimState — where the mouse is pointing (controls ship rotation). */
+  private aimPosition: { x: number; y: number } | null = null
+  private aimActive = false
   private collecting = false
   private wasPaused = false
   private stationX: number
@@ -198,9 +201,22 @@ export class GameSimulation {
     this.fireTarget = { x, y }
   }
 
+  /** Set aim target (mouse cursor position). Controls ship rotation. */
+  aimAt(x: number, y: number): void {
+    this.aimPosition = { x, y }
+    this.aimActive = true
+  }
+
+  /** Clear aim target (simulates mouse leaving the canvas). */
+  clearAim(): void {
+    this.aimActive = false
+    this.aimPosition = null
+  }
+
   holdFireAt(x: number, y: number): void {
     this.mouseHoldingFire = true
     this.holdFirePosition = { x, y }
+    this.aimAt(x, y) // aiming and firing at the same spot
   }
 
   releaseFire(): void {
@@ -287,20 +303,25 @@ export class GameSimulation {
       return
     }
 
-    // --- Resume from pause: clear stale fire state ---
+    // --- Resume from pause: clear stale fire AND aim state ---
+    // While paused, popup overlays capture mouse events so aimState and
+    // mouseHoldingFire can be stale. Clearing aimActive forces the ship to
+    // fall back to movement-based rotation until the user moves the mouse.
     if (this.wasPaused) {
       this.mouseHoldingFire = false
       this.fireTarget = null
       this.holdFirePosition = null
+      this.aimActive = false
+      this.aimPosition = null
       this.wasPaused = false
     }
 
     // --- Ship update ---
-    // Compute aim from hold-fire position (simulates mouse aim)
+    // Compute aim rotation from mouse aim position (separate from fire target)
     let aimRotation: number | null = null
-    if (this.holdFirePosition) {
-      const dx = this.holdFirePosition.x - this.ship.x
-      const dy = this.holdFirePosition.y - this.ship.y
+    if (this.aimActive && this.aimPosition) {
+      const dx = this.aimPosition.x - this.ship.x
+      const dy = this.aimPosition.y - this.ship.y
       if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
         aimRotation = Math.atan2(-dx, dy)
       }

@@ -63,6 +63,40 @@ describe('pause/resume and fire state', () => {
     h.assertShipNear(0, 0, 0.1)
   })
 
+  it('clears stale aimState on unpause so ship rotation is not locked', async () => {
+    const { GameTestHarness } = await import('../game-test-harness')
+    const h = new GameTestHarness({
+      shipPosition: { x: 0, y: 0 },
+    })
+
+    // Player aims right (ship faces right)
+    h.sim.aimAt(100, 0)
+    h.sim.stepN(5)
+    const rotationBeforePause = h.sim.ship.rotation
+
+    // Popup pauses the game (e.g. lazer tutorial)
+    h.sim.paused = true
+    h.sim.stepN(5)
+
+    // Player clicks empty space to dismiss — aimState still has stale coords
+    // Game unpauses:
+    h.sim.paused = false
+
+    // Player moves up (without moving the mouse, so no new aimAt call)
+    h.sim.setInput({ up: true })
+    h.sim.stepN(30)
+
+    // Ship rotation should follow movement direction (up), NOT the stale aim (right).
+    // aimState.active should have been cleared on unpause.
+    // atan2(-dx, dy) for movement up: atan2(0, 1) = 0
+    const rotationAfterResume = h.sim.ship.rotation
+    assert.notEqual(
+      rotationAfterResume,
+      rotationBeforePause,
+      `Ship rotation should not be locked to pre-pause aim (rotation=${rotationBeforePause.toFixed(3)})`,
+    )
+  })
+
   it('game resumes normally after unpausing', async () => {
     const { GameTestHarness } = await import('../game-test-harness')
     const h = new GameTestHarness({
