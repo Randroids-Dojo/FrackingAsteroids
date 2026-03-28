@@ -231,6 +231,7 @@ export default function Home() {
         upgrades={upgrades}
         playerHp={playerHp}
         playerMaxHp={playerMaxHp}
+        paused={paused}
         onPause={togglePause}
       />
       {tutorial.active && (
@@ -259,7 +260,9 @@ export default function Home() {
         />
       )}
       {paused && (
-        <div className="absolute inset-0 z-[40] bg-black/60 pointer-events-none" aria-hidden />
+        <div className="absolute inset-0 z-[40] bg-black/60 pointer-events-none flex items-center justify-center">
+          <p className="font-mono text-2xl sm:text-4xl tracking-widest text-white/80">PAUSED</p>
+        </div>
       )}
       {paused && <FeedbackFab />}
       {paused && <SoundFab />}
