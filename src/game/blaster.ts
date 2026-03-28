@@ -31,6 +31,32 @@ export function createBlasterState(): BlasterState {
 }
 
 /**
+ * Mutable fire-input state that tracks whether the mouse/touch is held down.
+ * When the game pauses (e.g. a popup overlay), mouseup events may not reach
+ * the canvas, leaving `mouseHoldingFire` stuck true. Call `clearStaleFireState`
+ * on pause→unpause transitions to prevent the ship from auto-firing and
+ * locking its rotation to a stale aim position.
+ */
+export interface FireInputState {
+  mouseHoldingFire: boolean
+  fireTarget: { x: number; y: number } | null
+}
+
+export function createFireInputState(): FireInputState {
+  return { mouseHoldingFire: false, fireTarget: null }
+}
+
+/**
+ * Clear stale fire-input state after a pause→unpause transition.
+ * Prevents the hold-to-fire loop from using stale aim data, which would
+ * lock the ship's rotation and auto-fire at the pre-pause position.
+ */
+export function clearStaleFireState(state: FireInputState): void {
+  state.mouseHoldingFire = false
+  state.fireTarget = null
+}
+
+/**
  * Update blaster cooldown. Call once per frame.
  */
 export function updateBlasterCooldown(blaster: BlasterState, dt: number): void {

@@ -6,6 +6,8 @@ import {
   fireBlaster,
   updateProjectiles,
   resetProjectileIdCounter,
+  createFireInputState,
+  clearStaleFireState,
 } from '../../src/game/blaster'
 import {
   BASE_PROJECTILE_SPEED,
@@ -306,5 +308,70 @@ describe('updateProjectiles', () => {
     const result = updateProjectiles(projectiles, 0.1, elapsed)
     assert.equal(result.length, 1)
     assert.equal(result[0].id, 'p2')
+  })
+})
+
+describe('clearStaleFireState — pause/unpause rotation lock fix', () => {
+  it('fire state must be cleared on pause→unpause to prevent rotation lock', () => {
+    // Simulates the scene.ts game loop logic around pause/unpause transitions.
+    // The bug: player fires at crystalline asteroid, popup pauses the game,
+    // mouseup fires on the popup overlay (not the canvas), so mouseHoldingFire
+    // stays true. On unpause, the hold-to-fire loop keeps overriding fireTarget
+    // from stale aim coords, locking the ship's rotation.
+    const fireState = createFireInputState()
+    let wasPaused = false
+    let paused = false
+    const aimState = { active: true, screenX: 400, screenY: 300 }
+
+    // --- Frame 1: player is firing normally ---
+    fireState.mouseHoldingFire = true
+    fireState.fireTarget = { x: 100, y: 200 }
+
+    // --- Popup appears: game pauses ---
+    paused = true
+
+    // --- Paused frame: scene.ts skips the update, sets wasPaused = true ---
+    wasPaused = true
+
+    // mouseup fires on the popup overlay, never reaches the canvas.
+    // fireState.mouseHoldingFire stays true.
+
+    // --- Popup dismissed: game unpauses ---
+    paused = false
+
+    // --- First unpaused frame: scene.ts must clear stale fire state ---
+    // This is the fix — scene.ts must call clearStaleFireState here.
+    if (!paused && wasPaused) {
+      clearStaleFireState(fireState)
+      wasPaused = false
+    }
+
+    // The hold-to-fire loop runs:
+    if (fireState.mouseHoldingFire && aimState.active) {
+      fireState.fireTarget = { x: aimState.screenX, y: aimState.screenY }
+    }
+
+    // After clearing, mouseHoldingFire should be false, so fireTarget stays null
+    assert.equal(
+      fireState.mouseHoldingFire,
+      false,
+      'mouseHoldingFire must be false after pause→unpause transition',
+    )
+    assert.equal(
+      fireState.fireTarget,
+      null,
+      'fireTarget must be null — hold-to-fire loop must not re-lock aim',
+    )
+  })
+
+  it('clearStaleFireState resets both fields', () => {
+    const fireState = createFireInputState()
+    fireState.mouseHoldingFire = true
+    fireState.fireTarget = { x: 50, y: 50 }
+
+    clearStaleFireState(fireState)
+
+    assert.equal(fireState.mouseHoldingFire, false)
+    assert.equal(fireState.fireTarget, null)
   })
 })

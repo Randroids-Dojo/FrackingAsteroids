@@ -573,6 +573,11 @@ export function createGameScene(
       // Resume audio if we were just paused
       if (wasPaused) {
         resumeMusic()
+        // Clear stale fire state — mouseup may not have reached the canvas
+        // while a popup overlay was capturing events, leaving mouseHoldingFire
+        // stuck true and locking the ship's rotation to a stale aim position.
+        mouseHoldingFire = false
+        fireTarget = null
       }
 
       // Compute aim rotation (mouse/touch → world → angle)
