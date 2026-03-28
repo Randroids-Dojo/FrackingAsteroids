@@ -211,7 +211,7 @@ export const COLLECTOR_RANGE = 12
  * Pull a metal chunk toward the ship when the collector is active.
  * Returns true if the chunk is close enough to be collected (absorbed).
  */
-export function attractMetalToShip(chunk: MetalChunk, ship: Ship, _dt: number): boolean {
+export function attractMetalToShip(chunk: MetalChunk, ship: Ship): boolean {
   const dx = ship.x - chunk.x
   const dy = ship.y - chunk.y
   const distSq = dx * dx + dy * dy

@@ -865,7 +865,7 @@ export function createGameScene(
         updateScrapBox(box, dt)
 
         if (collecting) {
-          const collected = attractScrapBoxToShip(box, ship, dt)
+          const collected = attractScrapBoxToShip(box, ship)
           if (collected) {
             scene.remove(box.mesh)
             disposeScrapBox(box)
@@ -905,7 +905,7 @@ export function createGameScene(
 
         // Attract toward ship when collector is active
         if (collecting) {
-          const collected = attractMetalToShip(metal, ship, dt)
+          const collected = attractMetalToShip(metal, ship)
           if (collected) {
             const variant = metal.variant
             scene.remove(metal.mesh)
