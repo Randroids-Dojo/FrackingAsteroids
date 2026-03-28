@@ -202,10 +202,10 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
 }
 
 /** Collector pull speed (units/sec). */
-export const COLLECTOR_PULL_SPEED = 150
+export const COLLECTOR_PULL_SPEED = 250
 
 /** Collector range in world units (tier 1 — small radius). */
-export const COLLECTOR_RANGE = 28
+export const COLLECTOR_RANGE = 12
 
 /** Damping applied to chunk velocity while being attracted (prevents orbiting). */
 export const ATTRACT_DAMPING = 0.88
