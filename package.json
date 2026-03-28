@@ -14,6 +14,7 @@
     "test:unit": "npx tsx --test tests/unit/*.test.ts",
     "test:coverage": "npx tsx --test --experimental-test-coverage --test-coverage-include='src/game/**' --test-coverage-include='src/lib/**' --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=90 tests/unit/*.test.ts",
     "test:smoke": "npx tsx tests/smoke/smoke.test.ts",
+    "test:integration": "npx tsx --test tests/integration/flows/*.test.ts",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed"
   },
