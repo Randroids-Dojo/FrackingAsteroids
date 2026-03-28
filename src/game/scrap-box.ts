@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import type { Ship } from '@/lib/schemas'
 import { SHIP_COLLISION_RADIUS } from './collision-constants'
-import { COLLECTOR_RANGE, COLLECTOR_PULL_SPEED } from './metal-chunk'
+import { COLLECTOR_RANGE, COLLECTOR_PULL_SPEED, ATTRACT_DAMPING } from './metal-chunk'
 
 // ---------------------------------------------------------------------------
 // Scrap box constants
@@ -150,11 +150,18 @@ export function attractScrapBoxToShip(box: ScrapBox, ship: Ship, dt: number): bo
 
   if (dist < collectDist) return true
 
-  // Pull toward ship — same mechanic as metal chunks
-  const strength = 1 - dist / range
-  const pull = COLLECTOR_PULL_SPEED * strength * dt
   const nx = dx / dist
   const ny = dy / dist
+
+  // Dampen existing velocity so boxes don't orbit or overshoot
+  const damp = Math.pow(ATTRACT_DAMPING, dt * 60)
+  box.vx *= damp
+  box.vy *= damp
+
+  // Quadratic falloff — gentle at edge, strong near ship
+  const t = 1 - dist / range
+  const strength = t * t
+  const pull = COLLECTOR_PULL_SPEED * strength * dt
   box.vx += nx * pull
   box.vy += ny * pull
 

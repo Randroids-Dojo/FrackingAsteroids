@@ -202,10 +202,13 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
 }
 
 /** Collector pull speed (units/sec). */
-export const COLLECTOR_PULL_SPEED = 60
+export const COLLECTOR_PULL_SPEED = 150
 
 /** Collector range in world units (tier 1 — small radius). */
-export const COLLECTOR_RANGE = 12
+export const COLLECTOR_RANGE = 28
+
+/** Damping applied to chunk velocity while being attracted (prevents orbiting). */
+export const ATTRACT_DAMPING = 0.88
 
 /**
  * Pull a metal chunk toward the ship when the collector is active.
@@ -224,11 +227,18 @@ export function attractMetalToShip(chunk: MetalChunk, ship: Ship, dt: number): b
 
   if (dist < collectDist) return true
 
-  // Pull toward ship — stronger as chunk gets closer
-  const strength = 1 - dist / range
-  const pull = COLLECTOR_PULL_SPEED * strength * dt
   const nx = dx / dist
   const ny = dy / dist
+
+  // Dampen existing velocity so chunks don't orbit or overshoot
+  const damp = Math.pow(ATTRACT_DAMPING, dt * 60)
+  chunk.vx *= damp
+  chunk.vy *= damp
+
+  // Quadratic falloff — gentle at edge, strong near ship
+  const t = 1 - dist / range
+  const strength = t * t
+  const pull = COLLECTOR_PULL_SPEED * strength * dt
   chunk.vx += nx * pull
   chunk.vy += ny * pull
 
