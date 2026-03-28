@@ -201,17 +201,26 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
   return true
 }
 
-/** Collector pull speed (units/sec). */
-export const COLLECTOR_PULL_SPEED = 120
+/** Collector pull acceleration (units/sec²). */
+export const COLLECTOR_PULL_ACCEL = 400
 
 /** Collector range in world units (tier 1 — small radius). */
-export const COLLECTOR_RANGE = 25
+export const COLLECTOR_RANGE = 12
+
+/** Max speed chunks can reach while being attracted (units/sec). */
+const COLLECTOR_MAX_PULL_SPEED = 100
+
+/** How quickly existing drift is damped toward the ship direction (0–1 per frame). */
+const COLLECTOR_STEER_FACTOR = 0.15
 
 /**
  * Pull a metal chunk toward the ship when the collector is active.
  * Returns true if the chunk is close enough to be collected (absorbed).
+ *
+ * Uses force-based acceleration so chunks ramp up speed gradually,
+ * giving a weighty, physically satisfying feel.
  */
-export function attractMetalToShip(chunk: MetalChunk, ship: Ship): boolean {
+export function attractMetalToShip(chunk: MetalChunk, ship: Ship, dt: number): boolean {
   const dx = ship.x - chunk.x
   const dy = ship.y - chunk.y
   const distSq = dx * dx + dy * dy
@@ -227,12 +236,23 @@ export function attractMetalToShip(chunk: MetalChunk, ship: Ship): boolean {
   const nx = dx / dist
   const ny = dy / dist
 
-  // Direct velocity set — tractor beam pulls chunks straight in
-  // Speed ramps up as chunks get closer (stronger near ship)
-  const t = 1 - dist / range
-  const speed = COLLECTOR_PULL_SPEED * (0.4 + 0.6 * t)
-  chunk.vx = nx * speed
-  chunk.vy = ny * speed
+  // Steer existing velocity toward ship (reduces orbiting without killing momentum)
+  chunk.vx += (nx * Math.abs(chunk.vx) - chunk.vx) * COLLECTOR_STEER_FACTOR
+  chunk.vy += (ny * Math.abs(chunk.vy) - chunk.vy) * COLLECTOR_STEER_FACTOR
+
+  // Accelerate toward ship — stronger when closer
+  const proximity = 1 - dist / range
+  const accel = COLLECTOR_PULL_ACCEL * (0.3 + 0.7 * proximity)
+  chunk.vx += nx * accel * dt
+  chunk.vy += ny * accel * dt
+
+  // Clamp to max pull speed
+  const speed = Math.sqrt(chunk.vx ** 2 + chunk.vy ** 2)
+  if (speed > COLLECTOR_MAX_PULL_SPEED) {
+    const s = COLLECTOR_MAX_PULL_SPEED / speed
+    chunk.vx *= s
+    chunk.vy *= s
+  }
 
   return false
 }

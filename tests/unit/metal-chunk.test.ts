@@ -10,7 +10,7 @@ import {
   disposeMetalChunk,
   METAL_CHUNK_RADIUS,
   METAL_SPAWN_CHANCE,
-  COLLECTOR_PULL_SPEED,
+  COLLECTOR_PULL_ACCEL,
   COLLECTOR_RANGE,
   resetMetalChunkIdCounter,
 } from '../../src/game/metal-chunk'
@@ -156,20 +156,20 @@ describe('attractMetalToShip', () => {
   it('returns false when metal is out of range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE + 10, 0)
     const ship = makeShip(0, 0)
-    assert.equal(attractMetalToShip(chunk, ship), false)
+    assert.equal(attractMetalToShip(chunk, ship, 1 / 60), false)
   })
 
   it('returns true when metal is close enough to collect', () => {
     const minDist = METAL_CHUNK_RADIUS + SHIP_COLLISION_RADIUS
     const chunk = makeMetalChunk(minDist - 0.5, 0)
     const ship = makeShip(0, 0)
-    assert.equal(attractMetalToShip(chunk, ship), true)
+    assert.equal(attractMetalToShip(chunk, ship, 1 / 60), true)
   })
 
   it('pulls metal toward ship when in range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE * 0.5, 0, 0, 0)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunk, ship)
+    attractMetalToShip(chunk, ship, 1 / 60)
     // Should have negative vx (pulled toward ship at origin)
     assert.ok(chunk.vx < 0, `vx should be negative (toward ship), got ${chunk.vx}`)
   })
@@ -192,7 +192,7 @@ describe('attractMetalToShip', () => {
   it('does not modify velocity when out of range', () => {
     const chunk = makeMetalChunk(COLLECTOR_RANGE + 10, 0, 5, 3)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunk, ship)
+    attractMetalToShip(chunk, ship, 1 / 60)
     assert.equal(chunk.vx, 5)
     assert.equal(chunk.vy, 3)
   })
@@ -301,8 +301,8 @@ describe('metal chunk constants', () => {
     assert.ok(METAL_SPAWN_CHANCE <= 1)
   })
 
-  it('COLLECTOR_PULL_SPEED is positive', () => {
-    assert.ok(COLLECTOR_PULL_SPEED > 0)
+  it('COLLECTOR_PULL_ACCEL is positive', () => {
+    assert.ok(COLLECTOR_PULL_ACCEL > 0)
   })
 
   it('COLLECTOR_RANGE is positive', () => {
