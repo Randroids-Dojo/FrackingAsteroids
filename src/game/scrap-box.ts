@@ -137,7 +137,7 @@ export function updateScrapBox(box: ScrapBox, dt: number): void {
  * Attract a scrap box toward the ship when collector is active.
  * Returns true if the box is close enough to be collected.
  */
-export function attractScrapBoxToShip(box: ScrapBox, ship: Ship, dt: number): boolean {
+export function attractScrapBoxToShip(box: ScrapBox, ship: Ship, _dt: number): boolean {
   const dx = ship.x - box.x
   const dy = ship.y - box.y
   const distSq = dx * dx + dy * dy
