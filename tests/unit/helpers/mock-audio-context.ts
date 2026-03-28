@@ -4,34 +4,35 @@
  */
 
 function createAudioParam(initial = 0): AudioParam {
-  return {
+  const param = {
     value: initial,
     defaultValue: initial,
     minValue: -3.4028235e38,
     maxValue: 3.4028235e38,
     automationRate: 'a-rate' as AutomationRate,
-    setValueAtTime(_v: number, _t: number) {
-      return this
+    setValueAtTime() {
+      return param
     },
-    linearRampToValueAtTime(_v: number, _t: number) {
-      return this
+    linearRampToValueAtTime() {
+      return param
     },
-    exponentialRampToValueAtTime(_v: number, _t: number) {
-      return this
+    exponentialRampToValueAtTime() {
+      return param
     },
-    setTargetAtTime(_v: number, _t: number, _c: number) {
-      return this
+    setTargetAtTime() {
+      return param
     },
-    setValueCurveAtTime(_v: Float32Array, _t: number, _d: number) {
-      return this
+    setValueCurveAtTime() {
+      return param
     },
-    cancelScheduledValues(_t: number) {
-      return this
+    cancelScheduledValues() {
+      return param
     },
-    cancelAndHoldAtTime(_t: number) {
-      return this
+    cancelAndHoldAtTime() {
+      return param
     },
-  } as AudioParam
+  } as unknown as AudioParam
+  return param
 }
 
 function createMockNode(): AudioNode {
@@ -64,8 +65,6 @@ class MockOscillatorNode extends EventTarget {
   disconnect() {}
   start() {}
   stop() {}
-  addEventListener() {}
-  removeEventListener() {}
 }
 
 class MockGainNode extends EventTarget {
@@ -74,8 +73,6 @@ class MockGainNode extends EventTarget {
     return createMockNode()
   }
   disconnect() {}
-  addEventListener() {}
-  removeEventListener() {}
 }
 
 class MockBiquadFilterNode extends EventTarget {
@@ -88,8 +85,6 @@ class MockBiquadFilterNode extends EventTarget {
     return createMockNode()
   }
   disconnect() {}
-  addEventListener() {}
-  removeEventListener() {}
 }
 
 class MockAudioBufferSourceNode extends EventTarget {
@@ -103,8 +98,6 @@ class MockAudioBufferSourceNode extends EventTarget {
   disconnect() {}
   start() {}
   stop() {}
-  addEventListener() {}
-  removeEventListener() {}
 }
 
 class MockAudioBuffer {
@@ -122,7 +115,7 @@ class MockAudioBuffer {
     this.data = new Float32Array(length)
   }
 
-  getChannelData(_channel: number): Float32Array {
+  getChannelData(): Float32Array {
     return this.data
   }
 
