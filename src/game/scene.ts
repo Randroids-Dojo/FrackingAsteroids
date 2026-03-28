@@ -263,9 +263,9 @@ export function createGameScene(
     healthMeter: tutorialHealthMeter,
   })
 
-  // --- Space Gas Station (just north of the tutorial asteroid) ---
+  // --- Space Gas Station (north of the tutorial asteroid) ---
   const GAS_STATION_X = 30
-  const GAS_STATION_Y = 120
+  const GAS_STATION_Y = 200
   const STATION_NEAR_DISTANCE = 80
   const STATION_ENTER_DISTANCE = 60
   const STATION_REPAIR_DISTANCE = 15
