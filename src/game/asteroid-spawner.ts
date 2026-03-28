@@ -1,19 +1,19 @@
 import type { Asteroid, AsteroidType } from './types'
 
 /** Number of asteroids to spawn after tutorial. */
-const ASTEROID_COUNT = 20
+const ASTEROID_COUNT = 40
 
 /** Minimum distance from station center to spawn asteroids. */
-const MIN_STATION_DISTANCE = 100
+const MIN_STATION_DISTANCE = 80
 
 /** Maximum spawn distance from station center. */
-const MAX_SPAWN_DISTANCE = 500
+const MAX_SPAWN_DISTANCE = 350
 
 /** Crystalline asteroids spawn closer to the station so players discover them early. */
-const CRYSTALLINE_MAX_DISTANCE = 200
+const CRYSTALLINE_MAX_DISTANCE = 180
 
 /** Minimum spacing between asteroids. */
-const MIN_ASTEROID_SPACING = 30
+const MIN_ASTEROID_SPACING = 20
 
 /** HP values per asteroid type and size. */
 const HP_TABLE: Record<AsteroidType, Record<number, number>> = {
