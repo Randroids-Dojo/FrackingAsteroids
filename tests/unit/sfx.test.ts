@@ -106,7 +106,8 @@ describe('sfx — with mock AudioContext', () => {
   // --- setSfxContext ---
 
   it('setSfxContext accepts a context', () => {
-    const ctx = new (globalThis as Record<string, unknown>).AudioContext() as AudioContext
+    const Ctor = (globalThis as Record<string, unknown>).AudioContext as new () => AudioContext
+    const ctx = new Ctor()
     assert.doesNotThrow(() => sfx.setSfxContext(ctx))
   })
 
