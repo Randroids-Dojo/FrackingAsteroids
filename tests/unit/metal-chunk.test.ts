@@ -181,8 +181,8 @@ describe('attractMetalToShip', () => {
     const chunkFar = makeMetalChunk(farDist, 0, 0, 0)
     const chunkNear = makeMetalChunk(nearDist, 0, 0, 0)
     const ship = makeShip(0, 0)
-    attractMetalToShip(chunkFar, ship)
-    attractMetalToShip(chunkNear, ship)
+    attractMetalToShip(chunkFar, ship, 1 / 60)
+    attractMetalToShip(chunkNear, ship, 1 / 60)
     assert.ok(
       Math.abs(chunkNear.vx) > Math.abs(chunkFar.vx),
       'closer chunk should be pulled harder',
