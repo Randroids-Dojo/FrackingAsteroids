@@ -258,6 +258,9 @@ export default function Home() {
           onClose={handleCloseTradeMenu}
         />
       )}
+      {paused && (
+        <div className="absolute inset-0 z-[40] bg-black/60 pointer-events-none" aria-hidden />
+      )}
       {paused && <FeedbackFab />}
       {paused && <SoundFab />}
       {ambushFade !== 'none' && (
