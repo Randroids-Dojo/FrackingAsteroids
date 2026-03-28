@@ -531,9 +531,7 @@ export function createGameScene(
     // Snapshot mesh-bearing objects before tick (tick may splice them out)
     const metalMeshMap = new Map(tickState.metalChunks.map((m) => [m.id, m.mesh]))
     const scrapMeshMap = new Map(tickState.scrapBoxes.map((s) => [s.id, s.mesh]))
-    const enemyProjMeshMap = new Map(
-      tickState.enemyProjectiles.map((p) => [p.id, p.mesh]),
-    )
+    const enemyProjMeshMap = new Map(tickState.enemyProjectiles.map((p) => [p.id, p.mesh]))
     const enemyBeforeTick = tickState.enemy
 
     const result = tick(tickState, tickInput)
