@@ -80,5 +80,41 @@ export {
   playCollectPling,
   disposeAudio,
 } from './audio'
+export {
+  startMusic,
+  setMusicIntensity,
+  updateMusic,
+  suspendMusic,
+  resumeMusic,
+  disposeMusic,
+} from './music'
+export {
+  playLaserFire,
+  playExplosion,
+  playPlayerHit,
+  startEngineSound,
+  updateEngineSound,
+  suspendEngineSound,
+  resumeEngineSound,
+  stopEngineSound,
+  disposeSfx,
+} from './sfx'
+export { createScreenShake, addTrauma, updateScreenShake } from './screen-shake'
+export type { ScreenShake } from './screen-shake'
+export {
+  createTwinkleStars,
+  updateTwinkleStars,
+  disposeTwinkleStars,
+  createNebulaSystem,
+  updateNebulaSystem,
+  disposeNebulaSystem,
+  createBlackHole,
+  updateBlackHole,
+  disposeBlackHole,
+} from './background-effects'
+export type { TwinkleStars, NebulaSystem, BlackHole } from './background-effects'
+export { createEngineTrail, updateEngineTrail, disposeEngineTrail } from './engine-trail'
+export type { EngineTrail } from './engine-trail'
+export { getSfxVolume, setSfxVolume, getMusicVolume, setMusicVolume } from './volume-control'
 export { createGameScene } from './scene'
 export type { GameScene, MetalVariant, GameSceneOptions } from './scene'

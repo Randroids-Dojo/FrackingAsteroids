@@ -1,64 +1,114 @@
-import { describe, it } from 'node:test'
+import { describe, it, before, after, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  resumeAudio,
-  startCollectorHum,
-  stopCollectorHum,
-  playCollectPling,
-  disposeAudio,
-} from '../../src/game/audio'
+import { installMockAudioContext, uninstallMockAudioContext } from './helpers/mock-audio-context'
 
-// Web Audio API is not available in Node.js test environment.
-// These tests verify the functions are resilient when AudioContext is unavailable.
+async function loadAudio() {
+  return await import('../../src/game/audio')
+}
 
-describe('audio — no AudioContext environment', () => {
-  it('resumeAudio does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => resumeAudio())
+describe('audio — with mock AudioContext', () => {
+  before(() => {
+    installMockAudioContext()
   })
 
-  it('startCollectorHum does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => startCollectorHum())
+  after(() => {
+    uninstallMockAudioContext()
   })
 
-  it('stopCollectorHum does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => stopCollectorHum())
+  let audio: Awaited<ReturnType<typeof loadAudio>>
+
+  before(async () => {
+    audio = await loadAudio()
   })
 
-  it('playCollectPling does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => playCollectPling())
+  beforeEach(() => {
+    audio.disposeAudio()
   })
 
-  it('disposeAudio does not throw without AudioContext', () => {
-    assert.doesNotThrow(() => disposeAudio())
+  // --- resumeAudio ---
+
+  it('resumeAudio creates context and resumes if suspended', () => {
+    assert.doesNotThrow(() => audio.resumeAudio())
   })
 
-  it('start then stop collector hum is safe', () => {
+  it('resumeAudio twice is safe', () => {
+    audio.resumeAudio()
+    assert.doesNotThrow(() => audio.resumeAudio())
+  })
+
+  // --- Collector Hum ---
+
+  it('startCollectorHum creates oscillators and connects', () => {
+    assert.doesNotThrow(() => audio.startCollectorHum())
+  })
+
+  it('startCollectorHum is idempotent', () => {
+    audio.startCollectorHum()
+    assert.doesNotThrow(() => audio.startCollectorHum())
+  })
+
+  it('stopCollectorHum stops oscillators', () => {
+    audio.startCollectorHum()
+    assert.doesNotThrow(() => audio.stopCollectorHum())
+  })
+
+  it('stopCollectorHum when not started is safe', () => {
+    assert.doesNotThrow(() => audio.stopCollectorHum())
+  })
+
+  it('double stop is safe', () => {
+    audio.startCollectorHum()
+    audio.stopCollectorHum()
+    assert.doesNotThrow(() => audio.stopCollectorHum())
+  })
+
+  it('start then stop then start again works', () => {
+    audio.startCollectorHum()
+    audio.stopCollectorHum()
     assert.doesNotThrow(() => {
-      startCollectorHum()
-      stopCollectorHum()
+      audio.startCollectorHum()
+      audio.stopCollectorHum()
     })
   })
 
-  it('double start is idempotent', () => {
+  // --- Collect Pling ---
+
+  it('playCollectPling creates oscillator and plays', () => {
+    assert.doesNotThrow(() => audio.playCollectPling())
+  })
+
+  it('multiple plings in quick succession', () => {
     assert.doesNotThrow(() => {
-      startCollectorHum()
-      startCollectorHum()
-      stopCollectorHum()
+      for (let i = 0; i < 5; i++) {
+        audio.playCollectPling()
+      }
     })
   })
 
-  it('double stop is idempotent', () => {
+  // --- Dispose ---
+
+  it('disposeAudio cleans up context', () => {
+    audio.startCollectorHum()
+    assert.doesNotThrow(() => audio.disposeAudio())
+  })
+
+  it('disposeAudio when never started is safe', () => {
+    assert.doesNotThrow(() => audio.disposeAudio())
+  })
+
+  it('start after dispose reinitializes', () => {
+    audio.disposeAudio()
     assert.doesNotThrow(() => {
-      stopCollectorHum()
-      stopCollectorHum()
+      audio.startCollectorHum()
+      audio.stopCollectorHum()
     })
   })
 
-  it('dispose then start is safe', () => {
-    assert.doesNotThrow(() => {
-      disposeAudio()
-      startCollectorHum()
-      stopCollectorHum()
-    })
+  it('full lifecycle: resume, hum, pling, stop, dispose', () => {
+    audio.resumeAudio()
+    audio.startCollectorHum()
+    audio.playCollectPling()
+    audio.stopCollectorHum()
+    audio.disposeAudio()
   })
 })

@@ -201,18 +201,53 @@ GameState { ship, upgrades, cargo, hp, timestamp }
 - Projectiles: bright amber elongated voxel pulses (mining laser bolts)
 - Background: particle-based star field
 
+### Visual Effects
+
+**Screen Shake:**
+- Triggered when player is hit by enemy projectiles
+- Trauma-based system: damage adds trauma (0–1), quadratic falloff for intensity
+- Camera offset oscillates at 25 Hz, decays at rate of 4.0/sec
+
+**Engine Trail:**
+- Glowing orange/red particles emitted from ship rear
+- Emission rate and brightness scale with ship speed
+- Particles fade and shrink over 0.4 seconds
+
+**Background Effects:**
+- Twinkling deep-space stars: 200 colored points with per-star brightness oscillation
+- Nebula swirls: 5 large semi-transparent glowing clouds with additive blending
+- Black hole: Dark core with 4 spinning accretion rings (orange/red gradient)
+- All background layers parallax at different rates for depth
+
 ### Color Palette
 
 - Space: `#0a0a1a` to `#111133` gradient
 - Asteroids: brown (common), gray-purple (dense), gold (precious), blue-teal (comet)
 - Mining laser: `#FFAA00` (amber bolt), `#FFDD44` (bright core)
 - HUD: `#00FF88` (green), `#00AAFF` (blue), `#FF4444` (red), `#FFAA00` (amber)
+- Engine trail: `#FF6600`, `#FF4400`, `#FF8800`, `#FFAA00` (orange spectrum)
+- Nebulae: `#220044` (purple), `#001133` (blue), `#110022` (magenta)
+- Black hole rings: `#FF4400`, `#FF8800`, `#FFAA00`, `#FF6600`
 
 ### Audio
 
-- Collector hum when active
-- Collection plings on pickup
-- Placeholder for additional sound effects
+All audio is procedurally synthesized using the Web Audio API — no external audio files.
+
+**Background Music:**
+- Four-layer procedural soundtrack generated live
+- Layer 0: Deep bass drone (always playing)
+- Layer 1: Pad chords (fades in at low intensity)
+- Layer 2: Arpeggiated melody (fades in during moderate activity)
+- Layer 3: Percussion pulse (fades in during combat)
+- Intensity lerps smoothly between peaceful (0.15) and combat (0.8)
+
+**Sound Effects:**
+- Laser fire: Short chirpy zap (bandpass-filtered square wave)
+- Explosion: Low boom with noise burst (when asteroids/enemies are hit)
+- Player hit: Sharp impact with distortion crack
+- Engine thrust: Filtered noise loop, volume/frequency scale with ship speed
+- Collector hum: Low sawtooth drone when magnet is active
+- Collection pling: Metallic ping on pickup
 
 ## 7. Milestones
 
@@ -224,4 +259,4 @@ GameState { ship, upgrades, cargo, hp, timestamp }
 - [x] **M6: Tutorial** — Guided onboarding with tutorial state machine
 - [x] **M7: Asteroid Field** — Multiple asteroid types/sizes spawned after tutorial
 - [x] **M8: Persistence** — Auto-save on game events, KV backend storage
-- [ ] **M9: Polish** — Voxel art pass, particles, screen shake, mobile refinement
+- [x] **M9: Polish** — Background music, SFX, particles, screen shake, background effects
