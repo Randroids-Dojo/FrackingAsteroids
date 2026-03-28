@@ -52,7 +52,7 @@ describe('spawnAsteroidField', () => {
   })
 
   it('spawns valid asteroid types', () => {
-    const validTypes = new Set(['common', 'dense', 'precious', 'comet'])
+    const validTypes = new Set(['common', 'dense', 'precious', 'comet', 'crystalline'])
     const asteroids = spawnAsteroidField(30, 350, 42)
     for (const a of asteroids) {
       assert.ok(validTypes.has(a.type), `Invalid type: ${a.type}`)

@@ -9,6 +9,9 @@ const MIN_STATION_DISTANCE = 100
 /** Maximum spawn distance from station center. */
 const MAX_SPAWN_DISTANCE = 500
 
+/** Crystalline asteroids spawn closer to the station so players discover them early. */
+const CRYSTALLINE_MAX_DISTANCE = 200
+
 /** Minimum spacing between asteroids. */
 const MIN_ASTEROID_SPACING = 30
 
@@ -75,9 +78,15 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
   while (asteroids.length < ASTEROID_COUNT && attempts < maxAttempts) {
     attempts++
 
+    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
+    const type = TYPE_WEIGHTS[typeIdx].type
+
+    // Crystalline asteroids spawn closer to the station
+    const maxDist = type === 'crystalline' ? CRYSTALLINE_MAX_DISTANCE : MAX_SPAWN_DISTANCE
+
     // Random position in a ring around the station
     const angle = rand() * Math.PI * 2
-    const distance = MIN_STATION_DISTANCE + rand() * (MAX_SPAWN_DISTANCE - MIN_STATION_DISTANCE)
+    const distance = MIN_STATION_DISTANCE + rand() * (maxDist - MIN_STATION_DISTANCE)
     const x = stationX + Math.cos(angle) * distance
     const y = stationY + Math.sin(angle) * distance
 
@@ -92,9 +101,6 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
       }
     }
     if (tooClose) continue
-
-    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
-    const type = TYPE_WEIGHTS[typeIdx].type
     const sizeIdx = pickWeighted(SIZE_WEIGHTS, rand)
     const size = SIZE_WEIGHTS[sizeIdx].size
 
