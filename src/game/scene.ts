@@ -923,7 +923,9 @@ export function createGameScene(
           }
         }
 
-        bounceMetalOffShip(metal, ship)
+        if (!collecting) {
+          bounceMetalOffShip(metal, ship)
+        }
         for (const a of asteroids) {
           bounceMetalOffAsteroid(metal, a)
         }
