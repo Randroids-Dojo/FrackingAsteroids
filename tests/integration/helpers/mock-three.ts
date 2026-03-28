@@ -229,7 +229,6 @@ export function installMockThree(): void {
     return origResolve.call(this, request, parent, isMain, options)
   }
 
-   
   require.cache[require.resolve('three')] = {
     id: 'three',
     filename: 'three',
