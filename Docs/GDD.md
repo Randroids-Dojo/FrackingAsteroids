@@ -171,6 +171,7 @@ GameState { ship, upgrades, cargo, hp, timestamp }
 - React state for UI/HUD via `useGameState` hook
 - Persistence via `useGamePersistence` hook → Upstash Redis
 - Auto-save on: resource collection, selling, buying, station repair
+- Headless `GameSimulation` mirrors scene.ts orchestration for integration testing
 
 ### API Routes
 
