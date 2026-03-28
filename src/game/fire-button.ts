@@ -129,12 +129,12 @@ function createActionButton(
 }
 
 function getFireBottom(): string {
-  return window.innerHeight < 600 ? '18%' : '25%'
+  return window.innerHeight < 600 ? '22%' : '28%'
 }
 
 function getCollectBottom(): string {
   const size = getButtonSize()
-  const base = window.innerHeight < 600 ? '18%' : '25%'
+  const base = window.innerHeight < 600 ? '22%' : '28%'
   return `calc(${base} + ${size + BUTTON_GAP}px)`
 }
 
