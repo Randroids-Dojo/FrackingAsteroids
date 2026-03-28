@@ -24,7 +24,7 @@ export function SoundFab() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-hud-blue text-space-900 font-bold text-xl shadow-lg hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
+        className="fixed bottom-14 left-6 z-50 w-14 h-14 rounded-full bg-hud-blue text-space-900 font-bold text-xl shadow-lg hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
         aria-label="Sound settings"
       >
         <SpeakerIcon />
@@ -33,7 +33,7 @@ export function SoundFab() {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 w-64 max-w-[calc(100vw-3rem)] bg-space-800 border border-hud-blue/30 rounded-lg shadow-2xl p-4">
+    <div className="fixed bottom-14 left-6 z-50 w-64 max-w-[calc(100vw-3rem)] bg-space-800 border border-hud-blue/30 rounded-lg shadow-2xl p-4">
       <div className="flex items-center justify-between mb-4">
         <span className="text-hud-blue font-mono text-sm font-bold">Sound</span>
         <button

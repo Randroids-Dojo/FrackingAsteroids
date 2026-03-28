@@ -48,7 +48,7 @@ claim, reinforcing the mining fantasy.
 | 5    | 5/sec     | 400 u/s (+100%)   | 3      | Triple (0°, ±10°) |
 
 **Projectile Constants:**
-- Base speed: 200 units/sec (matches ship max speed — feels like a tool, not a weapon)
+- Base speed: 200 units/sec (exceeds ship cruise speed ~56 u/s — bolts outrun the ship)
 - Lifetime: 1.5 seconds (~300 unit max range, but effective mining range is much shorter)
 - Visual: 2–3 voxel elongated amber pulse (color `0xFFAA00`)
 - Collision: circle-circle radius check against asteroids

@@ -1,9 +1,9 @@
 /**
  * Ship physics constants.
  */
-export const SHIP_ACCELERATION = 120
-export const SHIP_MAX_SPEED = 200
-export const SHIP_FRICTION = 0.97
+export const SHIP_ACCELERATION = 200
+export const SHIP_MAX_SPEED = 120
+export const SHIP_FRICTION = 0.94
 
 /**
  * Ship voxel colors (hex values).

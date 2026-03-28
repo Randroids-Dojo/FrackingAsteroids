@@ -10,7 +10,7 @@ import {
   disposeMetalChunk,
   METAL_CHUNK_RADIUS,
   METAL_SPAWN_CHANCE,
-  COLLECTOR_PULL_SPEED,
+  COLLECTOR_PULL_ACCEL,
   COLLECTOR_RANGE,
   resetMetalChunkIdCounter,
 } from '../../src/game/metal-chunk'
@@ -301,8 +301,8 @@ describe('metal chunk constants', () => {
     assert.ok(METAL_SPAWN_CHANCE <= 1)
   })
 
-  it('COLLECTOR_PULL_SPEED is positive', () => {
-    assert.ok(COLLECTOR_PULL_SPEED > 0)
+  it('COLLECTOR_PULL_ACCEL is positive', () => {
+    assert.ok(COLLECTOR_PULL_ACCEL > 0)
   })
 
   it('COLLECTOR_RANGE is positive', () => {
