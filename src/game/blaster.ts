@@ -1,5 +1,5 @@
 import type { Ship } from '@/lib/schemas'
-import type { Projectile } from './types'
+import type { MiningTool, Projectile } from './types'
 import {
   BASE_PROJECTILE_SPEED,
   SPEED_MULTIPLIERS,
@@ -53,6 +53,7 @@ export function fireBlaster(
   targetX: number,
   targetY: number,
   tier: number,
+  tool: MiningTool = 'blaster',
 ): Projectile[] {
   if (blaster.cooldownRemaining > 0) return []
 
@@ -84,17 +85,17 @@ export function fireBlaster(
     // Triple spread: center + two offset bolts
     for (const offset of [-TRIPLE_SPREAD_ANGLE, 0, TRIPLE_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
-      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage))
+      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage, tool))
     }
   } else if (clamped >= 4) {
     // Dual spread: two offset bolts
     for (const offset of [-DUAL_SPREAD_ANGLE, DUAL_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
-      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage))
+      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage, tool))
     }
   } else {
     // Single bolt
-    projectiles.push(makeProjectile(ship.x, ship.y, baseAngle, speed, damage))
+    projectiles.push(makeProjectile(ship.x, ship.y, baseAngle, speed, damage, tool))
   }
 
   return projectiles
@@ -106,6 +107,7 @@ function makeProjectile(
   angle: number,
   speed: number,
   damage: number,
+  tool: MiningTool = 'blaster',
 ): Projectile {
   return {
     id: generateProjectileId(),
@@ -114,6 +116,7 @@ function makeProjectile(
     velocityX: Math.cos(angle) * speed,
     velocityY: Math.sin(angle) * speed,
     damage,
+    tool,
   }
 }
 

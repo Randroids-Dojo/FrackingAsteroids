@@ -1,8 +1,13 @@
 import * as THREE from 'three'
+import type { MiningTool } from './types'
 import { PROJECTILE_COLOR, PROJECTILE_CORE_COLOR } from './blaster-constants'
 
 /** Voxel size for projectile bolts — small and punchy. */
 const BOLT_VOXEL = 0.4
+
+/** Lazer bolt colors — cyan/magenta energy beam. */
+const LAZER_COLOR = 0x00ccff
+const LAZER_CORE_COLOR = 0x88eeff
 
 function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: number): void {
   const geo = new THREE.BoxGeometry(BOLT_VOXEL, BOLT_VOXEL, BOLT_VOXEL)
@@ -21,15 +26,17 @@ function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: nu
  * Build a voxel-style mining laser bolt (3 voxels long, 1 wide).
  * Oriented along +Y (ship forward). Amber with a bright core.
  */
-export function createProjectileModel(): THREE.Group {
+export function createProjectileModel(tool: MiningTool = 'blaster'): THREE.Group {
   const bolt = new THREE.Group()
+  const outerColor = tool === 'lazer' ? LAZER_COLOR : PROJECTILE_COLOR
+  const coreColor = tool === 'lazer' ? LAZER_CORE_COLOR : PROJECTILE_CORE_COLOR
 
   // Tail
-  addVoxel(bolt, 0, -1, 0, PROJECTILE_COLOR)
+  addVoxel(bolt, 0, -1, 0, outerColor)
   // Core (bright center)
-  addVoxel(bolt, 0, 0, 0, PROJECTILE_CORE_COLOR)
+  addVoxel(bolt, 0, 0, 0, coreColor)
   // Tip
-  addVoxel(bolt, 0, 1, 0, PROJECTILE_COLOR)
+  addVoxel(bolt, 0, 1, 0, outerColor)
 
   return bolt
 }

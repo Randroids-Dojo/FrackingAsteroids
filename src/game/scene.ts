@@ -40,7 +40,7 @@ import {
   METAL_SPAWN_CHANCE,
 } from './metal-chunk'
 import type { MetalChunk } from './metal-chunk'
-import type { Asteroid, Projectile } from './types'
+import type { Asteroid, MiningTool, Projectile } from './types'
 import { createCollectorVfx, updateCollectorVfx, disposeCollectorVfx } from './collector-vfx'
 import {
   resumeAudio,
@@ -167,12 +167,14 @@ export interface GameSceneOptions {
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
+  onCrystallineDeflect?: () => void
 }
 
 export interface GameScene {
   dispose: () => void
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
+  setMiningTool: (tool: MiningTool) => void
 }
 
 /**
@@ -199,6 +201,7 @@ export function createGameScene(
   const onStationRange = options?.onStationRange
   const onStationDriveThrough = options?.onStationDriveThrough
   const onPlayerKilled = options?.onPlayerKilled
+  const onCrystallineDeflect = options?.onCrystallineDeflect
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -323,6 +326,7 @@ export function createGameScene(
   const projectileModels = new Map<string, THREE.Group>()
   const blasterTier = 1
   let fireRateBonus = 1.0
+  let activeMiningTool: MiningTool = 'blaster'
 
   // Asteroid game state
   const asteroids: Asteroid[] = [
@@ -621,6 +625,7 @@ export function createGameScene(
           fireTarget.x,
           fireTarget.y,
           blasterTier,
+          activeMiningTool,
         )
         // Apply fire rate bonus (reduces cooldown)
         if (newProjectiles.length > 0 && fireRateBonus > 1) {
@@ -631,7 +636,7 @@ export function createGameScene(
         }
         for (const p of newProjectiles) {
           projectiles.push(p)
-          const model = createProjectileModel()
+          const model = createProjectileModel(p.tool)
           model.position.set(p.x, p.y, 0)
           const angle = Math.atan2(p.velocityY, p.velocityX)
           model.rotation.z = angle - Math.PI / 2
@@ -661,15 +666,23 @@ export function createGameScene(
       if (projectiles.length > 0 && liveAsteroids.length > 0) {
         const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
 
-        // Tutorial: detect asteroid hit
-        if (hits.length > 0) {
+        // Tutorial: detect asteroid hit (only non-deflected hits count)
+        if (hits.some((h) => !h.deflected)) {
           onAsteroidHit?.()
+        }
+
+        // Notify when blaster deflects off crystalline
+        if (hits.some((h) => h.deflected)) {
+          onCrystallineDeflect?.()
         }
 
         // Remove hit projectile models, spawn explosions and debris
         for (const hit of hits) {
           removeProjectileModel(hit.projectileId)
           projectileElapsed.delete(hit.projectileId)
+
+          // Skip VFX for deflected hits
+          if (hit.deflected) continue
 
           // Spawn explosion at hit position
           const explosion = createExplosion(hit.x, hit.y)
@@ -1186,6 +1199,10 @@ export function createGameScene(
     fireRateBonus = multiplier
   }
 
+  function setMiningTool(tool: MiningTool) {
+    activeMiningTool = tool
+  }
+
   /** Reset ship to just north of station with full HP and clear ambush entities. */
   function resetShipToStation() {
     // Move ship to just north of the station (outside station range)
@@ -1270,5 +1287,5 @@ export function createGameScene(
     return hash
   }
 
-  return { dispose, setFireRateBonus, resetShipToStation }
+  return { dispose, setFireRateBonus, resetShipToStation, setMiningTool }
 }

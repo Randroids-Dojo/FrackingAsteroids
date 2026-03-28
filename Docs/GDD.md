@@ -84,11 +84,30 @@ when passing through the gas station (drive-through repair). HP is persisted acr
 | Dense    | Medium | Gray-purple / violet | 14  |
 | Precious | Small  | Gold / yellow accent | 6   |
 | Comet    | Varies | Blue-teal / cyan     | 10  |
+| Crystalline | Varies | Deep purple / magenta | 30 |
 
-- Four types with distinct color palettes and sizes
+- Five types with distinct color palettes and sizes
+- Crystalline asteroids are immune to the standard blaster and require a Lazer to mine
 - Asteroids drift across the field at varying speeds and angles
 - Spawned in a ring around the gas station after the tutorial
 - Voxel models with seeded shapes for visual variety
+
+#### Lazer (Advanced Mining Tool)
+
+The Lazer is a purchasable mining tool that allows harvesting crystalline asteroids and deals
+1.5x damage to all asteroid types. Purchased at the Trade Station for 200 scrap. Players switch
+between the Blaster and Lazer via a HUD dropdown.
+
+| Property | Value |
+|----------|-------|
+| Cost | 200 scrap |
+| Damage Multiplier | 1.5x (all asteroids) |
+| Projectile Color | Cyan (`0x00CCFF`) |
+| Required For | Crystalline asteroids |
+
+A tutorial popup appears when the player tries to shoot a crystalline asteroid with the blaster,
+hinting that they need a Lazer. The game freezes during the popup and is dismissed by pressing
+anywhere on screen. The popup appears every time the player deflects off crystalline.
 
 ### Controls
 
@@ -222,7 +241,7 @@ GameState { ship, upgrades, cargo, hp, timestamp }
 ### Color Palette
 
 - Space: `#0a0a1a` to `#111133` gradient
-- Asteroids: brown (common), gray-purple (dense), gold (precious), blue-teal (comet)
+- Asteroids: brown (common), gray-purple (dense), gold (precious), blue-teal (comet), deep purple (crystalline)
 - Mining laser: `#FFAA00` (amber bolt), `#FFDD44` (bright core)
 - HUD: `#00FF88` (green), `#00AAFF` (blue), `#FF4444` (red), `#FFAA00` (amber)
 - Engine trail: `#FF6600`, `#FF4400`, `#FF8800`, `#FFAA00` (orange spectrum)
@@ -260,3 +279,4 @@ All audio is procedurally synthesized using the Web Audio API — no external au
 - [x] **M7: Asteroid Field** — Multiple asteroid types/sizes spawned after tutorial
 - [x] **M8: Persistence** — Auto-save on game events, KV backend storage
 - [x] **M9: Polish** — Background music, SFX, particles, screen shake, background effects
+- [x] **M10: Lazer & Crystalline** — Crystalline asteroid type, Lazer mining tool, HUD tool switcher, trade station purchase

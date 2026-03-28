@@ -223,7 +223,9 @@ describe('updateProjectiles', () => {
   })
 
   it('moves projectiles by velocity * dt', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 50, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 50, damage: 1, tool: 'blaster' as const },
+    ]
     const elapsed = new Map<string, number>()
     const result = updateProjectiles(projectiles, 0.1, elapsed)
     assert.equal(result.length, 1)
@@ -232,7 +234,9 @@ describe('updateProjectiles', () => {
   })
 
   it('removes projectiles past lifetime', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const elapsed = new Map<string, number>()
     elapsed.set('p1', PROJECTILE_LIFETIME - 0.01)
     const result = updateProjectiles(projectiles, 0.02, elapsed)
@@ -240,7 +244,9 @@ describe('updateProjectiles', () => {
   })
 
   it('keeps projectiles within lifetime', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const elapsed = new Map<string, number>()
     const result = updateProjectiles(projectiles, 0.1, elapsed)
     assert.equal(result.length, 1)
@@ -250,7 +256,9 @@ describe('updateProjectiles', () => {
   })
 
   it('cleans up elapsed map for removed projectiles', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const elapsed = new Map<string, number>()
     elapsed.set('p1', PROJECTILE_LIFETIME)
     updateProjectiles(projectiles, 0.1, elapsed)
@@ -264,7 +272,9 @@ describe('updateProjectiles', () => {
   })
 
   it('accumulates age across multiple frames', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const elapsed = new Map<string, number>()
 
     // Frame 1
@@ -287,8 +297,8 @@ describe('updateProjectiles', () => {
 
   it('handles multiple projectiles with mixed lifetimes', () => {
     const projectiles = [
-      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 },
-      { id: 'p2', x: 0, y: 0, velocityX: 200, velocityY: 0, damage: 2 },
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+      { id: 'p2', x: 0, y: 0, velocityX: 200, velocityY: 0, damage: 2, tool: 'blaster' as const },
     ]
     const elapsed = new Map<string, number>()
     elapsed.set('p1', PROJECTILE_LIFETIME) // will expire

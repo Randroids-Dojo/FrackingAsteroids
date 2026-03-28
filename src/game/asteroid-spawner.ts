@@ -18,6 +18,7 @@ const HP_TABLE: Record<AsteroidType, Record<number, number>> = {
   dense: { 1: 25, 2: 14, 3: 8 },
   precious: { 1: 10, 2: 6, 3: 3 },
   comet: { 1: 18, 2: 10, 3: 5 },
+  crystalline: { 1: 30, 2: 18, 3: 10 },
 }
 
 /** Weighted type distribution for random selection. */
@@ -26,6 +27,7 @@ const TYPE_WEIGHTS: { type: AsteroidType; weight: number }[] = [
   { type: 'dense', weight: 25 },
   { type: 'precious', weight: 15 },
   { type: 'comet', weight: 10 },
+  { type: 'crystalline', weight: 8 },
 ]
 
 /** Weighted size distribution (1=large, 2=medium, 3=small). */

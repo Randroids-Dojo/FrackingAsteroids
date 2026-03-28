@@ -5,6 +5,9 @@ import type { Cargo, Upgrades } from '@/lib/schemas'
 import type { TutorialStep } from '@/hooks/useTutorial'
 import { SILVER_SCRAP_VALUE, GOLD_SCRAP_VALUE } from '@/hooks/useGameState'
 
+/** Cost to purchase the Lazer mining tool. */
+export const LAZER_COST = 200
+
 /** Upgrade catalog available at the trade station. */
 const UPGRADE_CATALOG = [
   { type: 'blaster' as const, label: 'Fire Rate Boost', cost: 10, description: '+10% fire rate' },
@@ -27,8 +30,10 @@ interface TradeMenuProps {
   scrap: number
   upgrades: Upgrades
   tutorialStep: TutorialStep
+  hasLazer: boolean
   onSell: () => void
   onBuy: (type: keyof Upgrades, cost: number) => void
+  onBuyLazer: () => void
   onClose: () => void
 }
 
@@ -37,8 +42,10 @@ export function TradeMenu({
   scrap,
   upgrades,
   tutorialStep,
+  hasLazer,
   onSell,
   onBuy,
+  onBuyLazer,
   onClose,
 }: TradeMenuProps) {
   const isTutorialSell = tutorialStep === 'trade-sell'
@@ -110,7 +117,14 @@ export function TradeMenu({
               onSell={onSell}
             />
           ) : (
-            <BuyPanel scrap={scrap} upgrades={upgrades} isTutorial={isTutorialBuy} onBuy={onBuy} />
+            <BuyPanel
+              scrap={scrap}
+              upgrades={upgrades}
+              hasLazer={hasLazer}
+              isTutorial={isTutorialBuy}
+              onBuy={onBuy}
+              onBuyLazer={onBuyLazer}
+            />
           )}
         </div>
 
@@ -186,14 +200,20 @@ function SellPanel({
 function BuyPanel({
   scrap,
   upgrades,
+  hasLazer,
   isTutorial,
   onBuy,
+  onBuyLazer,
 }: {
   scrap: number
   upgrades: Upgrades
+  hasLazer: boolean
   isTutorial: boolean
   onBuy: (type: keyof Upgrades, cost: number) => void
+  onBuyLazer: () => void
 }) {
+  const canAffordLazer = scrap >= LAZER_COST && !hasLazer
+
   return (
     <div className="flex flex-col gap-3">
       <div className="text-white/60 text-xs mb-1">UPGRADES</div>
@@ -239,6 +259,37 @@ function BuyPanel({
           </div>
         )
       })}
+
+      {/* Lazer mining tool */}
+      <div className="text-white/60 text-xs mb-1 mt-2">TOOLS</div>
+      <div
+        className={`flex items-center justify-between p-3 rounded border ${
+          hasLazer ? 'border-white/10 bg-white/5' : 'border-hud-blue/30 bg-hud-blue/5'
+        }`}
+        data-testid="lazer-buy-item"
+      >
+        <div className="flex-1">
+          <div className={`text-sm font-bold ${hasLazer ? 'text-white/40' : 'text-hud-blue'}`}>
+            Lazer
+          </div>
+          <div className="text-xs text-white/40">
+            {hasLazer ? 'OWNED' : 'Mines crystalline asteroids, +50% damage to all'}
+          </div>
+        </div>
+        <button
+          onClick={onBuyLazer}
+          disabled={!canAffordLazer}
+          className={`ml-3 px-4 py-2 rounded text-xs font-bold tracking-wider transition-all ${
+            hasLazer
+              ? 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'
+              : canAffordLazer
+                ? 'bg-hud-blue/20 border border-hud-blue/60 text-hud-blue hover:bg-hud-blue/40'
+                : 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'
+          }`}
+        >
+          {hasLazer ? 'OWNED' : `${LAZER_COST}`}
+        </button>
+      </div>
     </div>
   )
 }
