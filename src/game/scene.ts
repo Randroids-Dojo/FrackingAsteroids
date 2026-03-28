@@ -512,8 +512,12 @@ export function createGameScene(
       }
     }
 
-    tickState.mouseHoldingFire = mouseHoldingFire
-    tickState.aimActive = aimState.active
+    // Only sync aimActive from DOM if tick won't clear it on unpause.
+    // Otherwise the DOM's stale aimState.active=true overrides tick's clearing.
+    if (!tickState.wasPaused) {
+      tickState.mouseHoldingFire = mouseHoldingFire
+      tickState.aimActive = aimState.active
+    }
 
     const tickInput: TickInput = {
       dt,
@@ -527,6 +531,10 @@ export function createGameScene(
     // Snapshot mesh-bearing objects before tick (tick may splice them out)
     const metalMeshMap = new Map(tickState.metalChunks.map((m) => [m.id, m.mesh]))
     const scrapMeshMap = new Map(tickState.scrapBoxes.map((s) => [s.id, s.mesh]))
+    const enemyProjMeshMap = new Map(
+      tickState.enemyProjectiles.map((p) => [p.id, p.mesh]),
+    )
+    const enemyBeforeTick = tickState.enemy
 
     const result = tick(tickState, tickInput)
 
@@ -633,11 +641,22 @@ export function createGameScene(
         scene.add(proj.mesh)
       }
 
-      // Note: enemy projectiles have meshes that tick() splices from the array.
-      // The mesh disposal happens when tick processes the enemy projectile lifecycle.
+      // Remove expired enemy projectile meshes from scene
+      for (const id of result.expiredEnemyProjectileIds) {
+        const mesh = enemyProjMeshMap.get(id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
+      }
 
-      // Enemy projectile hits — VFX
+      // Remove enemy projectiles that hit the player
       for (const hit of result.enemyProjectileHits) {
+        const mesh = enemyProjMeshMap.get(hit.id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
         const hitExplosion = createExplosion(hit.x, hit.y)
         scene.add(hitExplosion.group)
         explosions.push(hitExplosion)
@@ -645,8 +664,10 @@ export function createGameScene(
         playPlayerHit()
       }
 
-      // Enemy destroyed — VFX
-      if (result.enemyDestroyed) {
+      // Enemy destroyed — remove mesh and spawn VFX
+      if (result.enemyDestroyed && enemyBeforeTick) {
+        scene.remove(enemyBeforeTick.mesh)
+        disposeEnemyShip(enemyBeforeTick)
         const wreck = createShipwreckDebris(result.enemyDestroyed.x, result.enemyDestroyed.y)
         scene.add(wreck.group)
         shipwreckDebrisList.push(wreck)
