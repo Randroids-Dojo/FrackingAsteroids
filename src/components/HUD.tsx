@@ -54,8 +54,6 @@ function GoldIcon({ size = 16 }: { size?: number }) {
 }
 
 function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; hasLazer: boolean }) {
-  if (!hasLazer) return null
-
   const toolLabel = activeTool === 'lazer' ? 'LAZER' : 'BLASTER'
   const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
   const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window
@@ -67,7 +65,7 @@ function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; has
       data-testid="mining-tool-label"
     >
       {toolLabel}
-      {!isMobile && (
+      {!isMobile && hasLazer && (
         <span className="ml-1 text-white/40 font-normal text-[clamp(0.4rem,1.2vw,0.625rem)]">
           [Q]
         </span>
