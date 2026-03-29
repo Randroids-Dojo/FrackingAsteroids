@@ -8,12 +8,17 @@ import {
   resetProjectileIdCounter,
   createFireInputState,
   clearStaleFireState,
+  createLazerState,
+  updateLazerState,
 } from '../../src/game/blaster'
 import {
   BASE_PROJECTILE_SPEED,
   PROJECTILE_LIFETIME,
   DUAL_SPREAD_ANGLE,
   TRIPLE_SPREAD_ANGLE,
+  LAZER_MAX_HEAT,
+  LAZER_COOLDOWN_TIME,
+  LAZER_FIRE_INTERVAL,
 } from '../../src/game/blaster-constants'
 
 function makeShip() {
@@ -373,5 +378,97 @@ describe('clearStaleFireState — pause/unpause rotation lock fix', () => {
 
     assert.equal(fireState.mouseHoldingFire, false)
     assert.equal(fireState.fireTarget, null)
+  })
+})
+
+describe('createLazerState', () => {
+  it('starts with zero heat and not overheated', () => {
+    const state = createLazerState()
+    assert.equal(state.heat, 0)
+    assert.equal(state.overheated, false)
+    assert.equal(state.cooldownRemaining, 0)
+    assert.equal(state.fireTimer, 0)
+  })
+})
+
+describe('updateLazerState', () => {
+  it('returns false when not firing and heat is zero', () => {
+    const state = createLazerState()
+    const shouldFire = updateLazerState(state, 1 / 60, false)
+    assert.equal(shouldFire, false)
+    assert.equal(state.heat, 0)
+  })
+
+  it('builds heat while firing', () => {
+    const state = createLazerState()
+    // Fire for 1 second
+    for (let i = 0; i < 60; i++) {
+      updateLazerState(state, 1 / 60, true)
+    }
+    assert.ok(Math.abs(state.heat - 1.0) < 0.05, `heat should be ~1.0, got ${state.heat}`)
+  })
+
+  it('fires at LAZER_FIRE_INTERVAL rate when firing', () => {
+    const state = createLazerState()
+    let fireCount = 0
+    // Fire for 1 second at 60fps
+    for (let i = 0; i < 60; i++) {
+      if (updateLazerState(state, 1 / 60, true)) {
+        fireCount++
+      }
+    }
+    // Expected: ~10 fires in 1s at 0.1s interval
+    const expected = Math.floor(1.0 / LAZER_FIRE_INTERVAL)
+    assert.ok(Math.abs(fireCount - expected) <= 1, `expected ~${expected} fires, got ${fireCount}`)
+  })
+
+  it('overheats after sustained firing for LAZER_MAX_HEAT seconds', () => {
+    const state = createLazerState()
+    const frames = Math.ceil(LAZER_MAX_HEAT * 60) + 1
+    for (let i = 0; i < frames; i++) {
+      updateLazerState(state, 1 / 60, true)
+    }
+    assert.equal(state.overheated, true)
+    assert.ok(state.cooldownRemaining > 0)
+  })
+
+  it('returns false while overheated', () => {
+    const state = createLazerState()
+    state.overheated = true
+    state.cooldownRemaining = LAZER_COOLDOWN_TIME
+    const shouldFire = updateLazerState(state, 1 / 60, true)
+    assert.equal(shouldFire, false)
+  })
+
+  it('recovers from overheat after cooldown period', () => {
+    const state = createLazerState()
+    state.overheated = true
+    state.cooldownRemaining = LAZER_COOLDOWN_TIME
+
+    // Wait full cooldown
+    const frames = Math.ceil(LAZER_COOLDOWN_TIME * 60) + 1
+    for (let i = 0; i < frames; i++) {
+      updateLazerState(state, 1 / 60, false)
+    }
+    assert.equal(state.overheated, false)
+    assert.equal(state.heat, 0)
+  })
+
+  it('passively cools when not firing and not overheated', () => {
+    const state = createLazerState()
+    state.heat = 1.0
+    // Not firing for 1 second
+    for (let i = 0; i < 60; i++) {
+      updateLazerState(state, 1 / 60, false)
+    }
+    assert.ok(state.heat < 1.0, `heat should decrease, got ${state.heat}`)
+    assert.ok(state.heat > 0, 'heat should not be fully cooled in 1s from 1.0')
+  })
+
+  it('resets fire timer when not firing', () => {
+    const state = createLazerState()
+    state.fireTimer = 0.05
+    updateLazerState(state, 1 / 60, false)
+    assert.equal(state.fireTimer, 0)
   })
 })

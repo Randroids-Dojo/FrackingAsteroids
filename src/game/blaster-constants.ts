@@ -37,6 +37,24 @@ export const PROJECTILE_CORE_COLOR = 0xffdd44
 /** Lazer damage multiplier applied to all asteroid types. */
 export const LAZER_DAMAGE_MULTIPLIER = 1.5
 
+/** Maximum heat before the lazer overheats (seconds of sustained fire). */
+export const LAZER_MAX_HEAT = 1.5
+
+/** Maximum range of the lazer beam in world units. */
+export const LAZER_BEAM_RANGE = 120
+
+/** Heat gained per second of sustained lazer fire. */
+export const LAZER_HEAT_RATE = 1.0
+
+/** Heat lost per second when not firing (passive dissipation). */
+export const LAZER_COOL_RATE = 0.5
+
+/** Time in seconds for the lazer to fully cool down after overheating. */
+export const LAZER_COOLDOWN_TIME = 1.5
+
+/** Interval between lazer projectile spawns (seconds) for sustained beam feel. */
+export const LAZER_FIRE_INTERVAL = 0.1
+
 /** Clamp a tier value to the valid 1–5 range. */
 export function clampTier(tier: number): number {
   return Math.max(1, Math.min(5, Math.round(tier)))

@@ -8,9 +8,11 @@ import {
   updateGasStationNeon,
 } from './gas-station-model'
 import { createProjectileModel } from './projectile-model'
+import { createLazerBeam, updateLazerBeam, disposeLazerBeam } from './lazer-beam'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { createVirtualJoystick } from './virtual-joystick'
-import { createFireButton, createCollectButton } from './fire-button'
+import { createFireButton, createCollectButton, createToolToggleButton } from './fire-button'
+import type { ToolToggleButton } from './fire-button'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
 import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
 import type { Explosion } from './explosion'
@@ -119,6 +121,7 @@ export interface GameSceneOptions {
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
   onCrystallineDeflect?: () => void
+  onToolChange?: (tool: MiningTool) => void
 }
 
 export interface GameScene {
@@ -153,6 +156,7 @@ export function createGameScene(
   const onStationDriveThrough = options?.onStationDriveThrough
   const onPlayerKilled = options?.onPlayerKilled
   const onCrystallineDeflect = options?.onCrystallineDeflect
+  const onToolChange = options?.onToolChange
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -197,6 +201,10 @@ export function createGameScene(
   // --- Recharge Meter (positioned at ship, but not parented to avoid rotation) ---
   const rechargeMeter = createRechargeMeter()
   scene.add(rechargeMeter)
+
+  // --- Lazer Beam (persistent mesh, hidden when not firing) ---
+  const lazerBeam = createLazerBeam()
+  scene.add(lazerBeam)
 
   // --- Asteroids ---
   // Tutorial asteroid (single, hardcoded)
@@ -415,6 +423,31 @@ export function createGameScene(
     collectButton.attach()
   }
 
+  // --- Tool Toggle (keyboard Q + mobile button) ---
+  let toolToggleButton: ToolToggleButton | null = null
+
+  function toggleMiningTool(): void {
+    const newTool = tickState.activeMiningTool === 'lazer' ? 'blaster' : 'lazer'
+    tickState.activeMiningTool = newTool
+    toolToggleButton?.setTool(newTool)
+    onToolChange?.(newTool)
+  }
+
+  if (hasTouch) {
+    toolToggleButton = createToolToggleButton(container, () => {
+      if (getPaused()) return
+      toggleMiningTool()
+    })
+    toolToggleButton.attach()
+  }
+
+  function onToolToggleKeyDown(e: KeyboardEvent): void {
+    if (e.code === 'KeyQ') {
+      toggleMiningTool()
+    }
+  }
+  window.addEventListener('keydown', onToolToggleKeyDown)
+
   // --- Collect (mouse right-click + keyboard + mobile button) ---
   let collecting = false
   let collectKeyDown = false
@@ -546,7 +579,48 @@ export function createGameScene(
       // --- Process tick result for rendering ---
 
       // Recharge meter (rendering-only)
-      updateRechargeMeter(rechargeMeter, tickState.blasterState, tickState.blasterTier)
+      updateRechargeMeter(
+        rechargeMeter,
+        tickState.blasterState,
+        tickState.blasterTier,
+        tickState.activeMiningTool,
+        tickState.lazerState,
+      )
+
+      // Lazer beam visual
+      updateLazerBeam(
+        lazerBeam,
+        result.beamActive,
+        result.beamStartX,
+        result.beamStartY,
+        result.beamEndX,
+        result.beamEndY,
+      )
+      if (result.beamActive) {
+        playLaserFire()
+      }
+
+      // Beam hit VFX (explosions on hit asteroids)
+      for (const hit of result.beamHits) {
+        if (hit.deflected) continue
+        // Only show explosion VFX periodically (not every frame)
+        const hitCount = tickState.asteroidHitCounts.get(hit.asteroidId) ?? 0
+        if (hitCount > 0 && hitCount % HITS_PER_BREAK === 0) {
+          const explosion = createExplosion(hit.x, hit.y)
+          scene.add(explosion.group)
+          explosions.push(explosion)
+          playExplosion()
+
+          const hitModel = asteroidModels.get(hit.asteroidId)?.model
+          if (hitModel) {
+            const chunks = breakChunks(hitModel, hit.x, hit.y, 2 + Math.floor(Math.random() * 2))
+            for (const chunk of chunks) {
+              scene.add(chunk.mesh)
+              debrisChunks.push(chunk)
+            }
+          }
+        }
+      }
 
       // Sync asteroid model positions
       for (const a of asteroids) {
@@ -862,18 +936,23 @@ export function createGameScene(
     joystick.detach()
     if (fireButton) fireButton.detach()
     if (collectButton) collectButton.detach()
+    if (toolToggleButton) toolToggleButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
     renderer.domElement.removeEventListener('mouseup', onMouseUp)
     renderer.domElement.removeEventListener('contextmenu', onContextMenu)
     container.removeEventListener('touchstart', onTouchStartSwallow)
     window.removeEventListener('keydown', onCollectKeyDown)
     window.removeEventListener('keyup', onCollectKeyUp)
+    window.removeEventListener('keydown', onToolToggleKeyDown)
     window.removeEventListener('resize', onResize)
 
     // Clean up projectile tracking state
     projectileModels.clear()
     tickState.projectileElapsed.clear()
     tickState.projectiles = []
+
+    // Clean up lazer beam
+    disposeLazerBeam(lazerBeam)
 
     // Clean up explosions
     for (const e of explosions) {
@@ -944,6 +1023,7 @@ export function createGameScene(
 
   function setMiningTool(tool: MiningTool) {
     tickState.activeMiningTool = tool
+    toolToggleButton?.setTool(tool)
   }
 
   /** Reset ship to just north of station with full HP and clear ambush entities. */

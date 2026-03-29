@@ -1,7 +1,8 @@
 import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { computeMeterState } from '../../src/game/recharge-meter'
-import { FIRE_RATES } from '../../src/game/blaster-constants'
+import { computeMeterState, computeLazerMeterState } from '../../src/game/recharge-meter'
+import { FIRE_RATES, LAZER_MAX_HEAT, LAZER_COOLDOWN_TIME } from '../../src/game/blaster-constants'
+import type { LazerState } from '../../src/game/blaster'
 
 function makeBlaster(cooldownRemaining: number) {
   return { cooldownRemaining }
@@ -67,6 +68,53 @@ describe('computeMeterState', () => {
     const cooldownTotal = 1 / FIRE_RATES[0]
     const state = computeMeterState(makeBlaster(cooldownTotal * 2), 1)
     assert.equal(state.progress, 0, 'progress should clamp to 0')
+  })
+})
+
+function makeLazer(overrides: Partial<LazerState> = {}): LazerState {
+  return { heat: 0, overheated: false, cooldownRemaining: 0, fireTimer: 0, ...overrides }
+}
+
+describe('computeLazerMeterState', () => {
+  it('returns hidden when heat is zero and not overheated', () => {
+    const state = computeLazerMeterState(makeLazer())
+    assert.equal(state.visible, false)
+    assert.equal(state.progress, 0)
+  })
+
+  it('returns visible with progress when heat is building', () => {
+    const state = computeLazerMeterState(makeLazer({ heat: LAZER_MAX_HEAT * 0.5 }))
+    assert.equal(state.visible, true)
+    assert.ok(
+      Math.abs(state.progress - 0.5) < 0.001,
+      `progress should be ~0.5, got ${state.progress}`,
+    )
+  })
+
+  it('uses cyan color at low heat', () => {
+    const state = computeLazerMeterState(makeLazer({ heat: LAZER_MAX_HEAT * 0.3 }))
+    assert.equal(state.color, 0x00ccff)
+  })
+
+  it('uses hot color at high heat (>=70%)', () => {
+    const state = computeLazerMeterState(makeLazer({ heat: LAZER_MAX_HEAT * 0.8 }))
+    assert.equal(state.color, 0xff6644)
+  })
+
+  it('shows overheat state with cooldown progress', () => {
+    const state = computeLazerMeterState(
+      makeLazer({ overheated: true, cooldownRemaining: LAZER_COOLDOWN_TIME }),
+    )
+    assert.equal(state.visible, true)
+    assert.ok(Math.abs(state.progress - 1.0) < 0.001)
+    assert.equal(state.color, 0xff4444)
+  })
+
+  it('cooldown progress decreases as cooldown drains', () => {
+    const state = computeLazerMeterState(
+      makeLazer({ overheated: true, cooldownRemaining: LAZER_COOLDOWN_TIME * 0.5 }),
+    )
+    assert.ok(Math.abs(state.progress - 0.5) < 0.001)
   })
 })
 

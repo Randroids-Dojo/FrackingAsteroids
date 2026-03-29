@@ -29,7 +29,7 @@ test.describe('Start Screen', () => {
     await page.locator('button', { hasText: 'SLOT 1' }).click()
     await expect(page.locator('text=SCRAP')).toBeVisible()
     await expect(page.locator('text=CARGO')).toBeVisible()
-    await expect(page.getByTestId('mining-tool-dropdown')).toBeVisible()
+    await expect(page.getByTestId('mining-tool-label')).toBeVisible()
   })
 
   test('back button returns to main menu from slot picker', async ({ page }) => {
