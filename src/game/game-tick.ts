@@ -17,7 +17,7 @@ import type { BlasterState, LazerState } from './blaster'
 import type { MetalChunk } from './metal-chunk'
 import type { EnemyShip, EnemyProjectile } from './enemy-ship'
 import type { ScrapBox } from './scrap-box'
-import type { ProjectileHit } from './collision'
+import type { ProjectileHit, BeamHit } from './collision'
 import type { TutorialStep } from '@/hooks/useTutorial'
 
 import { updateShip } from './ship-controller'
@@ -29,8 +29,19 @@ import {
   fireBlaster,
   updateProjectiles,
 } from './blaster'
-import { LAZER_MAX_HEAT, LAZER_HEAT_RATE, LAZER_FIRE_INTERVAL } from './blaster-constants'
-import { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
+import {
+  LAZER_MAX_HEAT,
+  LAZER_HEAT_RATE,
+  LAZER_FIRE_INTERVAL,
+  DAMAGE_PER_TIER,
+  LAZER_BEAM_RANGE,
+  clampTier,
+} from './blaster-constants'
+import {
+  resolveShipAsteroidCollision,
+  checkProjectileAsteroidCollisions,
+  checkBeamAsteroidCollisions,
+} from './collision'
 import {
   createMetalChunk,
   updateMetalChunk,
@@ -143,6 +154,13 @@ export interface TickResult {
   expiredProjectileIds: string[]
   // Asteroid collision details (for VFX positioning)
   asteroidHits: ProjectileHit[]
+  // Lazer beam state (for rendering the beam visual)
+  beamActive: boolean
+  beamStartX: number
+  beamStartY: number
+  beamEndX: number
+  beamEndY: number
+  beamHits: BeamHit[]
   // Metal spawned from asteroid hits
   newMetalChunks: MetalChunk[]
   // Collection events
@@ -246,6 +264,12 @@ function emptyResult(): TickResult {
     newProjectiles: [],
     expiredProjectileIds: [],
     asteroidHits: [],
+    beamActive: false,
+    beamStartX: 0,
+    beamStartY: 0,
+    beamEndX: 0,
+    beamEndY: 0,
+    beamHits: [],
     newMetalChunks: [],
     metalCollected: [],
     scrapCollected: [],
@@ -351,34 +375,80 @@ export function tick(state: TickState, input: TickInput): TickResult {
 
   // --- Fire ---
   if (state.activeMiningTool === 'lazer') {
-    // Sustained lazer: fires continuously while held, builds heat, overheats
+    // Sustained lazer beam: continuous beam while held, direct-hit damage each tick
     const hasFireTarget = state.fireTarget !== null
-    const lazerFiring = state.mouseHoldingFire && hasFireTarget
-    const shouldFire = updateLazerState(state.lazerState, dt, lazerFiring)
+    const lazerFiring = (state.mouseHoldingFire || hasFireTarget) && !state.lazerState.overheated
+    updateLazerState(state.lazerState, dt, lazerFiring)
 
-    // Fire on sustained tick OR on a single-shot fireTarget (tap-to-fire)
-    const canFire = shouldFire || (hasFireTarget && !state.mouseHoldingFire)
-    if (canFire && state.fireTarget && !state.lazerState.overheated) {
-      const newProjectiles = fireBlaster(
-        state.blasterState,
-        state.ship,
-        state.fireTarget.x,
-        state.fireTarget.y,
-        state.blasterTier,
-        'lazer',
-      )
-      // Skip blaster cooldown for lazer — heat system controls fire rate
-      state.blasterState.cooldownRemaining = 0
-      for (const p of newProjectiles) {
-        state.projectiles.push(p)
-        result.newProjectiles.push(p)
+    if (lazerFiring && state.fireTarget && !state.lazerState.overheated) {
+      // Compute beam direction from ship toward fire target
+      const dx = state.fireTarget.x - state.ship.x
+      const dy = state.fireTarget.y - state.ship.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+
+      let dirX: number
+      let dirY: number
+      if (dist < 0.5) {
+        // Fire forward along ship's facing direction
+        dirX = Math.cos(state.ship.rotation + Math.PI / 2)
+        dirY = Math.sin(state.ship.rotation + Math.PI / 2)
+      } else {
+        dirX = dx / dist
+        dirY = dy / dist
       }
-      // Single-shot tap: add a small amount of heat
-      if (!state.mouseHoldingFire) {
-        state.lazerState.heat = Math.min(
-          LAZER_MAX_HEAT,
-          state.lazerState.heat + LAZER_HEAT_RATE * LAZER_FIRE_INTERVAL,
-        )
+
+      const beamEndX = state.ship.x + dirX * LAZER_BEAM_RANGE
+      const beamEndY = state.ship.y + dirY * LAZER_BEAM_RANGE
+
+      // Beam damage scales with tier and dt (continuous DPS)
+      const baseDamage = DAMAGE_PER_TIER[clampTier(state.blasterTier) - 1]
+      const dps = baseDamage * 5 // 5x base damage per second for sustained beam
+      const frameDamage = dps * dt
+
+      const liveAsteroids = state.asteroids.filter((a) => a.hp > 0)
+      const beamResult = checkBeamAsteroidCollisions(
+        state.ship.x,
+        state.ship.y,
+        beamEndX,
+        beamEndY,
+        frameDamage,
+        liveAsteroids,
+      )
+
+      result.beamActive = true
+      result.beamStartX = state.ship.x
+      result.beamStartY = state.ship.y
+      result.beamEndX = beamResult.beamEndX
+      result.beamEndY = beamResult.beamEndY
+      result.beamHits = beamResult.hits
+
+      // Process beam hits for events and metal spawning
+      for (const hit of beamResult.hits) {
+        if (hit.deflected) {
+          result.crystallineDeflect = true
+        } else {
+          result.asteroidHit = true
+          const prevHits = state.asteroidHitCounts.get(hit.asteroidId) ?? 0
+          const newHits = prevHits + 1
+          state.asteroidHitCounts.set(hit.asteroidId, newHits)
+
+          if (newHits % HITS_PER_BREAK === 0) {
+            if (Math.random() < METAL_SPAWN_CHANCE) {
+              const hitAsteroid = state.asteroids.find((a) => a.id === hit.asteroidId)
+              const ax = hitAsteroid ? hitAsteroid.x : hit.x
+              const ay = hitAsteroid ? hitAsteroid.y : hit.y
+              const ddx = hit.x - ax
+              const ddy = hit.y - ay
+              const d = Math.sqrt(ddx * ddx + ddy * ddy)
+              const nx = d > 0.01 ? ddx / d : Math.random() - 0.5
+              const ny = d > 0.01 ? ddy / d : Math.random() - 0.5
+              const metal = createMetalChunk(hit.x, hit.y, nx, ny)
+              state.metalChunks.push(metal)
+              result.newMetalChunks.push(metal)
+              result.metalSpawned = true
+            }
+          }
+        }
       }
     }
     if (!state.mouseHoldingFire) {

@@ -8,6 +8,7 @@ import {
   updateGasStationNeon,
 } from './gas-station-model'
 import { createProjectileModel } from './projectile-model'
+import { createLazerBeam, updateLazerBeam, disposeLazerBeam } from './lazer-beam'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { createVirtualJoystick } from './virtual-joystick'
 import { createFireButton, createCollectButton } from './fire-button'
@@ -197,6 +198,10 @@ export function createGameScene(
   // --- Recharge Meter (positioned at ship, but not parented to avoid rotation) ---
   const rechargeMeter = createRechargeMeter()
   scene.add(rechargeMeter)
+
+  // --- Lazer Beam (persistent mesh, hidden when not firing) ---
+  const lazerBeam = createLazerBeam()
+  scene.add(lazerBeam)
 
   // --- Asteroids ---
   // Tutorial asteroid (single, hardcoded)
@@ -554,6 +559,41 @@ export function createGameScene(
         tickState.lazerState,
       )
 
+      // Lazer beam visual
+      updateLazerBeam(
+        lazerBeam,
+        result.beamActive,
+        result.beamStartX,
+        result.beamStartY,
+        result.beamEndX,
+        result.beamEndY,
+      )
+      if (result.beamActive) {
+        playLaserFire()
+      }
+
+      // Beam hit VFX (explosions on hit asteroids)
+      for (const hit of result.beamHits) {
+        if (hit.deflected) continue
+        // Only show explosion VFX periodically (not every frame)
+        const hitCount = tickState.asteroidHitCounts.get(hit.asteroidId) ?? 0
+        if (hitCount > 0 && hitCount % HITS_PER_BREAK === 0) {
+          const explosion = createExplosion(hit.x, hit.y)
+          scene.add(explosion.group)
+          explosions.push(explosion)
+          playExplosion()
+
+          const hitModel = asteroidModels.get(hit.asteroidId)?.model
+          if (hitModel) {
+            const chunks = breakChunks(hitModel, hit.x, hit.y, 2 + Math.floor(Math.random() * 2))
+            for (const chunk of chunks) {
+              scene.add(chunk.mesh)
+              debrisChunks.push(chunk)
+            }
+          }
+        }
+      }
+
       // Sync asteroid model positions
       for (const a of asteroids) {
         const entry = asteroidModels.get(a.id)
@@ -880,6 +920,9 @@ export function createGameScene(
     projectileModels.clear()
     tickState.projectileElapsed.clear()
     tickState.projectiles = []
+
+    // Clean up lazer beam
+    disposeLazerBeam(lazerBeam)
 
     // Clean up explosions
     for (const e of explosions) {

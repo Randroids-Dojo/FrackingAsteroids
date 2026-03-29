@@ -95,30 +95,35 @@ when passing through the gas station (drive-through repair). HP is persisted acr
 #### Lazer (Advanced Mining Tool)
 
 The Lazer is a sustained beam mining tool that allows harvesting crystalline asteroids and deals
-1.5x damage to all asteroid types. Unlike the Blaster's discrete shots, the Lazer fires a
-continuous stream of rapid projectiles while the fire button is held. Purchased at the Trade
-Station for 200 scrap. Players switch between the Blaster and Lazer via a HUD dropdown.
+1.5x damage to all asteroid types. Unlike the Blaster's discrete projectile shots, the Lazer
+emits a continuous solid beam while the fire button is held. The beam does instant line-of-sight
+damage to any asteroid it touches. Purchased at the Trade Station for 200 scrap. Players switch
+between the Blaster and Lazer via a HUD dropdown.
 
 | Property | Value |
 |----------|-------|
 | Cost | 200 scrap |
 | Damage Multiplier | 1.5x (all asteroids) |
-| Projectile Color | Cyan (`0x00CCFF`) |
+| Beam Color | Cyan (`0x00CCFF`) with bright core (`0x88EEFF`) |
 | Required For | Crystalline asteroids |
-| Fire Interval | 0.1s (10 shots/sec while sustained) |
-| Max Heat | 3.0 seconds of sustained fire |
+| Beam Range | 120 world units |
+| DPS | 5x base tier damage per second (continuous) |
+| Max Heat | 1.5 seconds of sustained fire |
 | Passive Cool Rate | 0.5 heat/sec (when not firing) |
-| Overheat Cooldown | 2.0 seconds |
+| Overheat Cooldown | 1.5 seconds |
+
+**Beam Mechanics:**
+- The beam renders as a solid glowing cyan line from the ship to the first asteroid hit (or max
+  range). Damage is applied every frame — no projectile travel time.
 
 **Heat/Cooldown System:**
 - While firing: heat builds at 1.0 heat/sec. A meter under the ship fills up (cyan → orange as
   heat rises).
-- At max heat (3s sustained fire): the lazer **overheats** — forced stop, meter turns red and
-  drains over the 2.0s cooldown period.
+- At max heat (1.5s sustained fire): the lazer **overheats** — forced stop, meter turns red and
+  drains over the 1.5s cooldown period.
 - After cooldown: heat resets to 0, lazer is ready to fire again.
 - When not firing (and not overheated): heat passively dissipates at 0.5/sec, allowing burst
   fire strategies to avoid overheating.
-- Tap-to-fire (single shot without holding) adds a small amount of heat per shot.
 
 A tutorial popup appears when the player tries to shoot a crystalline asteroid with the blaster,
 hinting that they need a Lazer. The game freezes during the popup and is dismissed by pressing

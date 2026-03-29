@@ -134,3 +134,82 @@ export function checkProjectileAsteroidCollisions(
 
   return { surviving, hits }
 }
+
+export interface BeamHit {
+  asteroidId: string
+  damage: number
+  x: number
+  y: number
+  deflected?: boolean
+}
+
+/**
+ * Closest distance from a point (cx, cy) to a line segment (ax, ay)→(bx, by).
+ */
+function pointToSegmentDistSq(
+  cx: number,
+  cy: number,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): number {
+  const abx = bx - ax
+  const aby = by - ay
+  const lenSq = abx * abx + aby * aby
+  if (lenSq < 0.0001) {
+    const dx = cx - ax
+    const dy = cy - ay
+    return dx * dx + dy * dy
+  }
+  let t = ((cx - ax) * abx + (cy - ay) * aby) / lenSq
+  t = Math.max(0, Math.min(1, t))
+  const px = ax + t * abx
+  const py = ay + t * aby
+  const dx = cx - px
+  const dy = cy - py
+  return dx * dx + dy * dy
+}
+
+/**
+ * Check a beam (line segment) against all live asteroids.
+ * Returns all asteroid hits along the beam and the hit point of the nearest one
+ * (used for beam endpoint rendering).
+ */
+export function checkBeamAsteroidCollisions(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  damage: number,
+  asteroids: Asteroid[],
+): { hits: BeamHit[]; beamEndX: number; beamEndY: number } {
+  const hits: BeamHit[] = []
+  let nearestT = 1.0
+  const dx = endX - startX
+  const dy = endY - startY
+
+  for (const a of asteroids) {
+    if (a.hp <= 0) continue
+    const aRadius = ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS
+    const distSq = pointToSegmentDistSq(a.x, a.y, startX, startY, endX, endY)
+    if (distSq < aRadius * aRadius) {
+      // Beam is always lazer — damages all asteroid types including crystalline
+      const effectiveDamage = Math.ceil(damage * LAZER_DAMAGE_MULTIPLIER)
+      a.hp = Math.max(0, a.hp - effectiveDamage)
+      hits.push({ asteroidId: a.id, damage: effectiveDamage, x: a.x, y: a.y })
+      // Find parameter t along the beam where it enters the asteroid
+      const lenSq = dx * dx + dy * dy
+      if (lenSq > 0.0001) {
+        const t = ((a.x - startX) * dx + (a.y - startY) * dy) / lenSq
+        if (t < nearestT) nearestT = Math.max(0, t)
+      }
+    }
+  }
+
+  return {
+    hits,
+    beamEndX: startX + dx * nearestT,
+    beamEndY: startY + dy * nearestT,
+  }
+}
