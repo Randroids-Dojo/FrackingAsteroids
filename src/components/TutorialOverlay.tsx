@@ -142,7 +142,12 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
   useEffect(() => {
     if (!frozen) return
 
-    const handleDismiss = () => onDismiss()
+    const handleDismiss = (e: Event) => {
+      // preventDefault stops the browser from synthesizing mousemove/mousedown
+      // from touch events that would leak into the canvas aim/fire handlers.
+      e.preventDefault()
+      onDismiss()
+    }
 
     const timerId = setTimeout(() => {
       window.addEventListener('keydown', handleDismiss, { once: true })

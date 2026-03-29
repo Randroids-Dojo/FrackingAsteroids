@@ -14,7 +14,14 @@ export function LazerTutorialPopup({ visible, onDismiss }: LazerTutorialPopupPro
   useEffect(() => {
     if (!visible) return
 
-    const handleDismiss = () => onDismiss()
+    const handleDismiss = (e: Event) => {
+      // preventDefault stops the browser from synthesizing mousemove/mousedown
+      // from touch events. Without this, the synthesized mouse events fire
+      // ~300ms after the popup unmounts and land on the canvas, setting aimState
+      // to the tap position and locking the ship's rotation there.
+      e.preventDefault()
+      onDismiss()
+    }
 
     const timerId = setTimeout(() => {
       window.addEventListener('keydown', handleDismiss, { once: true })
