@@ -381,6 +381,40 @@ describe('game-tick', () => {
   })
 
   // -------------------------------------------------------------------------
+  // 10b. Same-tick spawn + hit (player very close to enemy)
+  // -------------------------------------------------------------------------
+  describe('same-tick enemy projectile spawn and hit', () => {
+    it('reports projectile in both newEnemyProjectiles and enemyProjectileHits', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createEnemyShip } = await import('../../src/game/enemy-ship')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      // Place enemy 4 units above player — projectile spawns at offset of 4 toward player,
+      // which lands exactly on the player at (0,0).
+      const enemy = createEnemyShip(0, 4)
+      enemy.shootTimer = 0 // force immediate fire
+      state.enemy = enemy
+
+      const result = tick(state, makeInput(createInputState))
+
+      assert.ok(
+        result.newEnemyProjectiles.length > 0,
+        'enemy should have fired a projectile this tick',
+      )
+      assert.ok(
+        result.enemyProjectileHits.length > 0,
+        'projectile spawned on top of player should hit immediately',
+      )
+      // The same projectile id should appear in both lists
+      const spawnedIds = new Set(result.newEnemyProjectiles.map((p) => p.id))
+      const hitIds = result.enemyProjectileHits.map((h) => h.id)
+      const overlap = hitIds.filter((id) => spawnedIds.has(id))
+      assert.ok(overlap.length > 0, 'same-tick projectile should be in both new and hit lists')
+    })
+  })
+
+  // -------------------------------------------------------------------------
   // 11. Scrap collection
   // -------------------------------------------------------------------------
   describe('scrap collection', () => {

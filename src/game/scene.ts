@@ -634,6 +634,8 @@ export function createGameScene(
       // Enemy projectiles — add meshes
       for (const proj of result.newEnemyProjectiles) {
         scene.add(proj.mesh)
+        // Register in mesh map so same-tick hits (spawned & collided in one frame) can be cleaned up
+        enemyProjMeshMap.set(proj.id, proj.mesh)
       }
 
       // Remove expired enemy projectile meshes from scene
