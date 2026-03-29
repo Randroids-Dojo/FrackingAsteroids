@@ -29,14 +29,7 @@ import {
   fireBlaster,
   updateProjectiles,
 } from './blaster'
-import {
-  LAZER_MAX_HEAT,
-  LAZER_HEAT_RATE,
-  LAZER_FIRE_INTERVAL,
-  DAMAGE_PER_TIER,
-  LAZER_BEAM_RANGE,
-  clampTier,
-} from './blaster-constants'
+import { DAMAGE_PER_TIER, LAZER_BEAM_RANGE, clampTier } from './blaster-constants'
 import {
   resolveShipAsteroidCollision,
   checkProjectileAsteroidCollisions,
