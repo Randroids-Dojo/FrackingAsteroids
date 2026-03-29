@@ -224,6 +224,36 @@ export default function Home() {
     return () => timers.forEach(clearTimeout)
   }, [tutorialStep])
 
+  // Tutorial catch-up: auto-advance trade steps when their conditions are already met.
+  // This prevents the tutorial from getting stuck if the player performed actions
+  // (opened trade, sold materials, bought upgrades) before the tutorial reached those steps.
+  const tutorialActive = tutorial.active
+  const onEnteredStation = tutorial.onEnteredStation
+  const onSoldMaterials = tutorial.onSoldMaterials
+  const onBoughtUpgrade = tutorial.onBoughtUpgrade
+
+  useEffect(() => {
+    if (!tutorialActive) return
+    if (tutorialStep === 'approach-station' && tradeMenuOpen) {
+      onEnteredStation()
+    }
+  }, [tutorialActive, tutorialStep, tradeMenuOpen, onEnteredStation])
+
+  useEffect(() => {
+    if (!tutorialActive) return
+    if (tutorialStep === 'trade-sell' && cargo.silver === 0 && cargo.gold === 0) {
+      onSoldMaterials()
+    }
+  }, [tutorialActive, tutorialStep, cargo.silver, cargo.gold, onSoldMaterials])
+
+  useEffect(() => {
+    if (!tutorialActive) return
+    if (tutorialStep === 'trade-buy' && upgrades.blaster > 1) {
+      onBoughtUpgrade()
+      setTradeMenuOpen(false)
+    }
+  }, [tutorialActive, tutorialStep, upgrades.blaster, onBoughtUpgrade])
+
   // Freeze ship when the shop FAB is visible during the tutorial approach-station step.
   // Unfreezes when the player clicks the FAB (advancing to trade-sell, which hides the overlay).
   const shopTutorialFreeze =
