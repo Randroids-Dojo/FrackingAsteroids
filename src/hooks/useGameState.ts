@@ -24,6 +24,7 @@ export interface GameStateHook {
   onScrapCollect: (amount: number) => void
   sellMaterials: () => number
   buyUpgrade: (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void) => void
+  spendScrap: (amount: number) => boolean
 }
 
 export function useGameState(): GameStateHook {
@@ -89,6 +90,19 @@ export function useGameState(): GameStateHook {
     [],
   )
 
+  /** Deduct scrap if affordable. Returns true on success. */
+  const spendScrap = useCallback((amount: number): boolean => {
+    let success = false
+    setScrap((prev) => {
+      if (prev >= amount) {
+        success = true
+        return prev - amount
+      }
+      return prev
+    })
+    return success
+  }, [])
+
   return {
     paused,
     scrap,
@@ -102,5 +116,6 @@ export function useGameState(): GameStateHook {
     onScrapCollect,
     sellMaterials,
     buyUpgrade,
+    spendScrap,
   }
 }

@@ -1,5 +1,5 @@
 import type { Ship } from '@/lib/schemas'
-import type { Projectile } from './types'
+import type { MiningTool, Projectile } from './types'
 import {
   BASE_PROJECTILE_SPEED,
   SPEED_MULTIPLIERS,
@@ -31,6 +31,32 @@ export function createBlasterState(): BlasterState {
 }
 
 /**
+ * Mutable fire-input state that tracks whether the mouse/touch is held down.
+ * When the game pauses (e.g. a popup overlay), mouseup events may not reach
+ * the canvas, leaving `mouseHoldingFire` stuck true. Call `clearStaleFireState`
+ * on pause→unpause transitions to prevent the ship from auto-firing and
+ * locking its rotation to a stale aim position.
+ */
+export interface FireInputState {
+  mouseHoldingFire: boolean
+  fireTarget: { x: number; y: number } | null
+}
+
+export function createFireInputState(): FireInputState {
+  return { mouseHoldingFire: false, fireTarget: null }
+}
+
+/**
+ * Clear stale fire-input state after a pause→unpause transition.
+ * Prevents the hold-to-fire loop from using stale aim data, which would
+ * lock the ship's rotation and auto-fire at the pre-pause position.
+ */
+export function clearStaleFireState(state: FireInputState): void {
+  state.mouseHoldingFire = false
+  state.fireTarget = null
+}
+
+/**
  * Update blaster cooldown. Call once per frame.
  */
 export function updateBlasterCooldown(blaster: BlasterState, dt: number): void {
@@ -53,6 +79,7 @@ export function fireBlaster(
   targetX: number,
   targetY: number,
   tier: number,
+  tool: MiningTool = 'blaster',
 ): Projectile[] {
   if (blaster.cooldownRemaining > 0) return []
 
@@ -84,17 +111,17 @@ export function fireBlaster(
     // Triple spread: center + two offset bolts
     for (const offset of [-TRIPLE_SPREAD_ANGLE, 0, TRIPLE_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
-      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage))
+      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage, tool))
     }
   } else if (clamped >= 4) {
     // Dual spread: two offset bolts
     for (const offset of [-DUAL_SPREAD_ANGLE, DUAL_SPREAD_ANGLE]) {
       const angle = baseAngle + offset
-      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage))
+      projectiles.push(makeProjectile(ship.x, ship.y, angle, speed, damage, tool))
     }
   } else {
     // Single bolt
-    projectiles.push(makeProjectile(ship.x, ship.y, baseAngle, speed, damage))
+    projectiles.push(makeProjectile(ship.x, ship.y, baseAngle, speed, damage, tool))
   }
 
   return projectiles
@@ -106,6 +133,7 @@ function makeProjectile(
   angle: number,
   speed: number,
   damage: number,
+  tool: MiningTool = 'blaster',
 ): Projectile {
   return {
     id: generateProjectileId(),
@@ -114,6 +142,7 @@ function makeProjectile(
     velocityX: Math.cos(angle) * speed,
     velocityY: Math.sin(angle) * speed,
     damage,
+    tool,
   }
 }
 

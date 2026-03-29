@@ -9,17 +9,9 @@ import {
 } from './gas-station-model'
 import { createProjectileModel } from './projectile-model'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
-import { updateShip, aimToRotation } from './ship-controller'
 import { createVirtualJoystick } from './virtual-joystick'
 import { createFireButton, createCollectButton } from './fire-button'
-import {
-  createBlasterState,
-  updateBlasterCooldown,
-  fireBlaster,
-  updateProjectiles,
-} from './blaster'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
-import { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
 import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
 import type { Explosion } from './explosion'
 import { createHealthMeter, updateHealthMeter } from './asteroid-health-meter'
@@ -30,17 +22,10 @@ import {
   HITS_PER_BREAK,
 } from './asteroid-debris'
 import type { DebrisChunk } from './asteroid-debris'
-import {
-  createMetalChunk,
-  updateMetalChunk,
-  bounceMetalOffShip,
-  bounceMetalOffAsteroid,
-  attractMetalToShip,
-  disposeMetalChunk,
-  METAL_SPAWN_CHANCE,
-} from './metal-chunk'
-import type { MetalChunk } from './metal-chunk'
-import type { Asteroid, Projectile } from './types'
+import { disposeMetalChunk } from './metal-chunk'
+import type { MiningTool } from './types'
+import { tick, createTickState, PLAYER_MAX_HP } from './game-tick'
+import type { TickState, TickInput } from './game-tick'
 import { createCollectorVfx, updateCollectorVfx, disposeCollectorVfx } from './collector-vfx'
 import {
   resumeAudio,
@@ -83,28 +68,14 @@ import type { TwinkleStars, NebulaSystem, BlackHole } from './background-effects
 import { createEngineTrail, updateEngineTrail, disposeEngineTrail } from './engine-trail'
 import type { EngineTrail } from './engine-trail'
 import {
-  createEnemyShip,
-  updateEnemyShip,
-  checkProjectileEnemyCollisions,
-  checkEnemyProjectilePlayerCollisions,
-  updateEnemyProjectile,
   disposeEnemyProjectile,
   disposeEnemyShip,
   createShipwreckDebris,
   updateShipwreckDebris,
   disposeShipwreckDebris,
-  ENEMY_PROJECTILE_DAMAGE,
-  ENEMY_SPAWN_DISTANCE,
 } from './enemy-ship'
-import type { EnemyShip, EnemyProjectile, ShipwreckDebris } from './enemy-ship'
-import {
-  createScrapBox,
-  updateScrapBox,
-  attractScrapBoxToShip,
-  disposeScrapBox,
-  SCRAP_BOX_VALUE,
-} from './scrap-box'
-import type { ScrapBox } from './scrap-box'
+import type { ShipwreckDebris } from './enemy-ship'
+import { disposeScrapBox } from './scrap-box'
 import type { TutorialStep } from '@/hooks/useTutorial'
 
 function disposeMesh(obj: THREE.Object3D): void {
@@ -128,29 +99,9 @@ const CAMERA_HEIGHT = 150
 const CAMERA_LERP = 0.08
 const STAR_COUNT = 400
 
-/** Distance at which enemy triggers the tutorial freeze. */
-const ENEMY_NEARBY_DISTANCE = 60
-
-/** Player max health. */
-export const PLAYER_MAX_HP = 100
+export { PLAYER_MAX_HP } from './game-tick'
 
 export type MetalVariant = 'silver' | 'gold'
-
-/** Damage per ambush enemy projectile — high but takes ~5 hits to kill. */
-const AMBUSH_PROJECTILE_DAMAGE = 20
-
-/** Number of ambush enemies that spawn. */
-const AMBUSH_ENEMY_COUNT = 3
-
-/** Distance north of player where ambush enemies spawn. */
-const AMBUSH_SPAWN_OFFSET_Y = 70
-
-/** Horizontal spread between ambush enemies. */
-const AMBUSH_SPAWN_SPREAD_X = 25
-
-/** Ambush enemies fire every 0.3–0.5 seconds. */
-const AMBUSH_SHOOT_MIN = 0.3
-const AMBUSH_SHOOT_MAX = 0.5
 
 export interface GameSceneOptions {
   onCollect?: (variant: MetalVariant) => void
@@ -167,12 +118,14 @@ export interface GameSceneOptions {
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
+  onCrystallineDeflect?: () => void
 }
 
 export interface GameScene {
   dispose: () => void
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
+  setMiningTool: (tool: MiningTool) => void
 }
 
 /**
@@ -199,6 +152,7 @@ export function createGameScene(
   const onStationRange = options?.onStationRange
   const onStationDriveThrough = options?.onStationDriveThrough
   const onPlayerKilled = options?.onPlayerKilled
+  const onCrystallineDeflect = options?.onCrystallineDeflect
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -260,12 +214,10 @@ export function createGameScene(
     healthMeter: tutorialHealthMeter,
   })
 
-  // --- Space Gas Station (several screens north of asteroid) ---
+  // --- Space Gas Station (north of the tutorial asteroid) ---
   const GAS_STATION_X = 30
-  const GAS_STATION_Y = 350
-  const STATION_NEAR_DISTANCE = 80
+  const GAS_STATION_Y = 200
   const STATION_ENTER_DISTANCE = 60
-  const STATION_REPAIR_DISTANCE = 15
   const gasStation = createGasStationModel()
   gasStation.group.position.set(GAS_STATION_X, GAS_STATION_Y, 0)
   initGasStationNeon(gasStation.neonMeshes)
@@ -311,63 +263,35 @@ export function createGameScene(
   botBar2.position.set(-5, -2.5, 0)
   botBar2.rotation.z = 0.5
   arrowGroup.add(botBar2)
-  let nearStationFired = false
-  let wasInStationRange = false
-  let repairedThisVisit = false
+  // Station proximity flags are now in tickState
 
-  // --- Game State ---
-  const ship = { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 }
-  const blasterState = createBlasterState()
-  let projectiles: Projectile[] = []
-  const projectileElapsed = new Map<string, number>()
+  // --- Game State (shared with game-tick.ts) ---
+  const tickState: TickState = createTickState({
+    asteroids: [
+      {
+        id: 'asteroid-0',
+        x: 30,
+        y: 30,
+        velocityX: 0,
+        velocityY: 0,
+        type: 'common',
+        hp: 15,
+        maxHp: 15,
+        size: 1,
+      },
+    ],
+    stationPosition: { x: GAS_STATION_X, y: GAS_STATION_Y },
+  })
+
+  // Convenience aliases for rendering code
+  const ship = tickState.ship
+  const asteroids = tickState.asteroids
+
+  // Rendering-only state (not part of game tick)
   const projectileModels = new Map<string, THREE.Group>()
-  const blasterTier = 1
-  let fireRateBonus = 1.0
-
-  // Asteroid game state
-  const asteroids: Asteroid[] = [
-    {
-      id: 'asteroid-0',
-      x: 30,
-      y: 30,
-      velocityX: 0,
-      velocityY: 0,
-      type: 'common',
-      hp: 15,
-      maxHp: 15,
-      size: 1,
-    },
-  ]
-
-  // Active explosions
   const explosions: Explosion[] = []
-
-  // Active debris chunks flying off asteroids
   const debrisChunks: DebrisChunk[] = []
-
-  // Persistent metal chunks floating in space
-  const metalChunks: MetalChunk[] = []
-
-  // --- Enemy Ship State ---
-  let enemy: EnemyShip | null = null
-  const enemyProjectiles: EnemyProjectile[] = []
   const shipwreckDebrisList: ShipwreckDebris[] = []
-  const scrapBoxes: ScrapBox[] = []
-  let playerHp = PLAYER_MAX_HP
-  let firstMetalCollectedTime: number | null = null
-  let enemySpawned = false
-  let enemyNearbyFired = false
-
-  // --- Ambush State ---
-  const ambushEnemies: EnemyShip[] = []
-  let ambushSpawned = false
-  let playerKilledFired = false
-
-  function fireEnemyNearby() {
-    if (enemyNearbyFired) return
-    enemyNearbyFired = true
-    onEnemyNearby?.()
-  }
 
   // --- Collector VFX ---
   const collectorVfx = createCollectorVfx()
@@ -390,9 +314,7 @@ export function createGameScene(
   const engineTrail: EngineTrail = createEngineTrail()
   scene.add(engineTrail.group)
 
-  // Track cumulative hits on each asteroid for chunk break-off timing
-  const asteroidHitCounts = new Map<string, number>()
-  asteroidHitCounts.set('asteroid-0', 0)
+  // Hit counts are tracked in tickState.asteroidHitCounts
 
   // --- Input ---
   const inputState = createInputState()
@@ -565,156 +487,231 @@ export function createGameScene(
     const dt = Math.min((now - prevTime) / 1000, 0.05) // cap at 50ms
     prevTime = now
 
-    if (!getPaused()) {
-      // Resume audio if we were just paused
+    // --- Build per-frame input for the shared tick function ---
+    const paused = getPaused()
+
+    // Compute world-space aim from screen-space aimState
+    let aimWorldPosition: { x: number; y: number } | null = null
+    if (aimState.active) {
+      const w = screenToWorld(aimState.screenX, aimState.screenY)
+      aimWorldPosition = { x: w.x, y: w.y }
+    }
+
+    // Sync fire state from DOM event handlers into tickState
+    if (fireTarget) {
+      tickState.fireTarget = fireTarget
+      fireTarget = null
+    }
+
+    // Mobile fire button
+    if (!paused && fireButton && fireButton.isPressed()) {
+      const angle = ship.rotation + Math.PI / 2
+      tickState.fireTarget = {
+        x: ship.x + Math.cos(angle) * 100,
+        y: ship.y + Math.sin(angle) * 100,
+      }
+    }
+
+    // Always sync from DOM — tick's input cooldown handles stale events
+    tickState.mouseHoldingFire = mouseHoldingFire
+    tickState.aimActive = aimState.active
+
+    const tickInput: TickInput = {
+      dt,
+      paused,
+      inputState,
+      aimWorldPosition,
+      collecting,
+      tutorialStep: getTutorialStep(),
+    }
+
+    // Snapshot mesh-bearing objects before tick (tick may splice them out)
+    const metalMeshMap = new Map(tickState.metalChunks.map((m) => [m.id, m.mesh]))
+    const scrapMeshMap = new Map(tickState.scrapBoxes.map((s) => [s.id, s.mesh]))
+    const enemyProjMeshMap = new Map(tickState.enemyProjectiles.map((p) => [p.id, p.mesh]))
+    const enemyBeforeTick = tickState.enemy
+
+    const result = tick(tickState, tickInput)
+
+    // Sync cleared aim/fire state back to scene-level variables
+    aimState.active = tickState.aimActive
+    mouseHoldingFire = tickState.mouseHoldingFire
+
+    if (!paused) {
+      // Resume audio if we were just unpaused
       if (wasPaused) {
         resumeMusic()
       }
 
-      // Compute aim rotation (mouse/touch → world → angle)
-      const rotation = aimToRotation(ship, aimState, screenToWorld)
+      // --- Process tick result for rendering ---
 
-      updateShip(ship, inputState, dt, rotation)
+      // Recharge meter (rendering-only)
+      updateRechargeMeter(rechargeMeter, tickState.blasterState, tickState.blasterTier)
 
-      // Tutorial: detect ship movement
-      if (Math.sqrt(ship.x * ship.x + ship.y * ship.y) > 2) {
-        onShipMoved?.()
-      }
-
-      // --- Update Asteroid Drift ---
+      // Sync asteroid model positions
       for (const a of asteroids) {
-        if (a.velocityX !== 0 || a.velocityY !== 0) {
-          a.x += a.velocityX * dt
-          a.y += a.velocityY * dt
-          const entry = asteroidModels.get(a.id)
-          if (entry) {
-            entry.model.position.set(a.x, a.y, 0)
-          }
+        const entry = asteroidModels.get(a.id)
+        if (entry) {
+          entry.model.position.set(a.x, a.y, 0)
         }
       }
 
-      // --- Ship-Asteroid Collision ---
-      for (const a of asteroids) {
-        if (a.hp > 0) {
-          resolveShipAsteroidCollision(ship, a)
-        }
+      // New projectile models
+      if (result.newProjectiles.length > 0) {
+        playLaserFire()
+      }
+      for (const p of result.newProjectiles) {
+        const model = createProjectileModel(p.tool)
+        model.position.set(p.x, p.y, 0)
+        const angle = Math.atan2(p.velocityY, p.velocityX)
+        model.rotation.z = angle - Math.PI / 2
+        scene.add(model)
+        projectileModels.set(p.id, model)
       }
 
-      // --- Blaster ---
-      updateBlasterCooldown(blasterState, dt)
-      updateRechargeMeter(rechargeMeter, blasterState, blasterTier)
-
-      // Hold-to-fire: re-set fireTarget each frame while button is held
-      if (mouseHoldingFire && aimState.active) {
-        fireTarget = screenToWorld(aimState.screenX, aimState.screenY)
-      }
-      if (fireButton && fireButton.isPressed()) {
-        const angle = ship.rotation + Math.PI / 2
-        fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
+      // Remove expired/hit projectile models
+      for (const id of result.expiredProjectileIds) {
+        removeProjectileModel(id)
       }
 
-      // Fire if player clicked/tapped
-      if (fireTarget) {
-        const newProjectiles = fireBlaster(
-          blasterState,
-          ship,
-          fireTarget.x,
-          fireTarget.y,
-          blasterTier,
-        )
-        // Apply fire rate bonus (reduces cooldown)
-        if (newProjectiles.length > 0 && fireRateBonus > 1) {
-          blasterState.cooldownRemaining /= fireRateBonus
-        }
-        if (newProjectiles.length > 0) {
-          playLaserFire()
-        }
-        for (const p of newProjectiles) {
-          projectiles.push(p)
-          const model = createProjectileModel()
-          model.position.set(p.x, p.y, 0)
-          const angle = Math.atan2(p.velocityY, p.velocityX)
-          model.rotation.z = angle - Math.PI / 2
-          scene.add(model)
-          projectileModels.set(p.id, model)
-        }
-        fireTarget = null
-      }
+      // Asteroid hit VFX
+      for (const hit of result.asteroidHits) {
+        removeProjectileModel(hit.projectileId)
+        if (hit.deflected) continue
 
-      // Update projectile positions and collect IDs before update
-      const prevCount = projectiles.length
-      const prevIds = prevCount > 0 ? projectiles.map((p) => p.id) : []
-      projectiles = updateProjectiles(projectiles, dt, projectileElapsed)
+        const explosion = createExplosion(hit.x, hit.y)
+        scene.add(explosion.group)
+        explosions.push(explosion)
+        playExplosion()
 
-      // Remove expired projectile models (only if something was removed)
-      if (projectiles.length < prevCount) {
-        const currentIds = new Set(projectiles.map((p) => p.id))
-        for (const id of prevIds) {
-          if (!currentIds.has(id)) {
-            removeProjectileModel(id)
-          }
-        }
-      }
-
-      // --- Projectile-Asteroid Collision ---
-      const liveAsteroids = asteroids.filter((a) => a.hp > 0)
-      if (projectiles.length > 0 && liveAsteroids.length > 0) {
-        const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, liveAsteroids)
-
-        // Tutorial: detect asteroid hit
-        if (hits.length > 0) {
-          onAsteroidHit?.()
-        }
-
-        // Remove hit projectile models, spawn explosions and debris
-        for (const hit of hits) {
-          removeProjectileModel(hit.projectileId)
-          projectileElapsed.delete(hit.projectileId)
-
-          // Spawn explosion at hit position
-          const explosion = createExplosion(hit.x, hit.y)
-          scene.add(explosion.group)
-          explosions.push(explosion)
-          playExplosion()
-
-          // Break off asteroid chunks every few hits
-          const prevHits = asteroidHitCounts.get(hit.asteroidId) ?? 0
-          const newHits = prevHits + 1
-          asteroidHitCounts.set(hit.asteroidId, newHits)
-
-          if (newHits % HITS_PER_BREAK === 0) {
-            const hitModel = asteroidModels.get(hit.asteroidId)?.model
-            if (!hitModel) continue
+        // Break off visual debris chunks
+        const hitCount = tickState.asteroidHitCounts.get(hit.asteroidId) ?? 0
+        if (hitCount > 0 && hitCount % HITS_PER_BREAK === 0) {
+          const hitModel = asteroidModels.get(hit.asteroidId)?.model
+          if (hitModel) {
             const chunks = breakChunks(hitModel, hit.x, hit.y, 2 + Math.floor(Math.random() * 2))
             for (const chunk of chunks) {
               scene.add(chunk.mesh)
               debrisChunks.push(chunk)
             }
-
-            // Occasionally spawn a metal nugget alongside the debris
-            if (Math.random() < METAL_SPAWN_CHANCE) {
-              const hitAsteroid = asteroids.find((a) => a.id === hit.asteroidId)
-              const ax = hitAsteroid ? hitAsteroid.x : hit.x
-              const ay = hitAsteroid ? hitAsteroid.y : hit.y
-              const dx = hit.x - ax
-              const dy = hit.y - ay
-              const d = Math.sqrt(dx * dx + dy * dy)
-              const nx = d > 0.01 ? dx / d : Math.random() - 0.5
-              const ny = d > 0.01 ? dy / d : Math.random() - 0.5
-              const metal = createMetalChunk(hit.x, hit.y, nx, ny)
-              scene.add(metal.mesh)
-              metalChunks.push(metal)
-
-              // Tutorial: detect metal spawn
-              onMetalSpawned?.()
-            }
           }
         }
-
-        projectiles = surviving
       }
 
-      // --- Update Asteroid Health Meters & Visibility ---
+      // New metal chunk models
+      for (const metal of result.newMetalChunks) {
+        scene.add(metal.mesh)
+      }
+
+      // Metal collected — remove meshes from scene
+      for (const mc of result.metalCollected) {
+        const mesh = metalMeshMap.get(mc.id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
+        playCollectPling()
+      }
+
+      // Scrap collected — remove meshes from scene
+      for (const sc of result.scrapCollected) {
+        const mesh = scrapMeshMap.get(sc.id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
+        playCollectPling()
+      }
+
+      // Enemy spawned — add mesh to scene
+      if (result.enemySpawned) {
+        scene.add(result.enemySpawned.mesh)
+        const enemyHealthMeter = createHealthMeter()
+        result.enemySpawned.mesh.add(enemyHealthMeter)
+        result.enemySpawned.mesh.userData.healthMeter = enemyHealthMeter
+      }
+
+      // Enemy projectiles — add meshes
+      for (const proj of result.newEnemyProjectiles) {
+        scene.add(proj.mesh)
+      }
+
+      // Remove expired enemy projectile meshes from scene
+      for (const id of result.expiredEnemyProjectileIds) {
+        const mesh = enemyProjMeshMap.get(id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
+      }
+
+      // Remove enemy projectiles that hit the player
+      for (const hit of result.enemyProjectileHits) {
+        const mesh = enemyProjMeshMap.get(hit.id)
+        if (mesh) {
+          scene.remove(mesh)
+          mesh.traverse(disposeMesh)
+        }
+        const hitExplosion = createExplosion(hit.x, hit.y)
+        scene.add(hitExplosion.group)
+        explosions.push(hitExplosion)
+        addTrauma(screenShake, 0.4 + (hit.damage / PLAYER_MAX_HP) * 0.4)
+        playPlayerHit()
+      }
+
+      // Enemy destroyed — remove mesh and spawn VFX
+      if (result.enemyDestroyed && enemyBeforeTick) {
+        scene.remove(enemyBeforeTick.mesh)
+        disposeEnemyShip(enemyBeforeTick)
+        const wreck = createShipwreckDebris(result.enemyDestroyed.x, result.enemyDestroyed.y)
+        scene.add(wreck.group)
+        shipwreckDebrisList.push(wreck)
+
+        const bigExplosion = createExplosion(result.enemyDestroyed.x, result.enemyDestroyed.y)
+        scene.add(bigExplosion.group)
+        explosions.push(bigExplosion)
+        playExplosion()
+
+        // Scrap box mesh was created by tick via createScrapBox
+        const lastBox = tickState.scrapBoxes[tickState.scrapBoxes.length - 1]
+        if (lastBox) scene.add(lastBox.mesh)
+      }
+
+      // Ambush enemies — add meshes
+      for (const ae of result.ambushEnemiesSpawned) {
+        scene.add(ae.mesh)
+      }
+
+      // Update ambush enemy mesh positions
+      for (const ae of tickState.ambushEnemies) {
+        if (ae.alive) {
+          ae.mesh.position.set(ae.x, ae.y, 0)
+          ae.mesh.rotation.z = ae.rotation
+        }
+      }
+
+      // --- Fire callbacks from tick result ---
+      if (result.shipMoved) onShipMoved?.()
+      if (result.asteroidHit) onAsteroidHit?.()
+      if (result.crystallineDeflect) onCrystallineDeflect?.()
+      if (result.metalSpawned) onMetalSpawned?.()
+      for (const mc of result.metalCollected) {
+        onCollect?.(mc.variant)
+        onMetalCollected?.()
+      }
+      if (result.playerDamaged) onPlayerDamage?.(tickState.playerHp)
+      for (const sc of result.scrapCollected) {
+        onScrapCollect?.(sc.value)
+        onScrapCollected?.()
+      }
+      if (result.enemyNearby) onEnemyNearby?.()
+      if (result.enemyDestroyedEvent) onEnemyDestroyed?.()
+      if (result.nearStation) onNearStation?.()
+      if (result.stationRangeChanged !== null) onStationRange?.(result.stationRangeChanged)
+      if (result.stationRepaired) onStationDriveThrough?.()
+      if (result.playerKilled) onPlayerKilled?.()
+
+      // --- Update asteroid health meters & visibility ---
       for (const a of asteroids) {
         const entry = asteroidModels.get(a.id)
         if (entry) {
@@ -723,129 +720,11 @@ export function createGameScene(
         }
       }
 
-      // --- Enemy Spawn ---
-      if (!enemySpawned && firstMetalCollectedTime !== null) {
-        enemySpawned = true
-        const spawnAngle = Math.random() * Math.PI * 2
-        const ex = ship.x + Math.cos(spawnAngle) * ENEMY_SPAWN_DISTANCE
-        const ey = ship.y + Math.sin(spawnAngle) * ENEMY_SPAWN_DISTANCE
-        enemy = createEnemyShip(ex, ey)
-        scene.add(enemy.mesh)
-
-        // Add a health meter to the enemy
-        const enemyHealthMeter = createHealthMeter()
-        enemy.mesh.add(enemyHealthMeter)
-        enemy.mesh.userData.healthMeter = enemyHealthMeter
-      }
-
-      // --- Update Enemy Ship ---
-      if (enemy && enemy.alive) {
-        // Notify tutorial when enemy gets close enough to be visible
-        if (!enemyNearbyFired) {
-          const edx = enemy.x - ship.x
-          const edy = enemy.y - ship.y
-          const eDist = Math.sqrt(edx * edx + edy * edy)
-          if (eDist <= ENEMY_NEARBY_DISTANCE) {
-            fireEnemyNearby()
-          }
-        }
-
-        const newEnemyProjs = updateEnemyShip(enemy, ship, dt)
-        for (const proj of newEnemyProjs) {
-          scene.add(proj.mesh)
-          enemyProjectiles.push(proj)
-        }
-
-        // Update enemy health meter
-        const ehm = enemy.mesh.userData.healthMeter as THREE.Group | undefined
+      // --- Update enemy health meter ---
+      if (tickState.enemy && tickState.enemy.alive) {
+        const ehm = tickState.enemy.mesh.userData.healthMeter as THREE.Group | undefined
         if (ehm) {
-          updateHealthMeter(ehm, enemy.hp, enemy.maxHp)
-        }
-
-        // Check player projectiles hitting enemy
-        if (projectiles.length > 0) {
-          const { surviving: afterEnemy, hitProjectileIds } = checkProjectileEnemyCollisions(
-            projectiles,
-            enemy,
-          )
-          for (const hitId of hitProjectileIds) {
-            removeProjectileModel(hitId)
-            projectileElapsed.delete(hitId)
-
-            // Spawn explosion at enemy position
-            const explosion = createExplosion(enemy.x, enemy.y)
-            scene.add(explosion.group)
-            explosions.push(explosion)
-          }
-          projectiles = afterEnemy
-
-          // Enemy destroyed
-          if (!enemy.alive) {
-            // Spawn shipwreck debris explosion
-            const wreck = createShipwreckDebris(enemy.x, enemy.y)
-            scene.add(wreck.group)
-            shipwreckDebrisList.push(wreck)
-
-            // Also spawn a regular big explosion
-            const bigExplosion = createExplosion(enemy.x, enemy.y)
-            scene.add(bigExplosion.group)
-            explosions.push(bigExplosion)
-            playExplosion()
-
-            // Drop a scrap box
-            const box = createScrapBox(enemy.x, enemy.y)
-            scene.add(box.mesh)
-            scrapBoxes.push(box)
-
-            // Remove enemy mesh
-            scene.remove(enemy.mesh)
-            disposeEnemyShip(enemy)
-            enemy = null
-            onEnemyDestroyed?.()
-          }
-        }
-      }
-
-      // --- Update Enemy Projectiles ---
-      for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-        const alive = updateEnemyProjectile(enemyProjectiles[i], dt)
-        if (!alive) {
-          scene.remove(enemyProjectiles[i].mesh)
-          disposeEnemyProjectile(enemyProjectiles[i])
-          enemyProjectiles.splice(i, 1)
-        }
-      }
-
-      // --- Enemy Projectile → Player Collision ---
-      if (enemyProjectiles.length > 0) {
-        const hitIdSet = new Set(checkEnemyProjectilePlayerCollisions(enemyProjectiles, ship))
-        if (hitIdSet.size > 0) {
-          for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-            const proj = enemyProjectiles[i]
-            if (!hitIdSet.has(proj.id)) continue
-
-            // Spawn small explosion at hit position
-            const hitExplosion = createExplosion(proj.x, proj.y)
-            scene.add(hitExplosion.group)
-            explosions.push(hitExplosion)
-
-            scene.remove(proj.mesh)
-            disposeEnemyProjectile(proj)
-            enemyProjectiles.splice(i, 1)
-
-            // Apply damage to player (ambush projectiles deal much more)
-            const damage = proj.mesh.userData.ambush
-              ? AMBUSH_PROJECTILE_DAMAGE
-              : ENEMY_PROJECTILE_DAMAGE
-            playerHp = Math.max(0, playerHp - damage)
-
-            // Screen shake & hit SFX
-            addTrauma(screenShake, 0.4 + (damage / PLAYER_MAX_HP) * 0.4)
-            playPlayerHit()
-
-            fireEnemyNearby()
-          }
-          onPlayerDamage?.(playerHp)
+          updateHealthMeter(ehm, tickState.enemy.hp, tickState.enemy.maxHp)
         }
       }
 
@@ -856,25 +735,6 @@ export function createGameScene(
           scene.remove(shipwreckDebrisList[i].group)
           disposeShipwreckDebris(shipwreckDebrisList[i])
           shipwreckDebrisList.splice(i, 1)
-        }
-      }
-
-      // --- Update Scrap Boxes ---
-      for (let i = scrapBoxes.length - 1; i >= 0; i--) {
-        const box = scrapBoxes[i]
-        updateScrapBox(box, dt)
-
-        if (collecting) {
-          const collected = attractScrapBoxToShip(box, ship, dt)
-          if (collected) {
-            scene.remove(box.mesh)
-            disposeScrapBox(box)
-            scrapBoxes.splice(i, 1)
-            playCollectPling()
-            onScrapCollect?.(SCRAP_BOX_VALUE)
-            onScrapCollected?.()
-            continue
-          }
         }
       }
 
@@ -898,39 +758,6 @@ export function createGameScene(
         }
       }
 
-      // --- Update Metal Chunks ---
-      for (let i = metalChunks.length - 1; i >= 0; i--) {
-        const metal = metalChunks[i]
-        updateMetalChunk(metal, dt)
-
-        // Attract toward ship when collector is active
-        if (collecting) {
-          const collected = attractMetalToShip(metal, ship, dt)
-          if (collected) {
-            const variant = metal.variant
-            scene.remove(metal.mesh)
-            disposeMetalChunk(metal)
-            metalChunks.splice(i, 1)
-            playCollectPling()
-            if (firstMetalCollectedTime === null) {
-              firstMetalCollectedTime = now
-            }
-            onCollect?.(variant)
-
-            // Tutorial: detect metal collection
-            onMetalCollected?.()
-            continue
-          }
-        }
-
-        if (!collecting) {
-          bounceMetalOffShip(metal, ship)
-        }
-        for (const a of asteroids) {
-          bounceMetalOffAsteroid(metal, a)
-        }
-      }
-
       // --- Collector VFX & Audio ---
       updateCollectorVfx(collectorVfx, dt, collecting, ship.x, ship.y)
       if (collecting) {
@@ -943,15 +770,15 @@ export function createGameScene(
       updateGasStationNeon(gasStation.neonMeshes, now / 1000)
 
       // --- Music Intensity ---
-      // Combat intensity rises when enemies are present or projectiles are flying
-      const hasEnemies = (enemy && enemy.alive) || ambushEnemies.some((ae) => ae.alive)
-      const hasCombat = hasEnemies || enemyProjectiles.length > 0
+      const hasEnemies =
+        (tickState.enemy && tickState.enemy.alive) || tickState.ambushEnemies.some((ae) => ae.alive)
+      const hasCombat = hasEnemies || tickState.enemyProjectiles.length > 0
       setMusicIntensity(hasCombat ? 0.8 : 0.15)
       updateMusic(dt)
 
       // --- Engine Trail & Sound ---
       const shipSpeed = Math.sqrt(ship.velocityX * ship.velocityX + ship.velocityY * ship.velocityY)
-      const speedNorm = Math.min(1, shipSpeed / 50) // 50 = SHIP_MAX_SPEED
+      const speedNorm = Math.min(1, shipSpeed / 50)
       updateEngineTrail(engineTrail, dt, ship.x, ship.y, ship.rotation, speedNorm)
       updateEngineSound(speedNorm)
 
@@ -963,123 +790,50 @@ export function createGameScene(
       updateNebulaSystem(nebulaSystem, now / 1000, camera.position.x, camera.position.y)
       updateBlackHole(blackHole, now / 1000, camera.position.x, camera.position.y)
 
-      // --- Station Proximity ---
-      const dx = GAS_STATION_X - ship.x
-      const dy = GAS_STATION_Y - ship.y
-      const sDist = Math.sqrt(dx * dx + dy * dy)
-
-      // Fire near-station when within range (one-shot for tutorial arrow)
-      if (!nearStationFired && sDist <= STATION_NEAR_DISTANCE) {
-        nearStationFired = true
-        onNearStation?.()
-      }
-
-      // Continuous enter/leave detection for shop FAB
-      const inStationRange = sDist <= STATION_ENTER_DISTANCE
-      if (inStationRange !== wasInStationRange) {
-        wasInStationRange = inStationRange
-        onStationRange?.(inStationRange)
-        if (!inStationRange) repairedThisVisit = false
-      }
-
-      // Drive-through repair: heal to full HP when passing close to the station center
-      if (inStationRange && !repairedThisVisit && sDist <= STATION_REPAIR_DISTANCE) {
-        repairedThisVisit = true
-        playerHp = PLAYER_MAX_HP
-        onPlayerDamage?.(playerHp)
-        onStationDriveThrough?.()
-      }
-
       // --- Tutorial: Station Arrow ---
+      const sdx = GAS_STATION_X - ship.x
+      const sdy = GAS_STATION_Y - ship.y
+      const sDist = Math.sqrt(sdx * sdx + sdy * sdy)
+      const inStationRange = sDist <= 60
       const tutStep = getTutorialStep()
       const showArrow = tutStep === 'go-to-station' || tutStep === 'approach-station'
       arrowGroup.visible = showArrow && !inStationRange
       if (showArrow) {
-        // Position arrow ahead of ship, pointing toward station
-        const angle = Math.atan2(dy, dx)
-        const arrowDist = 8 // distance from ship to arrow
+        const angle = Math.atan2(sdy, sdx)
+        const arrowDist = 8
         arrowGroup.position.set(
           ship.x + Math.cos(angle) * arrowDist,
           ship.y + Math.sin(angle) * arrowDist,
           5,
         )
         arrowGroup.rotation.z = angle
-        // Flash the arrow
         const flash = 0.6 + 0.4 * Math.sin((now / 1000) * 4.0)
         arrowMat.emissiveIntensity = flash * 1.5
         arrowMat2.emissiveIntensity = flash * 0.7
-        // Bob the arrow up and down
         arrowGroup.position.z = 5 + Math.sin((now / 1000) * 2.5) * 2
       }
 
-      // --- Tutorial: Ambush ---
-      // Wait until the player has left station range before spawning enemies
-      if (tutStep === 'ambush' && !ambushSpawned && !inStationRange) {
-        ambushSpawned = true
-        // Spawn 3 enemy ships in a line north of the player
-        for (let i = 0; i < AMBUSH_ENEMY_COUNT; i++) {
-          const offsetX = (i - 1) * AMBUSH_SPAWN_SPREAD_X // -25, 0, +25
-          const ax = ship.x + offsetX
-          const ay = ship.y + AMBUSH_SPAWN_OFFSET_Y
-          const ae = createEnemyShip(ax, ay)
-          // Override shoot timer for rapid fire
-          ae.shootTimer = AMBUSH_SHOOT_MIN
-          ae.hp = 100 // near invincible
-          ae.maxHp = 100
-          scene.add(ae.mesh)
-          ambushEnemies.push(ae)
-        }
-      }
-
-      // Update ambush enemies
-      if (ambushEnemies.length > 0) {
-        for (const ae of ambushEnemies) {
-          if (!ae.alive) continue
-          const newProjs = updateEnemyShip(ae, ship, dt)
-          // Override shoot timer for rapid fire after each shot
-          if (ae.shootTimer > AMBUSH_SHOOT_MAX) {
-            ae.shootTimer = AMBUSH_SHOOT_MIN + Math.random() * (AMBUSH_SHOOT_MAX - AMBUSH_SHOOT_MIN)
-          }
-          for (const proj of newProjs) {
-            scene.add(proj.mesh)
-            enemyProjectiles.push(proj)
-            // Tag ambush projectiles for higher damage
-            proj.mesh.userData.ambush = true
-          }
-          ae.mesh.position.set(ae.x, ae.y, 0)
-          ae.mesh.rotation.z = ae.rotation
-        }
-      }
-
-      // Detect player death during ambush
-      if (tutStep === 'ambush' && playerHp <= 0 && !playerKilledFired) {
-        playerKilledFired = true
-        onPlayerKilled?.()
-      }
-
-      // Sync surviving projectile positions
-      for (const p of projectiles) {
+      // --- Sync projectile positions ---
+      for (const p of tickState.projectiles) {
         const model = projectileModels.get(p.id)
         if (model) {
           model.position.set(p.x, p.y, 0)
         }
       }
 
-      // Sync Three.js model to game state
+      // Sync ship model
       shipModel.position.set(ship.x, ship.y, 0)
       shipModel.rotation.z = ship.rotation
       rechargeMeter.position.set(ship.x, ship.y, 0)
 
-      // Camera follows ship (frame-rate independent lerp)
+      // Camera follows ship
       const lerpFactor = 1 - Math.pow(1 - CAMERA_LERP, dt * 60)
       camera.position.x += (ship.x - camera.position.x) * lerpFactor
       camera.position.y += (ship.y - camera.position.y) * lerpFactor
 
-      // Apply screen shake offset
       camera.position.x += screenShake.offsetX
       camera.position.y += screenShake.offsetY
 
-      // Stars follow camera (parallax)
       stars.position.x = camera.position.x * 0.5
       stars.position.y = camera.position.y * 0.5
 
@@ -1116,8 +870,8 @@ export function createGameScene(
 
     // Clean up projectile tracking state
     projectileModels.clear()
-    projectileElapsed.clear()
-    projectiles = []
+    tickState.projectileElapsed.clear()
+    tickState.projectiles = []
 
     // Clean up explosions
     for (const e of explosions) {
@@ -1132,31 +886,31 @@ export function createGameScene(
     debrisChunks.length = 0
 
     // Clean up metal chunks
-    for (const m of metalChunks) {
+    for (const m of tickState.metalChunks) {
       disposeMetalChunk(m)
     }
-    metalChunks.length = 0
+    tickState.metalChunks.length = 0
 
     // Clean up enemy
-    if (enemy) {
-      disposeEnemyShip(enemy)
+    if (tickState.enemy) {
+      disposeEnemyShip(tickState.enemy)
     }
-    for (const ae of ambushEnemies) {
+    for (const ae of tickState.ambushEnemies) {
       disposeEnemyShip(ae)
     }
-    ambushEnemies.length = 0
-    for (const ep of enemyProjectiles) {
+    tickState.ambushEnemies.length = 0
+    for (const ep of tickState.enemyProjectiles) {
       disposeEnemyProjectile(ep)
     }
-    enemyProjectiles.length = 0
+    tickState.enemyProjectiles.length = 0
     for (const wd of shipwreckDebrisList) {
       disposeShipwreckDebris(wd)
     }
     shipwreckDebrisList.length = 0
-    for (const sb of scrapBoxes) {
+    for (const sb of tickState.scrapBoxes) {
       disposeScrapBox(sb)
     }
-    scrapBoxes.length = 0
+    tickState.scrapBoxes.length = 0
 
     // Clean up asteroid models
     asteroidModels.clear()
@@ -1183,7 +937,11 @@ export function createGameScene(
   }
 
   function setFireRateBonus(multiplier: number) {
-    fireRateBonus = multiplier
+    tickState.fireRateBonus = multiplier
+  }
+
+  function setMiningTool(tool: MiningTool) {
+    tickState.activeMiningTool = tool
   }
 
   /** Reset ship to just north of station with full HP and clear ambush entities. */
@@ -1195,22 +953,22 @@ export function createGameScene(
     ship.velocityY = 0
 
     // Restore full HP
-    playerHp = PLAYER_MAX_HP
-    onPlayerDamage?.(playerHp)
+    tickState.playerHp = PLAYER_MAX_HP
+    onPlayerDamage?.(tickState.playerHp)
 
     // Remove ambush enemies
-    for (const ae of ambushEnemies) {
+    for (const ae of tickState.ambushEnemies) {
       scene.remove(ae.mesh)
       disposeEnemyShip(ae)
     }
-    ambushEnemies.length = 0
+    tickState.ambushEnemies.length = 0
 
     // Remove all enemy projectiles
-    for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-      scene.remove(enemyProjectiles[i].mesh)
-      disposeEnemyProjectile(enemyProjectiles[i])
+    for (let i = tickState.enemyProjectiles.length - 1; i >= 0; i--) {
+      scene.remove(tickState.enemyProjectiles[i].mesh)
+      disposeEnemyProjectile(tickState.enemyProjectiles[i])
     }
-    enemyProjectiles.length = 0
+    tickState.enemyProjectiles.length = 0
 
     // Clear all explosions
     for (let i = explosions.length - 1; i >= 0; i--) {
@@ -1233,7 +991,7 @@ export function createGameScene(
       entry.model.traverse(disposeMesh)
     }
     asteroidModels.clear()
-    asteroidHitCounts.clear()
+    tickState.asteroidHitCounts.clear()
 
     // Clear old asteroid data and generate new field
     asteroids.length = 0
@@ -1249,7 +1007,7 @@ export function createGameScene(
       const hm = createHealthMeter()
       model.add(hm)
       asteroidModels.set(a.id, { model, healthMeter: hm })
-      asteroidHitCounts.set(a.id, 0)
+      tickState.asteroidHitCounts.set(a.id, 0)
     }
 
     // Sync ship model to new position immediately so it's not visible at the old spot
@@ -1270,5 +1028,5 @@ export function createGameScene(
     return hash
   }
 
-  return { dispose, setFireRateBonus, resetShipToStation }
+  return { dispose, setFireRateBonus, resetShipToStation, setMiningTool }
 }

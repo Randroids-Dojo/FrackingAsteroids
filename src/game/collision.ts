@@ -3,7 +3,7 @@
  */
 import type { Ship } from '@/lib/schemas'
 import type { Asteroid, Projectile } from './types'
-import { PROJECTILE_RADIUS } from './blaster-constants'
+import { PROJECTILE_RADIUS, LAZER_DAMAGE_MULTIPLIER } from './blaster-constants'
 import {
   SHIP_COLLISION_RADIUS,
   ASTEROID_COLLISION_RADIUS,
@@ -77,12 +77,16 @@ export interface ProjectileHit {
   damage: number
   x: number
   y: number
+  /** True when a blaster projectile bounced off a crystalline asteroid. */
+  deflected?: boolean
 }
 
 /**
  * Check all projectiles against all asteroids.
  * Returns hits and the surviving projectiles (those that didn't hit anything).
- * Mutates asteroid HP.
+ * Mutates asteroid HP. Blaster projectiles deflect off crystalline asteroids
+ * (no damage dealt, hit still reported with `deflected: true`).
+ * Lazer projectiles deal bonus damage to all asteroid types.
  */
 export function checkProjectileAsteroidCollisions(
   projectiles: Projectile[],
@@ -97,14 +101,28 @@ export function checkProjectileAsteroidCollisions(
       if (a.hp <= 0) continue
       const aRadius = ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS
       if (circlesOverlap(p.x, p.y, PROJECTILE_RADIUS, a.x, a.y, aRadius)) {
-        a.hp = Math.max(0, a.hp - p.damage)
-        hits.push({
-          projectileId: p.id,
-          asteroidId: a.id,
-          damage: p.damage,
-          x: p.x,
-          y: p.y,
-        })
+        if (a.type === 'crystalline' && p.tool !== 'lazer') {
+          // Blaster can't damage crystalline — deflect
+          hits.push({
+            projectileId: p.id,
+            asteroidId: a.id,
+            damage: 0,
+            x: p.x,
+            y: p.y,
+            deflected: true,
+          })
+        } else {
+          const effectiveDamage =
+            p.tool === 'lazer' ? Math.ceil(p.damage * LAZER_DAMAGE_MULTIPLIER) : p.damage
+          a.hp = Math.max(0, a.hp - effectiveDamage)
+          hits.push({
+            projectileId: p.id,
+            asteroidId: a.id,
+            damage: effectiveDamage,
+            x: p.x,
+            y: p.y,
+          })
+        }
         hitSomething = true
         break // one projectile hits one asteroid
       }

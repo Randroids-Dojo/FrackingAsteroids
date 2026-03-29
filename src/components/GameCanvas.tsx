@@ -3,10 +3,12 @@
 import { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
 import type { GameScene, MetalVariant } from '@/game/scene'
 import type { TutorialStep } from '@/hooks/useTutorial'
+import type { MiningTool } from '@/game/types'
 
 export interface GameCanvasHandle {
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
+  setMiningTool: (tool: MiningTool) => void
 }
 
 interface GameCanvasProps {
@@ -27,6 +29,7 @@ interface GameCanvasProps {
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
+  onCrystallineDeflect?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -48,6 +51,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onStationRange,
     onStationDriveThrough,
     onPlayerKilled,
+    onCrystallineDeflect,
   },
   ref,
 ) {
@@ -70,6 +74,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onStationRangeRef = useRef(onStationRange)
   const onStationDriveThroughRef = useRef(onStationDriveThrough)
   const onPlayerKilledRef = useRef(onPlayerKilled)
+  const onCrystallineDeflectRef = useRef(onCrystallineDeflect)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -77,6 +82,9 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     },
     resetShipToStation: () => {
       sceneRef.current?.resetShipToStation()
+    },
+    setMiningTool: (tool: MiningTool) => {
+      sceneRef.current?.setMiningTool(tool)
     },
   }))
 
@@ -149,6 +157,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onPlayerKilledRef.current = onPlayerKilled
   }, [onPlayerKilled])
 
+  useEffect(() => {
+    onCrystallineDeflectRef.current = onCrystallineDeflect
+  }, [onCrystallineDeflect])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -175,6 +187,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
           onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
           onPlayerKilled: () => onPlayerKilledRef.current?.(),
+          onCrystallineDeflect: () => onCrystallineDeflectRef.current?.(),
         })
       })
       .catch((err: unknown) => {

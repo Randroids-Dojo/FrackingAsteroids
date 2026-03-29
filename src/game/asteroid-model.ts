@@ -18,6 +18,7 @@ const TYPE_PALETTES: Record<
   dense: { primary: 0x5a5a6e, dark: 0x3d3d50, light: 0x7a7a8e, accent: 0xcc88ff },
   precious: { primary: 0x8b6914, dark: 0x6b4f10, light: 0xb8922a, accent: 0xffd700 },
   comet: { primary: 0x4a6a8b, dark: 0x2a4a6b, light: 0x6a8aab, accent: 0x66ffcc },
+  crystalline: { primary: 0x2a0040, dark: 0x1a0030, light: 0x5a2080, accent: 0xff44ff },
 }
 
 /** Voxel size for large asteroids — bigger than ship voxels for imposing scale. */

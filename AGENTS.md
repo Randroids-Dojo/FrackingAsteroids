@@ -20,6 +20,7 @@ npm run lint:fix         # ESLint — autofix unused imports
 npm run type-check       # TypeScript strict
 npm run test:unit        # Unit tests (fast)
 npm run test:coverage    # Unit tests + coverage (lines≥90%, branches≥80%, functions≥90%)
+npm run test:integration # Integration tests (headless gameplay flows)
 npm run test:smoke       # Smoke tests
 npm run test:e2e         # E2E tests with Playwright
 npm run test:e2e:headed  # E2E tests with GUI
@@ -73,6 +74,43 @@ dot find "query"                # Search tasks
 - Run `npm run test:unit` after any game logic or lib changes
 - Run `npm run test:coverage` before committing
 - Never merge with coverage below thresholds
+
+## Integration Tests
+
+Headless gameplay-flow tests that exercise multiple game systems together without
+Three.js, DOM, or a browser.
+
+```
+tests/integration/
+  helpers/mock-three.ts    — Lightweight Three.js mock (install before imports)
+  game-simulation.ts       — Headless game loop using existing pure functions
+  game-test-harness.ts     — Convenience wrapper with actions & assertions
+  flows/
+    mining-flow.test.ts    — Projectile firing, asteroid damage, metal collection
+    lazer-tool.test.ts     — Crystalline deflection, lazer damage, tool switching
+    pause-resume.test.ts   — Stale fire state, pause/freeze/unpause behavior
+```
+
+### Architecture
+
+1. **`mock-three.ts`** — Stubs `THREE.Group`, `Mesh`, `BoxGeometry`, etc. so game
+   modules that touch `.mesh.position.set()` can be imported without WebGL.
+   Call `installMockThree()` in `before()` and `uninstallMockThree()` in `after()`.
+2. **`GameSimulation`** — Replicates the `scene.ts` game loop orchestration
+   (ship physics, blaster, collisions, enemies, metal, station proximity) using
+   the same pure functions. Supports `step(dt)` / `stepN(n)`, input injection
+   (`fireAt`, `holdFireAt`, `setInput`, `startCollecting`), world injection
+   (`spawnAsteroid`, `spawnEnemy`, `spawnMetal`, `teleportShip`), and event capture.
+3. **`GameTestHarness`** — Wraps `GameSimulation` with high-level actions
+   (`fireAndWait`, `destroyAsteroid`, `collectAllMetal`, `moveToward`, `stepUntil`)
+   and assertion helpers (`assertHp`, `assertAsteroidDestroyed`, `assertEventCount`).
+
+### Rules for agents
+
+- Run `npm run test:integration` after changes to game logic or scene orchestration
+- New gameplay features should have at least one integration test flow
+- Keep `GameSimulation.step()` in sync with `scene.ts` game loop changes
+- Use `GameTestHarness` for readable tests; avoid raw `step()` loops in flow tests
 
 ## Smoke Tests
 
@@ -159,6 +197,8 @@ Auto-deploy to Vercel via Git integration on push to `main`.
 ```bash
 npm run format
 npm run lint:fix
+npm run test:unit
+npm run test:integration
 npm run build
 ```
 

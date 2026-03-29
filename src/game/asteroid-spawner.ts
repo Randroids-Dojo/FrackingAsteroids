@@ -1,16 +1,19 @@
 import type { Asteroid, AsteroidType } from './types'
 
 /** Number of asteroids to spawn after tutorial. */
-const ASTEROID_COUNT = 20
+const ASTEROID_COUNT = 40
 
 /** Minimum distance from station center to spawn asteroids. */
-const MIN_STATION_DISTANCE = 100
+const MIN_STATION_DISTANCE = 80
 
 /** Maximum spawn distance from station center. */
-const MAX_SPAWN_DISTANCE = 500
+const MAX_SPAWN_DISTANCE = 350
+
+/** Crystalline asteroids spawn closer to the station so players discover them early. */
+const CRYSTALLINE_MAX_DISTANCE = 180
 
 /** Minimum spacing between asteroids. */
-const MIN_ASTEROID_SPACING = 30
+const MIN_ASTEROID_SPACING = 20
 
 /** HP values per asteroid type and size. */
 const HP_TABLE: Record<AsteroidType, Record<number, number>> = {
@@ -18,6 +21,7 @@ const HP_TABLE: Record<AsteroidType, Record<number, number>> = {
   dense: { 1: 25, 2: 14, 3: 8 },
   precious: { 1: 10, 2: 6, 3: 3 },
   comet: { 1: 18, 2: 10, 3: 5 },
+  crystalline: { 1: 30, 2: 18, 3: 10 },
 }
 
 /** Weighted type distribution for random selection. */
@@ -26,6 +30,7 @@ const TYPE_WEIGHTS: { type: AsteroidType; weight: number }[] = [
   { type: 'dense', weight: 25 },
   { type: 'precious', weight: 15 },
   { type: 'comet', weight: 10 },
+  { type: 'crystalline', weight: 8 },
 ]
 
 /** Weighted size distribution (1=large, 2=medium, 3=small). */
@@ -73,9 +78,15 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
   while (asteroids.length < ASTEROID_COUNT && attempts < maxAttempts) {
     attempts++
 
+    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
+    const type = TYPE_WEIGHTS[typeIdx].type
+
+    // Crystalline asteroids spawn closer to the station
+    const maxDist = type === 'crystalline' ? CRYSTALLINE_MAX_DISTANCE : MAX_SPAWN_DISTANCE
+
     // Random position in a ring around the station
     const angle = rand() * Math.PI * 2
-    const distance = MIN_STATION_DISTANCE + rand() * (MAX_SPAWN_DISTANCE - MIN_STATION_DISTANCE)
+    const distance = MIN_STATION_DISTANCE + rand() * (maxDist - MIN_STATION_DISTANCE)
     const x = stationX + Math.cos(angle) * distance
     const y = stationY + Math.sin(angle) * distance
 
@@ -90,9 +101,6 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
       }
     }
     if (tooClose) continue
-
-    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
-    const type = TYPE_WEIGHTS[typeIdx].type
     const sizeIdx = pickWeighted(SIZE_WEIGHTS, rand)
     const size = SIZE_WEIGHTS[sizeIdx].size
 

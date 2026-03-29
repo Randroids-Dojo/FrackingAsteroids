@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
 import type { Cargo, Upgrades } from '@/lib/schemas'
+import type { MiningTool } from '@/game/types'
 
 interface HUDProps {
   scrap: number
@@ -9,7 +11,10 @@ interface HUDProps {
   playerHp: number
   playerMaxHp: number
   paused: boolean
+  activeTool: MiningTool
+  hasLazer: boolean
   onPause: () => void
+  onToolChange: (tool: MiningTool) => void
 }
 
 function SilverIcon({ size = 16 }: { size?: number }) {
@@ -50,7 +55,90 @@ function GoldIcon({ size = 16 }: { size?: number }) {
   )
 }
 
-export function HUD({ scrap, cargo, upgrades, playerHp, playerMaxHp, paused, onPause }: HUDProps) {
+function MiningToolDropdown({
+  activeTool,
+  hasLazer,
+  onToolChange,
+}: {
+  activeTool: MiningTool
+  hasLazer: boolean
+  onToolChange: (tool: MiningTool) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    window.addEventListener('mousedown', handleClick)
+    return () => window.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  const toolLabel = activeTool === 'lazer' ? 'LAZER' : 'BLASTER'
+  const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
+
+  return (
+    <div ref={dropdownRef} className="relative pointer-events-auto">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="px-2 py-1 sm:px-3 sm:py-1.5 bg-space-800/80 border rounded text-xs sm:text-sm font-mono font-bold transition-all hover:bg-space-700/80 active:scale-95 min-w-[44px] min-h-[44px] flex items-center gap-1"
+        style={{ borderColor: `${toolColor}60`, color: toolColor }}
+        aria-label="Switch mining tool"
+        data-testid="mining-tool-dropdown"
+      >
+        {toolLabel} {hasLazer ? '\u25BC' : ''}
+      </button>
+      {open && hasLazer && (
+        <div className="absolute right-0 mt-1 w-36 bg-space-900/95 border border-white/20 rounded shadow-xl z-50 font-mono">
+          <button
+            onClick={() => {
+              onToolChange('blaster')
+              setOpen(false)
+            }}
+            className={`w-full text-left px-3 py-2 text-xs sm:text-sm transition-colors ${
+              activeTool === 'blaster'
+                ? 'text-hud-amber bg-hud-amber/10'
+                : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+            }`}
+          >
+            BLASTER
+          </button>
+          <button
+            onClick={() => {
+              onToolChange('lazer')
+              setOpen(false)
+            }}
+            className={`w-full text-left px-3 py-2 text-xs sm:text-sm transition-colors ${
+              activeTool === 'lazer'
+                ? 'text-hud-blue bg-hud-blue/10'
+                : 'text-white/60 hover:text-white/80 hover:bg-white/5'
+            }`}
+          >
+            LAZER
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function HUD({
+  scrap,
+  cargo,
+  upgrades,
+  playerHp,
+  playerMaxHp,
+  paused,
+  activeTool,
+  hasLazer,
+  onPause,
+  onToolChange,
+}: HUDProps) {
   const cargoPercent = cargo.capacity > 0 ? Math.round((cargo.fragments / cargo.capacity) * 100) : 0
   const hpPercent = playerMaxHp > 0 ? Math.round((playerHp / playerMaxHp) * 100) : 100
   const hpColor = hpPercent > 50 ? '#00ff88' : hpPercent > 25 ? '#ffaa00' : '#ff4444'
@@ -95,6 +183,11 @@ export function HUD({ scrap, cargo, upgrades, playerHp, playerMaxHp, paused, onP
               </div>
             </div>
           )}
+          <MiningToolDropdown
+            activeTool={activeTool}
+            hasLazer={hasLazer}
+            onToolChange={onToolChange}
+          />
         </div>
 
         {/* Right: Upgrades + Pause */}

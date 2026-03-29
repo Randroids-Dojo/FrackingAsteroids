@@ -3,9 +3,9 @@ import assert from 'node:assert/strict'
 import { spawnAsteroidField } from '../../src/game/asteroid-spawner'
 
 describe('spawnAsteroidField', () => {
-  it('spawns 20 asteroids by default', () => {
+  it('spawns 40 asteroids by default', () => {
     const asteroids = spawnAsteroidField(30, 350, 42)
-    assert.equal(asteroids.length, 20)
+    assert.equal(asteroids.length, 40)
   })
 
   it('assigns unique ids', () => {
@@ -27,7 +27,7 @@ describe('spawnAsteroidField', () => {
     assert.equal(samePositions, false)
   })
 
-  it('places asteroids at least 100 units from station', () => {
+  it('places asteroids at least 80 units from station', () => {
     const stationX = 30
     const stationY = 350
     const asteroids = spawnAsteroidField(stationX, stationY, 42)
@@ -35,7 +35,7 @@ describe('spawnAsteroidField', () => {
       const dx = a.x - stationX
       const dy = a.y - stationY
       const dist = Math.sqrt(dx * dx + dy * dy)
-      assert.ok(dist >= 99, `Asteroid ${a.id} too close to station: ${dist}`)
+      assert.ok(dist >= 79, `Asteroid ${a.id} too close to station: ${dist}`)
     }
   })
 
@@ -46,13 +46,13 @@ describe('spawnAsteroidField', () => {
         const dx = asteroids[i].x - asteroids[j].x
         const dy = asteroids[i].y - asteroids[j].y
         const dist = Math.sqrt(dx * dx + dy * dy)
-        assert.ok(dist >= 29, `Asteroids ${i} and ${j} too close: ${dist}`)
+        assert.ok(dist >= 19, `Asteroids ${i} and ${j} too close: ${dist}`)
       }
     }
   })
 
   it('spawns valid asteroid types', () => {
-    const validTypes = new Set(['common', 'dense', 'precious', 'comet'])
+    const validTypes = new Set(['common', 'dense', 'precious', 'comet', 'crystalline'])
     const asteroids = spawnAsteroidField(30, 350, 42)
     for (const a of asteroids) {
       assert.ok(validTypes.has(a.type), `Invalid type: ${a.type}`)

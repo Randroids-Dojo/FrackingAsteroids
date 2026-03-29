@@ -8,11 +8,13 @@ import { FeedbackFab } from '@/components/FeedbackFab'
 import { SoundFab } from '@/components/SoundFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
-import { TradeMenu } from '@/components/TradeMenu'
+import { TradeMenu, LAZER_COST } from '@/components/TradeMenu'
+import { LazerTutorialPopup } from '@/components/LazerTutorialPopup'
 import { ShopFab } from '@/components/ShopFab'
 import { useGameState } from '@/hooks/useGameState'
 import { useGamePersistence } from '@/hooks/useGamePersistence'
 import { useTutorial } from '@/hooks/useTutorial'
+import type { MiningTool } from '@/game/types'
 import type { Upgrades, SaveSlotId } from '@/lib/schemas'
 
 type Screen = 'start' | 'game'
@@ -25,6 +27,9 @@ export default function Home() {
   const [isNewGame, setIsNewGame] = useState(false)
   const [tradeMenuOpen, setTradeMenuOpen] = useState(false)
   const [inStationRange, setInStationRange] = useState(false)
+  const [activeTool, setActiveTool] = useState<MiningTool>('blaster')
+  const [hasLazer, setHasLazer] = useState(false)
+  const [lazerPopupVisible, setLazerPopupVisible] = useState(false)
   const gameCanvasRef = useRef<GameCanvasHandle>(null)
   const {
     paused,
@@ -39,6 +44,7 @@ export default function Home() {
     onScrapCollect,
     sellMaterials,
     buyUpgrade,
+    spendScrap,
   } = useGameState()
   const { save } = useGamePersistence(activeSlot)
   const tutorial = useTutorial(isNewGame && screen === 'game')
@@ -127,6 +133,17 @@ export default function Home() {
     [buyUpgrade, tutorial, requestSave],
   )
 
+  const handleBuyLazer = useCallback(() => {
+    if (hasLazer) return
+    const ok = spendScrap(LAZER_COST)
+    if (ok) {
+      setHasLazer(true)
+      setActiveTool('lazer')
+      gameCanvasRef.current?.setMiningTool('lazer')
+      requestSave()
+    }
+  }, [hasLazer, spendScrap, requestSave])
+
   const handleCloseTradeMenu = useCallback(() => {
     setTradeMenuOpen(false)
   }, [])
@@ -135,6 +152,23 @@ export default function Home() {
     tutorial.onDroveThroughStation()
     requestSave()
   }, [tutorial, requestSave])
+
+  const handleToolChange = useCallback(
+    (tool: MiningTool) => {
+      if (tool === 'lazer' && !hasLazer) return
+      setActiveTool(tool)
+      gameCanvasRef.current?.setMiningTool(tool)
+    },
+    [hasLazer],
+  )
+
+  const handleCrystallineDeflect = useCallback(() => {
+    setLazerPopupVisible(true)
+  }, [])
+
+  const handleDismissLazerPopup = useCallback(() => {
+    setLazerPopupVisible(false)
+  }, [])
 
   const handlePlayerKilled = useCallback(() => {
     tutorial.onPlayerKilled()
@@ -207,7 +241,7 @@ export default function Home() {
     <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
       <GameCanvas
         ref={gameCanvasRef}
-        paused={paused || tradeMenuOpen}
+        paused={paused || tradeMenuOpen || lazerPopupVisible}
         frozen={tutorial.frozen || shopTutorialFreeze}
         tutorialStep={tutorial.step}
         onCollect={handleCollect}
@@ -224,6 +258,7 @@ export default function Home() {
         onStationRange={handleStationRange}
         onStationDriveThrough={handleStationDriveThrough}
         onPlayerKilled={handlePlayerKilled}
+        onCrystallineDeflect={handleCrystallineDeflect}
       />
       <HUD
         scrap={scrap}
@@ -232,7 +267,10 @@ export default function Home() {
         playerHp={playerHp}
         playerMaxHp={playerMaxHp}
         paused={paused}
+        activeTool={activeTool}
+        hasLazer={hasLazer}
         onPause={togglePause}
+        onToolChange={handleToolChange}
       />
       {tutorial.active && (
         <TutorialOverlay
@@ -254,11 +292,14 @@ export default function Home() {
           scrap={scrap}
           upgrades={upgrades}
           tutorialStep={tutorial.step}
+          hasLazer={hasLazer}
           onSell={handleSell}
           onBuy={handleBuy}
+          onBuyLazer={handleBuyLazer}
           onClose={handleCloseTradeMenu}
         />
       )}
+      <LazerTutorialPopup visible={lazerPopupVisible} onDismiss={handleDismissLazerPopup} />
       {paused && (
         <div className="absolute inset-0 z-[40] bg-black/60 pointer-events-none flex items-center justify-center">
           <p className="font-mono text-2xl sm:text-4xl tracking-widest text-white/80">PAUSED</p>

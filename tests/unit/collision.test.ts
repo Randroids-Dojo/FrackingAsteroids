@@ -102,14 +102,26 @@ describe('resolveShipAsteroidCollision', () => {
 
 describe('checkProjectileAsteroidCollisions', () => {
   it('returns all projectiles as surviving when no asteroids', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, [])
     assert.equal(surviving.length, 1)
     assert.equal(hits.length, 0)
   })
 
   it('returns all projectiles as surviving when far from asteroids', () => {
-    const projectiles = [{ id: 'p1', x: 100, y: 100, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      {
+        id: 'p1',
+        x: 100,
+        y: 100,
+        velocityX: 100,
+        velocityY: 0,
+        damage: 1,
+        tool: 'blaster' as const,
+      },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0 })]
     const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(surviving.length, 1)
@@ -117,7 +129,9 @@ describe('checkProjectileAsteroidCollisions', () => {
   })
 
   it('detects hit when projectile overlaps asteroid', () => {
-    const projectiles = [{ id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0, hp: 3, maxHp: 3 })]
     const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(surviving.length, 0)
@@ -127,21 +141,27 @@ describe('checkProjectileAsteroidCollisions', () => {
   })
 
   it('reduces asteroid HP on hit', () => {
-    const projectiles = [{ id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2 }]
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0, hp: 3, maxHp: 3 })]
     checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(asteroids[0].hp, 1)
   })
 
   it('does not reduce HP below zero', () => {
-    const projectiles = [{ id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 10 }]
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 10, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0, hp: 3, maxHp: 3 })]
     checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(asteroids[0].hp, 0)
   })
 
   it('skips dead asteroids', () => {
-    const projectiles = [{ id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0, hp: 0, maxHp: 3 })]
     const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(surviving.length, 1)
@@ -149,7 +169,9 @@ describe('checkProjectileAsteroidCollisions', () => {
   })
 
   it('one projectile hits only one asteroid', () => {
-    const projectiles = [{ id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const asteroids = [
       makeAsteroid({ id: 'a1', x: 0, y: 0, hp: 3 }),
       makeAsteroid({ id: 'a2', x: 0, y: 0, hp: 3 }),
@@ -160,8 +182,8 @@ describe('checkProjectileAsteroidCollisions', () => {
 
   it('multiple projectiles can hit different asteroids', () => {
     const projectiles = [
-      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1 },
-      { id: 'p2', x: 50, y: 0, velocityX: 100, velocityY: 0, damage: 1 },
+      { id: 'p1', x: 0, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+      { id: 'p2', x: 50, y: 0, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
     ]
     const asteroids = [
       makeAsteroid({ id: 'a1', x: 0, y: 0, hp: 3 }),
@@ -173,7 +195,9 @@ describe('checkProjectileAsteroidCollisions', () => {
   })
 
   it('hit contains correct position', () => {
-    const projectiles = [{ id: 'p1', x: 7, y: 3, velocityX: 100, velocityY: 0, damage: 1 }]
+    const projectiles = [
+      { id: 'p1', x: 7, y: 3, velocityX: 100, velocityY: 0, damage: 1, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0 })]
     const { hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(hits[0].x, 7)
@@ -181,9 +205,45 @@ describe('checkProjectileAsteroidCollisions', () => {
   })
 
   it('hit contains correct damage', () => {
-    const projectiles = [{ id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2 }]
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2, tool: 'blaster' as const },
+    ]
     const asteroids = [makeAsteroid({ x: 0, y: 0 })]
     const { hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
     assert.equal(hits[0].damage, 2)
+  })
+
+  it('deflects blaster projectile off crystalline asteroid', () => {
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2, tool: 'blaster' as const },
+    ]
+    const asteroids = [makeAsteroid({ x: 0, y: 0, type: 'crystalline', hp: 30, maxHp: 30 })]
+    const { surviving, hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
+    assert.equal(surviving.length, 0)
+    assert.equal(hits.length, 1)
+    assert.equal(hits[0].deflected, true)
+    assert.equal(hits[0].damage, 0)
+    assert.equal(asteroids[0].hp, 30, 'crystalline HP should be unchanged')
+  })
+
+  it('lazer damages crystalline asteroids', () => {
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2, tool: 'lazer' as const },
+    ]
+    const asteroids = [makeAsteroid({ x: 0, y: 0, type: 'crystalline', hp: 30, maxHp: 30 })]
+    const { hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
+    assert.equal(hits[0].deflected, undefined)
+    assert.equal(hits[0].damage, 3) // 2 * 1.5 = 3 (ceiling)
+    assert.equal(asteroids[0].hp, 27)
+  })
+
+  it('lazer deals bonus damage to regular asteroids', () => {
+    const projectiles = [
+      { id: 'p1', x: 5, y: 0, velocityX: 100, velocityY: 0, damage: 2, tool: 'lazer' as const },
+    ]
+    const asteroids = [makeAsteroid({ x: 0, y: 0, hp: 10, maxHp: 10 })]
+    const { hits } = checkProjectileAsteroidCollisions(projectiles, asteroids)
+    assert.equal(hits[0].damage, 3) // 2 * 1.5 = 3
+    assert.equal(asteroids[0].hp, 7)
   })
 })

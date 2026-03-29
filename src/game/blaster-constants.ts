@@ -34,6 +34,9 @@ export const PROJECTILE_COLOR = 0xffaa00
 /** Bright core color for projectile glow effect. */
 export const PROJECTILE_CORE_COLOR = 0xffdd44
 
+/** Lazer damage multiplier applied to all asteroid types. */
+export const LAZER_DAMAGE_MULTIPLIER = 1.5
+
 /** Clamp a tier value to the valid 1–5 range. */
 export function clampTier(tier: number): number {
   return Math.max(1, Math.min(5, Math.round(tier)))
