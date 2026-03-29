@@ -13,9 +13,7 @@ function makeShip(x = 0, y = 0) {
 describe('scrap-box', () => {
   describe('createScrapBox', () => {
     it('creates a scrap box at the given position', async () => {
-      const { createScrapBox, resetScrapBoxIdCounter } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, resetScrapBoxIdCounter } = await import('../../src/game/scrap-box')
       resetScrapBoxIdCounter()
       const box = createScrapBox(10, 20)
       assert.equal(box.x, 10)
@@ -25,9 +23,7 @@ describe('scrap-box', () => {
     })
 
     it('assigns sequential IDs', async () => {
-      const { createScrapBox, resetScrapBoxIdCounter } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, resetScrapBoxIdCounter } = await import('../../src/game/scrap-box')
       resetScrapBoxIdCounter()
       const b1 = createScrapBox(0, 0)
       const b2 = createScrapBox(0, 0)
@@ -62,10 +58,7 @@ describe('scrap-box', () => {
       const box = createScrapBox(0, 0)
       const vxBefore = box.vx
       updateScrapBox(box, 1 / 60)
-      assert.ok(
-        Math.abs(box.vx) < Math.abs(vxBefore),
-        'velocity should decrease from friction',
-      )
+      assert.ok(Math.abs(box.vx) < Math.abs(vxBefore), 'velocity should decrease from friction')
     })
 
     it('moves the box by velocity * dt', async () => {
@@ -103,9 +96,7 @@ describe('scrap-box', () => {
 
   describe('attractScrapBoxToShip', () => {
     it('returns false when box is outside collector range', async () => {
-      const { createScrapBox, attractScrapBoxToShip } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip } = await import('../../src/game/scrap-box')
       const box = createScrapBox(0, 0)
       box.x = 1000
       box.y = 0
@@ -116,9 +107,7 @@ describe('scrap-box', () => {
     })
 
     it('does not modify velocity when out of range', async () => {
-      const { createScrapBox, attractScrapBoxToShip } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip } = await import('../../src/game/scrap-box')
       const box = createScrapBox(0, 0)
       box.x = 1000
       box.y = 0
@@ -131,9 +120,8 @@ describe('scrap-box', () => {
     })
 
     it('returns true when box is close enough to collect', async () => {
-      const { createScrapBox, attractScrapBoxToShip, SCRAP_BOX_RADIUS } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip, SCRAP_BOX_RADIUS } =
+        await import('../../src/game/scrap-box')
       const { SHIP_COLLISION_RADIUS } = await import('../../src/game/collision-constants')
       const box = createScrapBox(0, 0)
       const collectDist = SCRAP_BOX_RADIUS + SHIP_COLLISION_RADIUS
@@ -146,9 +134,7 @@ describe('scrap-box', () => {
     })
 
     it('accelerates box toward ship when in range but not close enough', async () => {
-      const { createScrapBox, attractScrapBoxToShip } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip } = await import('../../src/game/scrap-box')
       const { COLLECTOR_RANGE } = await import('../../src/game/metal-chunk')
       const box = createScrapBox(0, 0)
       box.x = COLLECTOR_RANGE * 0.5
@@ -162,9 +148,8 @@ describe('scrap-box', () => {
     })
 
     it('pull is stronger when closer', async () => {
-      const { createScrapBox, attractScrapBoxToShip, SCRAP_BOX_RADIUS } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip, SCRAP_BOX_RADIUS } =
+        await import('../../src/game/scrap-box')
       const { COLLECTOR_RANGE } = await import('../../src/game/metal-chunk')
       const { SHIP_COLLISION_RADIUS } = await import('../../src/game/collision-constants')
       const collectDist = SCRAP_BOX_RADIUS + SHIP_COLLISION_RADIUS
@@ -186,16 +171,11 @@ describe('scrap-box', () => {
       const ship = makeShip(0, 0)
       attractScrapBoxToShip(boxFar, ship, 1 / 60)
       attractScrapBoxToShip(boxNear, ship, 1 / 60)
-      assert.ok(
-        Math.abs(boxNear.vx) > Math.abs(boxFar.vx),
-        'closer box should be pulled harder',
-      )
+      assert.ok(Math.abs(boxNear.vx) > Math.abs(boxFar.vx), 'closer box should be pulled harder')
     })
 
     it('clamps speed to 100', async () => {
-      const { createScrapBox, attractScrapBoxToShip } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, attractScrapBoxToShip } = await import('../../src/game/scrap-box')
       const { COLLECTOR_RANGE } = await import('../../src/game/metal-chunk')
       const box = createScrapBox(0, 0)
       // Place box in range with very high velocity
@@ -222,9 +202,7 @@ describe('scrap-box', () => {
 
   describe('resetScrapBoxIdCounter', () => {
     it('resets the ID counter so next box starts at 0', async () => {
-      const { createScrapBox, resetScrapBoxIdCounter } = await import(
-        '../../src/game/scrap-box'
-      )
+      const { createScrapBox, resetScrapBoxIdCounter } = await import('../../src/game/scrap-box')
       // Create a couple boxes to increment counter
       createScrapBox(0, 0)
       createScrapBox(0, 0)

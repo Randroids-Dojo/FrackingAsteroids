@@ -70,10 +70,7 @@ describe('computeMeterState', () => {
   })
 })
 
-import {
-  installMockThree,
-  uninstallMockThree,
-} from '../integration/helpers/mock-three'
+import { installMockThree, uninstallMockThree } from '../integration/helpers/mock-three'
 
 before(() => {
   installMockThree()
@@ -111,13 +108,17 @@ describe('updateRechargeMeter', () => {
   function patchFillMatColor(meter: { userData: Record<string, unknown> }) {
     const ud = meter.userData as Record<string, unknown>
     const fillMat = ud.fillMat as Record<string, unknown>
-    fillMat.color = { _hex: 0, setHex(hex: number) { (this as Record<string, unknown>)._hex = hex } }
+    fillMat.color = {
+      _hex: 0,
+      setHex(hex: number) {
+        ;(this as Record<string, unknown>)._hex = hex
+      },
+    }
   }
 
   it('hides meter when cooldown is zero', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     updateRechargeMeter(meter, makeBlaster(0), 1)
@@ -125,9 +126,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('hides meter when cooldown is negative', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     updateRechargeMeter(meter, makeBlaster(-0.5), 1)
@@ -135,9 +135,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('shows meter when cooldown is positive', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
@@ -146,9 +145,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('updates fill scale based on progress', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
@@ -163,9 +161,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('offsets fill position so bar grows from left edge', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
@@ -181,9 +178,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('uses amber color while charging (<90%)', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
@@ -195,9 +191,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('uses green color when nearly ready (>=90%)', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
@@ -210,9 +205,8 @@ describe('updateRechargeMeter', () => {
   })
 
   it('only calls setHex when color changes', async () => {
-    const { createRechargeMeter, updateRechargeMeter } = await import(
-      '../../src/game/recharge-meter'
-    )
+    const { createRechargeMeter, updateRechargeMeter } =
+      await import('../../src/game/recharge-meter')
     const meter = createRechargeMeter()
     patchFillMatColor(meter)
     const cooldownTotal = 1 / FIRE_RATES[0]
