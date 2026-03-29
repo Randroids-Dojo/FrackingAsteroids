@@ -9,6 +9,7 @@ const DISMISS_GRACE_MS = 400
 interface TutorialOverlayProps {
   step: TutorialStep
   frozen: boolean
+  tradeMenuOpen: boolean
   onSkip: () => void
   onDismiss: () => void
 }
@@ -117,7 +118,13 @@ function getPromptText(step: TutorialStep): string {
   return touch ? entry.mobile : entry.desktop
 }
 
-export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOverlayProps) {
+export function TutorialOverlay({
+  step,
+  frozen,
+  tradeMenuOpen,
+  onSkip,
+  onDismiss,
+}: TutorialOverlayProps) {
   const [confirming, setConfirming] = useState(false)
 
   // Reset confirmation state when the step changes
@@ -169,7 +176,7 @@ export function TutorialOverlay({ step, frozen, onSkip, onDismiss }: TutorialOve
   if (step === 'destroy-enemy' && !frozen) return null
 
   // Hide tutorial overlay when trade menu is handling the interaction
-  if (step === 'trade-sell' || step === 'trade-buy') return null
+  if ((step === 'trade-sell' || step === 'trade-buy') && tradeMenuOpen) return null
 
   // Hide overlay during ambush sequence (fade overlay handles this)
   if (step === 'ambush' || step === 'ambush-fade') return null

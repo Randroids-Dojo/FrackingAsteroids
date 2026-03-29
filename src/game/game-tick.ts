@@ -541,6 +541,13 @@ export function tick(state: TickState, input: TickInput): TickResult {
     result.nearStation = true
   }
 
+  // Tutorial catch-up: if the player is already near the station when the tutorial
+  // reaches go-to-station, re-fire the event so the step can advance.
+  const tutStep = input.tutorialStep
+  if (tutStep === 'go-to-station' && sDist <= STATION_NEAR_DISTANCE) {
+    result.nearStation = true
+  }
+
   const inStationRange = sDist <= STATION_ENTER_DISTANCE
   if (inStationRange !== state.wasInStationRange) {
     state.wasInStationRange = inStationRange
@@ -556,7 +563,6 @@ export function tick(state: TickState, input: TickInput): TickResult {
   }
 
   // --- Ambush ---
-  const tutStep = input.tutorialStep
   if (tutStep === 'ambush' && !state.ambushSpawned && !inStationRange) {
     state.ambushSpawned = true
     for (let i = 0; i < AMBUSH_ENEMY_COUNT; i++) {

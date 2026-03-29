@@ -73,7 +73,7 @@ dot find "query"                # Search tasks
 
 - Run `npm run test:unit` after any game logic or lib changes
 - Run `npm run test:coverage` before committing
-- Never merge with coverage below thresholds
+- Never merge with coverage below thresholds — if coverage is already below when you start, fix it before pushing your own changes
 
 ## Integration Tests
 
@@ -220,7 +220,7 @@ npm run build
 
 ## No Broken Windows
 
-Fix broken tools, tests, or builds immediately. Never leave the codebase in a worse state than you found it.
+Fix broken tools, tests, or builds immediately — even if someone else broke them. If CI is red when you start, fix it first. If coverage is below thresholds, raise it. Never leave the codebase in a worse state than you found it.
 
 ## Boy Scout Rule
 
