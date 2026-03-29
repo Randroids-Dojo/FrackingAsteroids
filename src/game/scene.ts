@@ -546,7 +546,13 @@ export function createGameScene(
       // --- Process tick result for rendering ---
 
       // Recharge meter (rendering-only)
-      updateRechargeMeter(rechargeMeter, tickState.blasterState, tickState.blasterTier)
+      updateRechargeMeter(
+        rechargeMeter,
+        tickState.blasterState,
+        tickState.blasterTier,
+        tickState.activeMiningTool,
+        tickState.lazerState,
+      )
 
       // Sync asteroid model positions
       for (const a of asteroids) {

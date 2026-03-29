@@ -13,7 +13,7 @@
 import type { Ship } from '@/lib/schemas'
 import type { Asteroid, MiningTool, Projectile } from './types'
 import type { InputState } from './input'
-import type { BlasterState } from './blaster'
+import type { BlasterState, LazerState } from './blaster'
 import type { MetalChunk } from './metal-chunk'
 import type { EnemyShip, EnemyProjectile } from './enemy-ship'
 import type { ScrapBox } from './scrap-box'
@@ -23,10 +23,13 @@ import type { TutorialStep } from '@/hooks/useTutorial'
 import { updateShip } from './ship-controller'
 import {
   createBlasterState,
+  createLazerState,
   updateBlasterCooldown,
+  updateLazerState,
   fireBlaster,
   updateProjectiles,
 } from './blaster'
+import { LAZER_MAX_HEAT, LAZER_HEAT_RATE, LAZER_FIRE_INTERVAL } from './blaster-constants'
 import { resolveShipAsteroidCollision, checkProjectileAsteroidCollisions } from './collision'
 import {
   createMetalChunk,
@@ -80,6 +83,7 @@ export interface TickState {
   playerHp: number
 
   blasterState: BlasterState
+  lazerState: LazerState
   projectileElapsed: Map<string, number>
   asteroidHitCounts: Map<string, number>
   blasterTier: number
@@ -202,6 +206,7 @@ export function createTickState(config?: TickStateConfig): TickState {
     playerHp: config?.playerHp ?? PLAYER_MAX_HP,
 
     blasterState: createBlasterState(),
+    lazerState: createLazerState(),
     projectileElapsed: new Map(),
     asteroidHitCounts: hitCounts,
     blasterTier: config?.blasterTier ?? 1,
@@ -345,23 +350,60 @@ export function tick(state: TickState, input: TickInput): TickResult {
   }
 
   // --- Fire ---
-  if (state.fireTarget) {
-    const newProjectiles = fireBlaster(
-      state.blasterState,
-      state.ship,
-      state.fireTarget.x,
-      state.fireTarget.y,
-      state.blasterTier,
-      state.activeMiningTool,
-    )
-    if (newProjectiles.length > 0 && state.fireRateBonus > 1) {
-      state.blasterState.cooldownRemaining /= state.fireRateBonus
+  if (state.activeMiningTool === 'lazer') {
+    // Sustained lazer: fires continuously while held, builds heat, overheats
+    const hasFireTarget = state.fireTarget !== null
+    const lazerFiring = state.mouseHoldingFire && hasFireTarget
+    const shouldFire = updateLazerState(state.lazerState, dt, lazerFiring)
+
+    // Fire on sustained tick OR on a single-shot fireTarget (tap-to-fire)
+    const canFire = shouldFire || (hasFireTarget && !state.mouseHoldingFire)
+    if (canFire && state.fireTarget && !state.lazerState.overheated) {
+      const newProjectiles = fireBlaster(
+        state.blasterState,
+        state.ship,
+        state.fireTarget.x,
+        state.fireTarget.y,
+        state.blasterTier,
+        'lazer',
+      )
+      // Skip blaster cooldown for lazer — heat system controls fire rate
+      state.blasterState.cooldownRemaining = 0
+      for (const p of newProjectiles) {
+        state.projectiles.push(p)
+        result.newProjectiles.push(p)
+      }
+      // Single-shot tap: add a small amount of heat
+      if (!state.mouseHoldingFire) {
+        state.lazerState.heat = Math.min(
+          LAZER_MAX_HEAT,
+          state.lazerState.heat + LAZER_HEAT_RATE * LAZER_FIRE_INTERVAL,
+        )
+      }
     }
-    for (const p of newProjectiles) {
-      state.projectiles.push(p)
-      result.newProjectiles.push(p)
+    if (!state.mouseHoldingFire) {
+      state.fireTarget = null
     }
-    state.fireTarget = null
+  } else {
+    // Blaster: standard cooldown-based firing
+    if (state.fireTarget) {
+      const newProjectiles = fireBlaster(
+        state.blasterState,
+        state.ship,
+        state.fireTarget.x,
+        state.fireTarget.y,
+        state.blasterTier,
+        state.activeMiningTool,
+      )
+      if (newProjectiles.length > 0 && state.fireRateBonus > 1) {
+        state.blasterState.cooldownRemaining /= state.fireRateBonus
+      }
+      for (const p of newProjectiles) {
+        state.projectiles.push(p)
+        result.newProjectiles.push(p)
+      }
+      state.fireTarget = null
+    }
   }
 
   // --- Projectile update ---

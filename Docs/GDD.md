@@ -94,9 +94,10 @@ when passing through the gas station (drive-through repair). HP is persisted acr
 
 #### Lazer (Advanced Mining Tool)
 
-The Lazer is a purchasable mining tool that allows harvesting crystalline asteroids and deals
-1.5x damage to all asteroid types. Purchased at the Trade Station for 200 scrap. Players switch
-between the Blaster and Lazer via a HUD dropdown.
+The Lazer is a sustained beam mining tool that allows harvesting crystalline asteroids and deals
+1.5x damage to all asteroid types. Unlike the Blaster's discrete shots, the Lazer fires a
+continuous stream of rapid projectiles while the fire button is held. Purchased at the Trade
+Station for 200 scrap. Players switch between the Blaster and Lazer via a HUD dropdown.
 
 | Property | Value |
 |----------|-------|
@@ -104,6 +105,20 @@ between the Blaster and Lazer via a HUD dropdown.
 | Damage Multiplier | 1.5x (all asteroids) |
 | Projectile Color | Cyan (`0x00CCFF`) |
 | Required For | Crystalline asteroids |
+| Fire Interval | 0.1s (10 shots/sec while sustained) |
+| Max Heat | 3.0 seconds of sustained fire |
+| Passive Cool Rate | 0.5 heat/sec (when not firing) |
+| Overheat Cooldown | 2.0 seconds |
+
+**Heat/Cooldown System:**
+- While firing: heat builds at 1.0 heat/sec. A meter under the ship fills up (cyan → orange as
+  heat rises).
+- At max heat (3s sustained fire): the lazer **overheats** — forced stop, meter turns red and
+  drains over the 2.0s cooldown period.
+- After cooldown: heat resets to 0, lazer is ready to fire again.
+- When not firing (and not overheated): heat passively dissipates at 0.5/sec, allowing burst
+  fire strategies to avoid overheating.
+- Tap-to-fire (single shot without holding) adds a small amount of heat per shot.
 
 A tutorial popup appears when the player tries to shoot a crystalline asteroid with the blaster,
 hinting that they need a Lazer. The game freezes during the popup and is dismissed by pressing

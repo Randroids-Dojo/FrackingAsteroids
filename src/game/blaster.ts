@@ -8,6 +8,11 @@ import {
   PROJECTILE_LIFETIME,
   DUAL_SPREAD_ANGLE,
   TRIPLE_SPREAD_ANGLE,
+  LAZER_MAX_HEAT,
+  LAZER_HEAT_RATE,
+  LAZER_COOL_RATE,
+  LAZER_COOLDOWN_TIME,
+  LAZER_FIRE_INTERVAL,
   clampTier,
 } from './blaster-constants'
 
@@ -28,6 +33,56 @@ export interface BlasterState {
 
 export function createBlasterState(): BlasterState {
   return { cooldownRemaining: 0 }
+}
+
+export interface LazerState {
+  /** Current heat level (0 = cool, LAZER_MAX_HEAT = overheated). */
+  heat: number
+  /** Whether the lazer is in forced cooldown after overheating. */
+  overheated: boolean
+  /** Time remaining in forced cooldown (seconds). */
+  cooldownRemaining: number
+  /** Internal fire interval timer. */
+  fireTimer: number
+}
+
+export function createLazerState(): LazerState {
+  return { heat: 0, overheated: false, cooldownRemaining: 0, fireTimer: 0 }
+}
+
+/**
+ * Update lazer heat/cooldown each frame. Call once per frame.
+ * Returns true if the lazer is able to fire this frame.
+ */
+export function updateLazerState(lazer: LazerState, dt: number, firing: boolean): boolean {
+  if (lazer.overheated) {
+    lazer.cooldownRemaining = Math.max(0, lazer.cooldownRemaining - dt)
+    if (lazer.cooldownRemaining <= 0) {
+      lazer.overheated = false
+      lazer.heat = 0
+    }
+    return false
+  }
+
+  if (firing) {
+    lazer.heat = Math.min(LAZER_MAX_HEAT, lazer.heat + LAZER_HEAT_RATE * dt)
+    if (lazer.heat >= LAZER_MAX_HEAT) {
+      lazer.overheated = true
+      lazer.cooldownRemaining = LAZER_COOLDOWN_TIME
+      return false
+    }
+    lazer.fireTimer += dt
+    if (lazer.fireTimer >= LAZER_FIRE_INTERVAL) {
+      lazer.fireTimer -= LAZER_FIRE_INTERVAL
+      return true
+    }
+    return false
+  }
+
+  // Not firing, not overheated — passively cool down
+  lazer.heat = Math.max(0, lazer.heat - LAZER_COOL_RATE * dt)
+  lazer.fireTimer = 0
+  return false
 }
 
 /**
