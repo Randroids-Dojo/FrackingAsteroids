@@ -11,7 +11,8 @@ import { createProjectileModel } from './projectile-model'
 import { createLazerBeam, updateLazerBeam, disposeLazerBeam } from './lazer-beam'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { createVirtualJoystick } from './virtual-joystick'
-import { createFireButton, createCollectButton } from './fire-button'
+import { createFireButton, createCollectButton, createToolToggleButton } from './fire-button'
+import type { ToolToggleButton } from './fire-button'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
 import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
 import type { Explosion } from './explosion'
@@ -120,6 +121,7 @@ export interface GameSceneOptions {
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
   onCrystallineDeflect?: () => void
+  onToolChange?: (tool: MiningTool) => void
 }
 
 export interface GameScene {
@@ -154,6 +156,7 @@ export function createGameScene(
   const onStationDriveThrough = options?.onStationDriveThrough
   const onPlayerKilled = options?.onPlayerKilled
   const onCrystallineDeflect = options?.onCrystallineDeflect
+  const onToolChange = options?.onToolChange
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -419,6 +422,31 @@ export function createGameScene(
     )
     collectButton.attach()
   }
+
+  // --- Tool Toggle (keyboard Q + mobile button) ---
+  let toolToggleButton: ToolToggleButton | null = null
+
+  function toggleMiningTool(): void {
+    const newTool = tickState.activeMiningTool === 'lazer' ? 'blaster' : 'lazer'
+    tickState.activeMiningTool = newTool
+    toolToggleButton?.setTool(newTool)
+    onToolChange?.(newTool)
+  }
+
+  if (hasTouch) {
+    toolToggleButton = createToolToggleButton(container, () => {
+      if (getPaused()) return
+      toggleMiningTool()
+    })
+    toolToggleButton.attach()
+  }
+
+  function onToolToggleKeyDown(e: KeyboardEvent): void {
+    if (e.code === 'KeyQ') {
+      toggleMiningTool()
+    }
+  }
+  window.addEventListener('keydown', onToolToggleKeyDown)
 
   // --- Collect (mouse right-click + keyboard + mobile button) ---
   let collecting = false
@@ -908,12 +936,14 @@ export function createGameScene(
     joystick.detach()
     if (fireButton) fireButton.detach()
     if (collectButton) collectButton.detach()
+    if (toolToggleButton) toolToggleButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)
     renderer.domElement.removeEventListener('mouseup', onMouseUp)
     renderer.domElement.removeEventListener('contextmenu', onContextMenu)
     container.removeEventListener('touchstart', onTouchStartSwallow)
     window.removeEventListener('keydown', onCollectKeyDown)
     window.removeEventListener('keyup', onCollectKeyUp)
+    window.removeEventListener('keydown', onToolToggleKeyDown)
     window.removeEventListener('resize', onResize)
 
     // Clean up projectile tracking state
@@ -993,6 +1023,7 @@ export function createGameScene(
 
   function setMiningTool(tool: MiningTool) {
     tickState.activeMiningTool = tool
+    toolToggleButton?.setTool(tool)
   }
 
   /** Reset ship to just north of station with full HP and clear ambush entities. */

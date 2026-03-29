@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import type { Cargo, Upgrades } from '@/lib/schemas'
 import type { MiningTool } from '@/game/types'
 
@@ -14,7 +13,6 @@ interface HUDProps {
   activeTool: MiningTool
   hasLazer: boolean
   onPause: () => void
-  onToolChange: (tool: MiningTool) => void
 }
 
 function SilverIcon({ size = 16 }: { size?: number }) {
@@ -55,73 +53,24 @@ function GoldIcon({ size = 16 }: { size?: number }) {
   )
 }
 
-function MiningToolDropdown({
-  activeTool,
-  hasLazer,
-  onToolChange,
-}: {
-  activeTool: MiningTool
-  hasLazer: boolean
-  onToolChange: (tool: MiningTool) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!open) return
-    function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    window.addEventListener('mousedown', handleClick)
-    return () => window.removeEventListener('mousedown', handleClick)
-  }, [open])
+function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; hasLazer: boolean }) {
+  if (!hasLazer) return null
 
   const toolLabel = activeTool === 'lazer' ? 'LAZER' : 'BLASTER'
   const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
+  const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window
 
   return (
-    <div ref={dropdownRef} className="relative pointer-events-auto">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="px-2 py-1 sm:px-3 sm:py-1.5 bg-space-800/80 border rounded text-xs sm:text-sm font-mono font-bold transition-all hover:bg-space-700/80 active:scale-95 min-w-[44px] min-h-[44px] flex items-center gap-1"
-        style={{ borderColor: `${toolColor}60`, color: toolColor }}
-        aria-label="Switch mining tool"
-        data-testid="mining-tool-dropdown"
-      >
-        {toolLabel} {hasLazer ? '\u25BC' : ''}
-      </button>
-      {open && hasLazer && (
-        <div className="absolute right-0 mt-1 w-36 bg-space-900/95 border border-white/20 rounded shadow-xl z-50 font-mono">
-          <button
-            onClick={() => {
-              onToolChange('blaster')
-              setOpen(false)
-            }}
-            className={`w-full text-left px-3 py-2 text-xs sm:text-sm transition-colors ${
-              activeTool === 'blaster'
-                ? 'text-hud-amber bg-hud-amber/10'
-                : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-            }`}
-          >
-            BLASTER
-          </button>
-          <button
-            onClick={() => {
-              onToolChange('lazer')
-              setOpen(false)
-            }}
-            className={`w-full text-left px-3 py-2 text-xs sm:text-sm transition-colors ${
-              activeTool === 'lazer'
-                ? 'text-hud-blue bg-hud-blue/10'
-                : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-            }`}
-          >
-            LAZER
-          </button>
-        </div>
+    <div
+      className="font-mono font-bold text-[clamp(0.5rem,1.5vw,0.75rem)]"
+      style={{ color: toolColor }}
+      data-testid="mining-tool-label"
+    >
+      {toolLabel}
+      {!isMobile && (
+        <span className="ml-1 text-white/40 font-normal text-[clamp(0.4rem,1.2vw,0.625rem)]">
+          [Q]
+        </span>
       )}
     </div>
   )
@@ -137,7 +86,6 @@ export function HUD({
   activeTool,
   hasLazer,
   onPause,
-  onToolChange,
 }: HUDProps) {
   const cargoPercent = cargo.capacity > 0 ? Math.round((cargo.fragments / cargo.capacity) * 100) : 0
   const hpPercent = playerMaxHp > 0 ? Math.round((playerHp / playerMaxHp) * 100) : 100
@@ -183,11 +131,7 @@ export function HUD({
               </div>
             </div>
           )}
-          <MiningToolDropdown
-            activeTool={activeTool}
-            hasLazer={hasLazer}
-            onToolChange={onToolChange}
-          />
+          <MiningToolLabel activeTool={activeTool} hasLazer={hasLazer} />
         </div>
 
         {/* Right: Upgrades + Pause */}

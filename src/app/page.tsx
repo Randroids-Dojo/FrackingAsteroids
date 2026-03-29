@@ -166,14 +166,9 @@ export default function Home() {
     requestSave()
   }, [tutorial, requestSave])
 
-  const handleToolChange = useCallback(
-    (tool: MiningTool) => {
-      if (tool === 'lazer' && !hasLazer) return
-      setActiveTool(tool)
-      gameCanvasRef.current?.setMiningTool(tool)
-    },
-    [hasLazer],
-  )
+  const handleToolChange = useCallback((tool: MiningTool) => {
+    setActiveTool(tool)
+  }, [])
 
   const handleCrystallineDeflect = useCallback(() => {
     setLazerPopupVisible(true)
@@ -306,6 +301,7 @@ export default function Home() {
         onStationDriveThrough={handleStationDriveThrough}
         onPlayerKilled={handlePlayerKilled}
         onCrystallineDeflect={handleCrystallineDeflect}
+        onToolChange={handleToolChange}
       />
       <HUD
         scrap={scrap}
@@ -317,7 +313,6 @@ export default function Home() {
         activeTool={activeTool}
         hasLazer={hasLazer}
         onPause={togglePause}
-        onToolChange={handleToolChange}
       />
       {tutorial.active && (
         <TutorialOverlay

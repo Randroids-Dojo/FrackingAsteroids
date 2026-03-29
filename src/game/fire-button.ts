@@ -1,3 +1,5 @@
+import type { MiningTool } from './types'
+
 function getButtonSize(): number {
   const vw = Math.min(window.innerWidth, window.innerHeight)
   return Math.max(56, Math.min(80, Math.round(vw * 0.12)))
@@ -138,6 +140,20 @@ function getCollectBottom(): string {
   return `calc(${base} + ${size + BUTTON_GAP}px)`
 }
 
+function getToolToggleBottom(): string {
+  const size = getButtonSize()
+  const base = window.innerHeight < 600 ? '22%' : '28%'
+  return `calc(${base} + ${(size + BUTTON_GAP) * 2}px)`
+}
+
+const STYLE_LAZER: ButtonStyle = { r: 0, g: 204, b: 255 }
+
+export interface ToolToggleButton {
+  attach: () => void
+  detach: () => void
+  setTool: (tool: MiningTool) => void
+}
+
 /**
  * Creates a visible fire button on the bottom-right of the screen for mobile.
  * Calls `onFire` on each touchstart.
@@ -163,4 +179,60 @@ export function createCollectButton(
     onPress,
     onRelease,
   )
+}
+
+/**
+ * Creates a tool toggle button above the collect button on mobile.
+ * Tapping switches between blaster and lazer.
+ */
+export function createToolToggleButton(
+  container: HTMLElement,
+  onToggle: () => void,
+): ToolToggleButton {
+  const size = getButtonSize()
+  const rightMargin = Math.max(16, Math.round(size * 0.4))
+  const button = document.createElement('div')
+  button.setAttribute('aria-label', 'Switch mining tool')
+  button.setAttribute('role', 'button')
+  button.style.cssText =
+    `position:absolute;bottom:${getToolToggleBottom()};right:${rightMargin}px;` +
+    `width:${size}px;height:${size}px;border-radius:50%;` +
+    `border:${BORDER_WIDTH}px solid ${rgba(STYLE_FIRE, 0.6)};` +
+    `background:${rgba(STYLE_FIRE, 0.15)};z-index:10;touch-action:none;` +
+    `display:flex;align-items:center;justify-content:center;`
+
+  const label = document.createElement('div')
+  label.style.cssText =
+    `color:${rgba(STYLE_FIRE, 0.9)};font-family:monospace;font-weight:bold;` +
+    `font-size:${Math.round(size * 0.22)}px;pointer-events:none;text-align:center;` +
+    `line-height:1.1;`
+  label.textContent = 'BLS'
+  button.appendChild(label)
+  container.appendChild(button)
+
+  function updateStyle(tool: MiningTool) {
+    const style = tool === 'lazer' ? STYLE_LAZER : STYLE_FIRE
+    button.style.borderColor = rgba(style, 0.6)
+    button.style.background = rgba(style, 0.15)
+    label.style.color = rgba(style, 0.9)
+    label.textContent = tool === 'lazer' ? 'LZR' : 'BLS'
+  }
+
+  function onTouchStart(e: TouchEvent) {
+    e.preventDefault()
+    onToggle()
+  }
+
+  return {
+    attach() {
+      button.addEventListener('touchstart', onTouchStart, { passive: false })
+    },
+    detach() {
+      button.removeEventListener('touchstart', onTouchStart)
+      if (button.parentElement) button.parentElement.removeChild(button)
+    },
+    setTool(tool: MiningTool) {
+      updateStyle(tool)
+    },
+  }
 }

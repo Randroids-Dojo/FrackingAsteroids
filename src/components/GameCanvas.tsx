@@ -30,6 +30,7 @@ interface GameCanvasProps {
   onStationDriveThrough?: () => void
   onPlayerKilled?: () => void
   onCrystallineDeflect?: () => void
+  onToolChange?: (tool: MiningTool) => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -52,6 +53,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onStationDriveThrough,
     onPlayerKilled,
     onCrystallineDeflect,
+    onToolChange,
   },
   ref,
 ) {
@@ -75,6 +77,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onStationDriveThroughRef = useRef(onStationDriveThrough)
   const onPlayerKilledRef = useRef(onPlayerKilled)
   const onCrystallineDeflectRef = useRef(onCrystallineDeflect)
+  const onToolChangeRef = useRef(onToolChange)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -161,6 +164,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onCrystallineDeflectRef.current = onCrystallineDeflect
   }, [onCrystallineDeflect])
 
+  useEffect(() => {
+    onToolChangeRef.current = onToolChange
+  }, [onToolChange])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -188,6 +195,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
           onPlayerKilled: () => onPlayerKilledRef.current?.(),
           onCrystallineDeflect: () => onCrystallineDeflectRef.current?.(),
+          onToolChange: (tool: MiningTool) => onToolChangeRef.current?.(tool),
         })
       })
       .catch((err: unknown) => {
