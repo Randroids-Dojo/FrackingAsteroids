@@ -100,10 +100,22 @@ export default function Home() {
     [onScrapCollect, requestSave],
   )
 
-  const handleStationRange = useCallback((inRange: boolean) => {
-    setInStationRange(inRange)
-    if (!inRange) setTradeMenuOpen(false)
-  }, [])
+  // Extract tutorial state early so callbacks can reference them
+  const tutorialActive = tutorial.active
+  const tutorialStep = tutorial.step
+
+  const handleStationRange = useCallback(
+    (inRange: boolean) => {
+      setInStationRange(inRange)
+      // Don't close trade menu if the player exits range during tutorial trade steps
+      if (
+        !inRange &&
+        !(tutorialActive && (tutorialStep === 'trade-sell' || tutorialStep === 'trade-buy'))
+      )
+        setTradeMenuOpen(false)
+    },
+    [tutorialActive, tutorialStep],
+  )
 
   const handleShopFabClick = useCallback(() => {
     tutorial.onEnteredStation()
@@ -145,8 +157,10 @@ export default function Home() {
   }, [hasLazer, spendScrap, requestSave])
 
   const handleCloseTradeMenu = useCallback(() => {
+    // Prevent closing during tutorial trade steps — player must complete sell/buy
+    if (tutorialActive && (tutorialStep === 'trade-sell' || tutorialStep === 'trade-buy')) return
     setTradeMenuOpen(false)
-  }, [])
+  }, [tutorialActive, tutorialStep])
 
   const handleStationDriveThrough = useCallback(() => {
     tutorial.onDroveThroughStation()
@@ -174,6 +188,13 @@ export default function Home() {
     tutorial.onPlayerKilled()
   }, [tutorial])
 
+  const handleSkipTutorial = useCallback(() => {
+    tutorial.skip()
+    setTradeMenuOpen(false)
+    // Spawn the real asteroid field so the player has a proper game world
+    gameCanvasRef.current?.resetShipToStation()
+  }, [tutorial])
+
   // --- Ambush fade-to-black and respawn sequence ---
   const [ambushFade, setAmbushFade] = useState<
     'none' | 'fading-in' | 'black' | 'loaded' | 'fading-out'
@@ -185,7 +206,6 @@ export default function Home() {
     ambushCompleteRef.current = tutorial.onAmbushComplete
   }, [tutorial.onAmbushComplete])
 
-  const tutorialStep = tutorial.step
   useEffect(() => {
     if (tutorialStep !== 'ambush-fade') return
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -227,7 +247,6 @@ export default function Home() {
   // Tutorial catch-up: auto-advance trade steps when their conditions are already met.
   // This prevents the tutorial from getting stuck if the player performed actions
   // (opened trade, sold materials, bought upgrades) before the tutorial reached those steps.
-  const tutorialActive = tutorial.active
   const onEnteredStation = tutorial.onEnteredStation
   const onSoldMaterials = tutorial.onSoldMaterials
   const onBoughtUpgrade = tutorial.onBoughtUpgrade
@@ -306,7 +325,8 @@ export default function Home() {
         <TutorialOverlay
           step={tutorial.step}
           frozen={tutorial.frozen}
-          onSkip={tutorial.skip}
+          tradeMenuOpen={tradeMenuOpen}
+          onSkip={handleSkipTutorial}
           onDismiss={tutorial.unfreeze}
         />
       )}
