@@ -137,7 +137,6 @@ export default function Home() {
         }
         if (tutorial.active) {
           tutorial.onBoughtUpgrade()
-          setTradeMenuOpen(false)
         }
         requestSave()
       })
@@ -269,7 +268,6 @@ export default function Home() {
     if (!tutorialActive) return
     if (tutorialStep === 'trade-buy' && upgrades.blaster > 1) {
       onBoughtUpgrade()
-      setTradeMenuOpen(false)
     }
   }, [tutorialActive, tutorialStep, upgrades.blaster, onBoughtUpgrade])
 
