@@ -1,33 +1,14 @@
 import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { installMockThree, uninstallMockThree } from '../integration/helpers/mock-three'
+import type { TutorialStep } from '../../src/hooks/useTutorial'
+import type { TickInput } from '../../src/game/game-tick'
 
 before(() => installMockThree())
 after(() => uninstallMockThree())
 
-type TickInput = {
-  dt: number
-  paused: boolean
-  inputState: {
-    up: boolean
-    down: boolean
-    left: boolean
-    right: boolean
-    joystickAngle: number | null
-  }
-  aimWorldPosition: { x: number; y: number } | null
-  collecting: boolean
-  tutorialStep: string
-}
-
 function makeInput(
-  createInputState: () => {
-    up: boolean
-    down: boolean
-    left: boolean
-    right: boolean
-    joystickAngle: number | null
-  },
+  createInputState: () => TickInput['inputState'],
   overrides?: Partial<TickInput>,
 ): TickInput {
   return {
@@ -36,9 +17,9 @@ function makeInput(
     inputState: createInputState(),
     aimWorldPosition: null,
     collecting: false,
-    tutorialStep: 'done',
+    tutorialStep: 'done' as TutorialStep,
     ...overrides,
-  } as TickInput
+  }
 }
 
 describe('game-tick', () => {

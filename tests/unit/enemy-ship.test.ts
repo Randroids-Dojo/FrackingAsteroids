@@ -302,11 +302,10 @@ describe('enemy-ship', () => {
         id: `proj-${Math.random()}`,
         x,
         y,
-        vx: 0,
-        vy: 0,
+        velocityX: 0,
+        velocityY: 0,
         damage,
-        mesh: {} as never,
-        miningTool: false,
+        tool: 'blaster' as const,
       }
     }
 
