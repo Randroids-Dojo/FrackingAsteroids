@@ -97,6 +97,42 @@ describe('pause/resume and fire state', () => {
     )
   })
 
+  it('ignores aim/fire input during post-unpause cooldown (synthesized events)', async () => {
+    const { GameTestHarness } = await import('../game-test-harness')
+    const h = new GameTestHarness({ shipPosition: { x: 0, y: 0 } })
+
+    // Pause the game
+    h.sim.paused = true
+    h.sim.stepN(3)
+
+    // Unpause
+    h.sim.paused = false
+    h.sim.step() // first unpaused frame — sets cooldown
+
+    // Simulate synthesized events arriving during cooldown:
+    // aim and fire at a specific position (as if mouse events leaked through)
+    h.sim.aimAt(200, 0)
+    h.sim.fireAt(200, 0)
+    h.sim.stepN(15) // ~250ms at 60fps — still within 500ms cooldown
+
+    // Ship should NOT be facing (200, 0) — cooldown should have blocked it
+    // atan2(-200, 0) = -PI/2 ≈ -1.57
+    const lockedRotation = Math.atan2(-200, 0)
+    assert.ok(
+      Math.abs(h.sim.ship.rotation - lockedRotation) > 0.1,
+      `Ship rotation should NOT be locked to dismiss tap position (got ${h.sim.ship.rotation.toFixed(3)})`,
+    )
+
+    // After cooldown expires (~500ms = 30 frames), aim should work again
+    h.sim.aimAt(200, 0)
+    h.sim.stepN(30) // another 500ms
+    // Now the cooldown has expired, aim should be active
+    assert.ok(
+      Math.abs(h.sim.ship.rotation - lockedRotation) < 0.1,
+      `Ship should face aim target after cooldown expires (got ${h.sim.ship.rotation.toFixed(3)})`,
+    )
+  })
+
   it('game resumes normally after unpausing', async () => {
     const { GameTestHarness } = await import('../game-test-harness')
     const h = new GameTestHarness({

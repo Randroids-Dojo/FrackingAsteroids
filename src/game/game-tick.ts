@@ -91,6 +91,13 @@ export interface TickState {
   mouseHoldingFire: boolean
   aimActive: boolean
 
+  /**
+   * Countdown (seconds) after unpausing during which aim/fire input is ignored.
+   * Prevents synthesized mouse events from touch dismiss (~300ms delay) from
+   * leaking into the canvas and locking the ship's rotation.
+   */
+  inputCooldown: number
+
   // Internal flags
   wasPaused: boolean
   nearStationFired: boolean
@@ -204,6 +211,7 @@ export function createTickState(config?: TickStateConfig): TickState {
     fireTarget: null,
     mouseHoldingFire: false,
     aimActive: false,
+    inputCooldown: 0,
 
     wasPaused: false,
     nearStationFired: false,
@@ -276,15 +284,26 @@ export function tick(state: TickState, input: TickInput): TickResult {
     return result
   }
 
-  // --- Resume from pause: clear stale fire AND aim state ---
+  // --- Resume from pause: clear stale state and start input cooldown ---
   // While paused, popup overlays capture mouse events so aimState and
-  // mouseHoldingFire can be stale. Clearing aimActive forces the ship to
-  // fall back to movement-based rotation until the player moves the mouse.
+  // mouseHoldingFire can be stale. On mobile, dismissing a popup via touch
+  // causes the browser to synthesize mousemove/mousedown events ~300ms later.
+  // The cooldown window ignores all aim/fire input so these leaked events
+  // cannot lock the ship's rotation to the dismiss tap position.
   if (state.wasPaused) {
     state.mouseHoldingFire = false
     state.fireTarget = null
     state.aimActive = false
+    state.inputCooldown = 0.5 // 500ms — covers synthesized event delay
     state.wasPaused = false
+  }
+
+  // --- Input cooldown: ignore aim/fire input while active ---
+  if (state.inputCooldown > 0) {
+    state.inputCooldown -= dt
+    state.mouseHoldingFire = false
+    state.fireTarget = null
+    state.aimActive = false
   }
 
   // --- Ship update ---

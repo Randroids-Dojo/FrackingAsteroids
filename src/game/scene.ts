@@ -512,12 +512,9 @@ export function createGameScene(
       }
     }
 
-    // Only sync aimActive from DOM if tick won't clear it on unpause.
-    // Otherwise the DOM's stale aimState.active=true overrides tick's clearing.
-    if (!tickState.wasPaused) {
-      tickState.mouseHoldingFire = mouseHoldingFire
-      tickState.aimActive = aimState.active
-    }
+    // Always sync from DOM — tick's input cooldown handles stale events
+    tickState.mouseHoldingFire = mouseHoldingFire
+    tickState.aimActive = aimState.active
 
     const tickInput: TickInput = {
       dt,

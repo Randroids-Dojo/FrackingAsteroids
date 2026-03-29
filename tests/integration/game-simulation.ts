@@ -244,9 +244,9 @@ export class GameSimulation {
   // --- Simulation step (delegates to shared tick()) ---
 
   step(dt = 1 / 60): void {
-    // Build TickInput
-    const aimWorldPosition =
-      this.tickState.aimActive && this.aimPosition ? { ...this.aimPosition } : null
+    // Sync aim state into tickState before tick (tick may clear it via cooldown)
+    this.tickState.aimActive = this.aimPosition !== null
+    const aimWorldPosition = this.aimPosition ? { ...this.aimPosition } : null
 
     const input: TickInput = {
       dt,
