@@ -172,8 +172,10 @@ export default function Home() {
   }, [])
 
   const handleCrystallineDeflect = useCallback(() => {
+    // Don't show lazer tutorial popup during prologue — ship already has lazer
+    if (tutorialStep.startsWith('prologue-')) return
     setLazerPopupVisible(true)
-  }, [])
+  }, [tutorialStep])
 
   const handleDismissLazerPopup = useCallback(() => {
     setLazerPopupVisible(false)

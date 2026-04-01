@@ -77,37 +77,52 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
   // Only show during prologue steps
   if (!step.startsWith('prologue-')) return null
 
+  // Steps that show persistent text in a panel
+  const showPanel =
+    step === 'prologue-start' || step === 'prologue-arbiter' || step === 'prologue-strip'
+
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="prologue-overlay">
-      {/* Cinematic content */}
-      <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-md px-4 sm:px-6 py-3 sm:py-4 bg-space-800/80 border border-hud-green/30 rounded-lg font-mono text-center">
-        {step === 'prologue-start' && (
-          <p className="text-hud-green text-sm sm:text-base animate-pulse">
-            Systems online. Full power.
-          </p>
-        )}
-
-        {step === 'prologue-mining' && <FadingText text="LAZER engaged." />}
-
-        {step === 'prologue-combat' && (
-          <FadingText text="Hostiles detected." color="text-hud-red" />
-        )}
-
-        {step === 'prologue-speed' && <FadingText text="Full throttle." />}
-
-        {step === 'prologue-arbiter' && (
-          <div className="space-y-4">
-            <p className="text-white/60 text-xs uppercase tracking-widest animate-pulse">
-              Signal detected
+      {/* Persistent content panel (start, arbiter dialogue, strip) */}
+      {showPanel && (
+        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-md px-4 sm:px-6 py-3 sm:py-4 bg-space-800/80 border border-hud-green/30 rounded-lg font-mono text-center">
+          {step === 'prologue-start' && (
+            <p className="text-hud-green text-sm sm:text-base animate-pulse">
+              Systems online. Full power.
             </p>
-            <ArbiterDialogue />
-          </div>
-        )}
+          )}
 
-        {step === 'prologue-strip' && (
-          <p className="text-hud-red text-sm sm:text-base animate-pulse">Systems failing...</p>
-        )}
-      </div>
+          {step === 'prologue-arbiter' && (
+            <div className="space-y-4">
+              <p className="text-white/60 text-xs uppercase tracking-widest animate-pulse">
+                Signal detected
+              </p>
+              <ArbiterDialogue />
+            </div>
+          )}
+
+          {step === 'prologue-strip' && (
+            <p className="text-hud-red text-sm sm:text-base animate-pulse">Systems failing...</p>
+          )}
+        </div>
+      )}
+
+      {/* Fading text (mining, combat, speed) — no background panel */}
+      {step === 'prologue-mining' && (
+        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
+          <FadingText text="LAZER engaged." />
+        </div>
+      )}
+      {step === 'prologue-combat' && (
+        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
+          <FadingText text="Hostiles detected." color="text-hud-red" />
+        </div>
+      )}
+      {step === 'prologue-speed' && (
+        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
+          <FadingText text="Full throttle." />
+        </div>
+      )}
 
       {/* Skip button — always visible during prologue */}
       <div className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2">

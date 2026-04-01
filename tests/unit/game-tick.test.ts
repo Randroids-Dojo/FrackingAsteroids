@@ -811,4 +811,263 @@ describe('game-tick', () => {
       assert.ok(Math.abs(state.elapsedTime - 0.75) < 0.001)
     })
   })
+
+  // -------------------------------------------------------------------------
+  // Prologue auto-behavior
+  // -------------------------------------------------------------------------
+  describe('prologue', () => {
+    it('prologue-start initializes maxed ship config', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-start' }))
+
+      assert.equal(state.blasterTier, 5)
+      assert.ok(state.fireRateBonus > 1.4)
+      assert.equal(state.activeMiningTool, 'lazer')
+      assert.equal(state.prologueFieldSpawned, true)
+      assert.equal(result.prologueReady, true)
+    })
+
+    it('prologue-mining auto-targets nearest asteroid', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 20,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      assert.equal(state.activeMiningTool, 'lazer')
+      assert.equal(state.prologueAutoCollect, true)
+      assert.ok(state.prologueAutoAim !== null, 'should set auto-aim target')
+      assert.ok(state.mouseHoldingFire, 'should hold fire')
+    })
+
+    it('prologue-mining fires asteroidsCleared when enough destroyed', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const asteroids = Array.from({ length: 10 }, (_, i) => ({
+        id: `a${i}`,
+        x: 50 + i * 20,
+        y: 50,
+        velocityX: 0,
+        velocityY: 0,
+        type: 'common' as const,
+        hp: 0,
+        maxHp: 15,
+        size: 1,
+      }))
+      const state = createTickState({ asteroids })
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      assert.equal(result.asteroidsCleared, true)
+    })
+
+    it('prologue-combat spawns enemy fleet', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+
+      assert.equal(state.prologueEnemiesSpawned, true)
+      assert.ok(state.ambushEnemies.length > 0, 'should spawn enemies')
+      assert.ok(result.ambushEnemiesSpawned.length > 0, 'should report spawned enemies')
+      assert.equal(state.activeMiningTool, 'blaster')
+      assert.equal(state.prologueAutoCollect, true)
+    })
+
+    it('prologue-combat fires fleetDestroyed when all enemies dead', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      // First tick spawns enemies
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+      // Kill all enemies
+      for (const e of state.ambushEnemies) {
+        e.alive = false
+      }
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+
+      assert.equal(result.fleetDestroyed, true)
+    })
+
+    it('prologue-speed enables auto-pilot and tracks time', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      // Give ship high velocity; updateShip will clamp to 120 and apply friction
+      // but with auto-pilot (up=true) the ship stays near max speed
+      state.ship.velocityY = 120
+
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-speed' }))
+
+      assert.equal(state.prologueAutoPilotForward, true)
+      assert.equal(state.prologueAutoCollect, true)
+      assert.ok(state.prologueSpeedTime > 0, 'should accumulate speed time')
+    })
+
+    it('prologue-speed fires speedReached after enough time', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.ship.velocityY = 120
+      state.prologueSpeedTime = 3.99
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-speed' }))
+
+      assert.equal(result.speedReached, true)
+    })
+
+    it('prologue-arbiter freezes ship and tracks approach', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-arbiter', dt: 0.5 }))
+
+      assert.equal(state.prologueShipFrozen, true)
+      assert.equal(state.prologueArbiterSpawned, true)
+      assert.ok(state.prologueArbiterDistance < 80, 'distance should decrease')
+      assert.equal(state.ship.velocityX, 0)
+      assert.equal(state.ship.velocityY, 0)
+    })
+
+    it('prologue-arbiter fires arbiterArrived when close enough', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueArbiterSpawned = true
+      state.prologueArbiterDistance = 26
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-arbiter', dt: 0.1 }),
+      )
+
+      assert.equal(result.arbiterArrived, true)
+    })
+
+    it('prologue-strip advances phases on timer', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueShipFrozen = true
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-strip', dt: 1.6 }),
+      )
+
+      assert.equal(state.prologueStripPhase, 1)
+      assert.equal(result.stripAdvanced, true)
+      assert.equal(result.stripComplete, false)
+    })
+
+    it('prologue-strip fires stripComplete after 4 phases', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueShipFrozen = true
+      state.prologueStripPhase = 3
+      state.prologueStripTimer = 1.4
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-strip', dt: 0.2 }),
+      )
+
+      assert.equal(state.prologueStripPhase, 4)
+      assert.equal(result.stripAdvanced, true)
+      assert.equal(result.stripComplete, true)
+    })
+
+    it('prologue-fade returns early with empty result', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-fade' }))
+
+      assert.equal(result.shipMoved, false)
+      assert.equal(result.newProjectiles.length, 0)
+    })
+
+    it('prologue does not mutate input.collecting', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 10,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+      const input = makeInput(createInputState, { tutorialStep: 'prologue-mining' })
+      assert.equal(input.collecting, false)
+
+      tick(state, input)
+
+      assert.equal(input.collecting, false, 'input.collecting should not be mutated')
+    })
+
+    it('prologue does not mutate input.aimWorldPosition', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 20,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+      const input = makeInput(createInputState, { tutorialStep: 'prologue-mining' })
+      assert.equal(input.aimWorldPosition, null)
+
+      tick(state, input)
+
+      assert.equal(input.aimWorldPosition, null, 'input.aimWorldPosition should not be mutated')
+    })
+  })
 })

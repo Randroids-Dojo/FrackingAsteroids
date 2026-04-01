@@ -467,18 +467,13 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
   }
 
   // --- prologue-speed: auto-pilot forward, track time at speed ---
+  // Speed time is tracked in the main tick after updateShip, since prologueTick
+  // runs before ship physics. Here we just set the auto-pilot flag.
   if (step === 'prologue-speed') {
     state.mouseHoldingFire = false
     state.fireTarget = null
     state.prologueAutoCollect = true
     state.prologueAutoPilotForward = true
-    const speed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
-    if (speed > SHIP_MAX_SPEED * 1.25) {
-      state.prologueSpeedTime += dt
-    }
-    if (state.prologueSpeedTime >= PROLOGUE_SPEED_DURATION) {
-      result.speedReached = true
-    }
     return
   }
 
@@ -592,13 +587,32 @@ export function tick(state: TickState, input: TickInput): TickResult {
     : input.inputState
   updateShip(state.ship, effectiveInput, dt, aimRotation)
 
-  // Prologue speed override: allow higher max speed
+  // Prologue speed override: boost acceleration and raise speed cap.
+  // updateShip() clamps at SHIP_MAX_SPEED (120), so we uncap and re-apply
+  // the prologue acceleration to allow speeds up to PROLOGUE_SHIP.maxSpeed (180).
   if (isPrologue) {
+    if (state.prologueAutoPilotForward) {
+      // Apply full prologue acceleration (not just the delta) since updateShip
+      // already clamped at 120. This pushes the ship past the normal cap.
+      const dir = state.ship.rotation
+      const fx = -Math.sin(dir)
+      const fy = Math.cos(dir)
+      state.ship.velocityX += fx * PROLOGUE_SHIP.acceleration * dt
+      state.ship.velocityY += fy * PROLOGUE_SHIP.acceleration * dt
+    }
     const speed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
     if (speed > PROLOGUE_SHIP.maxSpeed) {
       const scale = PROLOGUE_SHIP.maxSpeed / speed
       state.ship.velocityX *= scale
       state.ship.velocityY *= scale
+    }
+    // Track time at speed for prologue-speed phase (after physics applied)
+    const finalSpeed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
+    if (input.tutorialStep === 'prologue-speed' && finalSpeed > SHIP_MAX_SPEED * 0.8) {
+      state.prologueSpeedTime += dt
+      if (state.prologueSpeedTime >= PROLOGUE_SPEED_DURATION) {
+        result.speedReached = true
+      }
     }
   }
 
