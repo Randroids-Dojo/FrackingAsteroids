@@ -220,11 +220,16 @@ const COLLECTOR_STEER_FACTOR = 0.15
  * Uses force-based acceleration so chunks ramp up speed gradually,
  * giving a weighty, physically satisfying feel.
  */
-export function attractMetalToShip(chunk: MetalChunk, ship: Ship, dt: number): boolean {
+export function attractMetalToShip(
+  chunk: MetalChunk,
+  ship: Ship,
+  dt: number,
+  rangeOverride?: number,
+): boolean {
   const dx = ship.x - chunk.x
   const dy = ship.y - chunk.y
   const distSq = dx * dx + dy * dy
-  const range = COLLECTOR_RANGE
+  const range = rangeOverride ?? COLLECTOR_RANGE
 
   if (distSq > range * range) return false
 

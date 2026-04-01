@@ -54,6 +54,8 @@ import {
 } from './enemy-ship'
 import { createScrapBox, updateScrapBox, attractScrapBoxToShip, SCRAP_BOX_VALUE } from './scrap-box'
 import { HITS_PER_BREAK } from './asteroid-debris'
+import { PROLOGUE_SHIP, PROLOGUE_ENEMY_FLEET_SIZE, PROLOGUE_MINING_TARGET, PROLOGUE_SPEED_DURATION, ARBITER_STRIP_DELAY } from './prologue-config'
+import { SHIP_MAX_SPEED } from './ship-constants'
 
 // ---------------------------------------------------------------------------
 // Constants (mirrored from scene.ts)
@@ -112,7 +114,7 @@ export interface TickState {
   enemySpawned: boolean
   enemyNearbyFired: boolean
 
-  // Ambush
+  // Ambush (used by prologue)
   ambushEnemies: EnemyShip[]
   ambushSpawned: boolean
   playerKilledFired: boolean
@@ -122,6 +124,17 @@ export interface TickState {
   stationY: number
 
   elapsedTime: number
+
+  // Prologue
+  prologueFieldSpawned: boolean
+  prologueAsteroidsDestroyed: number
+  prologueEnemiesSpawned: boolean
+  prologueEnemiesKilled: number
+  prologueSpeedTime: number
+  prologueArbiterSpawned: boolean
+  prologueShipFrozen: boolean
+  prologueStripPhase: number
+  prologueStripTimer: number
 }
 
 /** Per-frame inputs — NOT owned by tick(), only read. */
@@ -178,6 +191,15 @@ export interface TickResult {
   playerKilled: boolean
   enemyDestroyedEvent: boolean
   scrapCollectedEvent: boolean
+  // Prologue events
+  prologueReady: boolean
+  asteroidsCleared: boolean
+  fleetDestroyed: boolean
+  speedReached: boolean
+  arbiterArrived: boolean
+  stripAdvanced: boolean
+  stripComplete: boolean
+  prologuePlayerKilled: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -242,6 +264,16 @@ export function createTickState(config?: TickStateConfig): TickState {
     stationY: station.y,
 
     elapsedTime: 0,
+
+    prologueFieldSpawned: false,
+    prologueAsteroidsDestroyed: 0,
+    prologueEnemiesSpawned: false,
+    prologueEnemiesKilled: 0,
+    prologueSpeedTime: 0,
+    prologueArbiterSpawned: false,
+    prologueShipFrozen: false,
+    prologueStripPhase: 0,
+    prologueStripTimer: 0,
   }
 }
 
@@ -282,7 +314,169 @@ function emptyResult(): TickResult {
     playerKilled: false,
     enemyDestroyedEvent: false,
     scrapCollectedEvent: false,
+    prologueReady: false,
+    asteroidsCleared: false,
+    fleetDestroyed: false,
+    speedReached: false,
+    arbiterArrived: false,
+    stripAdvanced: false,
+    stripComplete: false,
+    prologuePlayerKilled: false,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Prologue auto-behavior
+// ---------------------------------------------------------------------------
+
+/** Find nearest live target for auto-targeting. */
+function findNearestTarget(
+  state: TickState,
+  preferEnemies: boolean,
+): { x: number; y: number } | null {
+  let target: { x: number; y: number } | null = null
+  let minDist = Infinity
+
+  // Check asteroids
+  for (const a of state.asteroids) {
+    if (a.hp <= 0) continue
+    const d = Math.hypot(a.x - state.ship.x, a.y - state.ship.y)
+    if (d < minDist) {
+      minDist = d
+      target = { x: a.x, y: a.y }
+    }
+  }
+
+  // Check enemies (take priority when preferEnemies is true)
+  if (preferEnemies) {
+    const enemies: { x: number; y: number; alive: boolean }[] = [
+      ...(state.enemy && state.enemy.alive ? [state.enemy] : []),
+      ...state.ambushEnemies.filter((e) => e.alive),
+    ]
+    for (const e of enemies) {
+      const d = Math.hypot(e.x - state.ship.x, e.y - state.ship.y)
+      if (d < minDist) {
+        minDist = d
+        target = { x: e.x, y: e.y }
+      }
+    }
+  }
+
+  return target
+}
+
+/** Phase-specific prologue logic. Sets auto-fire/auto-aim and fires events. */
+function prologueTick(state: TickState, input: TickInput, result: TickResult): void {
+  const { dt } = input
+  const step = input.tutorialStep
+
+  // --- prologue-start: initialize maxed ship and fire ready ---
+  if (step === 'prologue-start') {
+    if (!state.prologueFieldSpawned) {
+      state.prologueFieldSpawned = true
+      state.blasterTier = PROLOGUE_SHIP.blasterTier
+      state.fireRateBonus = PROLOGUE_SHIP.fireRateBonus
+      state.activeMiningTool = PROLOGUE_SHIP.miningTool
+    }
+    result.prologueReady = true
+    return
+  }
+
+  // --- prologue-mining: auto-lazer at asteroids ---
+  if (step === 'prologue-mining') {
+    state.activeMiningTool = 'lazer'
+    const target = findNearestTarget(state, false)
+    if (target) {
+      state.aimActive = true
+      state.mouseHoldingFire = true
+      state.fireTarget = { x: target.x, y: target.y }
+      input.aimWorldPosition = { x: target.x, y: target.y }
+    }
+    // Count destroyed asteroids
+    const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
+    if (destroyed > state.prologueAsteroidsDestroyed) {
+      state.prologueAsteroidsDestroyed = destroyed
+    }
+    if (state.prologueAsteroidsDestroyed >= PROLOGUE_MINING_TARGET) {
+      result.asteroidsCleared = true
+    }
+    return
+  }
+
+  // --- prologue-combat: spawn enemies, auto-blaster ---
+  if (step === 'prologue-combat') {
+    state.activeMiningTool = 'blaster'
+    if (!state.prologueEnemiesSpawned) {
+      state.prologueEnemiesSpawned = true
+      for (let i = 0; i < PROLOGUE_ENEMY_FLEET_SIZE; i++) {
+        const angle = (i / PROLOGUE_ENEMY_FLEET_SIZE) * Math.PI * 2
+        const dist = ENEMY_SPAWN_DISTANCE
+        const ex = state.ship.x + Math.cos(angle) * dist
+        const ey = state.ship.y + Math.sin(angle) * dist
+        const enemy = createEnemyShip(ex, ey)
+        state.ambushEnemies.push(enemy)
+        result.ambushEnemiesSpawned.push(enemy)
+      }
+    }
+    const target = findNearestTarget(state, true)
+    if (target) {
+      state.aimActive = true
+      state.mouseHoldingFire = true
+      state.fireTarget = { x: target.x, y: target.y }
+      input.aimWorldPosition = { x: target.x, y: target.y }
+    }
+    // Check if all enemies are dead
+    const allDead = state.ambushEnemies.every((e) => !e.alive)
+    if (state.prologueEnemiesSpawned && allDead && state.ambushEnemies.length > 0) {
+      result.fleetDestroyed = true
+    }
+    return
+  }
+
+  // --- prologue-speed: auto-pilot forward, track time at speed ---
+  if (step === 'prologue-speed') {
+    state.mouseHoldingFire = false
+    state.fireTarget = null
+    // Synthesize forward input
+    input.inputState = { ...input.inputState, up: true }
+    const speed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
+    if (speed > SHIP_MAX_SPEED * 1.25) {
+      state.prologueSpeedTime += dt
+    }
+    if (state.prologueSpeedTime >= PROLOGUE_SPEED_DURATION) {
+      result.speedReached = true
+    }
+    return
+  }
+
+  // --- prologue-arbiter: freeze ship, wait for arbiter approach ---
+  if (step === 'prologue-arbiter') {
+    state.prologueShipFrozen = true
+    state.mouseHoldingFire = false
+    state.fireTarget = null
+    if (!state.prologueArbiterSpawned) {
+      state.prologueArbiterSpawned = true
+    }
+    // Arbiter arrival is timed by scene.ts animation
+    return
+  }
+
+  // --- prologue-strip: timed module removal ---
+  if (step === 'prologue-strip') {
+    state.prologueShipFrozen = true
+    state.prologueStripTimer += dt
+    if (state.prologueStripTimer >= ARBITER_STRIP_DELAY) {
+      state.prologueStripTimer -= ARBITER_STRIP_DELAY
+      state.prologueStripPhase++
+      result.stripAdvanced = true
+      if (state.prologueStripPhase >= 4) {
+        result.stripComplete = true
+      }
+    }
+    return
+  }
+
+  // --- prologue-ambush: not used (Arbiter replaces ambush) ---
 }
 
 /**
@@ -325,6 +519,25 @@ export function tick(state: TickState, input: TickInput): TickResult {
     state.aimActive = false
   }
 
+  // --- Prologue auto-behavior ---
+  const isPrologue = input.tutorialStep.startsWith('prologue-')
+  if (isPrologue) {
+    prologueTick(state, input, result)
+
+    // Skip rest of tick during fade
+    if (input.tutorialStep === 'prologue-fade') return result
+
+    // Ship frozen by Arbiter — zero velocity, skip ship update
+    if (state.prologueShipFrozen) {
+      state.ship.velocityX = 0
+      state.ship.velocityY = 0
+      return result
+    }
+
+    // Auto-collect during prologue
+    input.collecting = true
+  }
+
   // --- Ship update ---
   let aimRotation: number | null = null
   if (state.aimActive && input.aimWorldPosition) {
@@ -335,6 +548,16 @@ export function tick(state: TickState, input: TickInput): TickResult {
     }
   }
   updateShip(state.ship, input.inputState, dt, aimRotation)
+
+  // Prologue speed override: allow higher max speed
+  if (isPrologue) {
+    const speed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
+    if (speed > PROLOGUE_SHIP.maxSpeed) {
+      const scale = PROLOGUE_SHIP.maxSpeed / speed
+      state.ship.velocityX *= scale
+      state.ship.velocityY *= scale
+    }
+  }
 
   if (Math.sqrt(state.ship.x ** 2 + state.ship.y ** 2) > 2) {
     result.shipMoved = true
@@ -597,7 +820,8 @@ export function tick(state: TickState, input: TickInput): TickResult {
   for (let i = state.scrapBoxes.length - 1; i >= 0; i--) {
     updateScrapBox(state.scrapBoxes[i], dt)
     if (input.collecting) {
-      const collected = attractScrapBoxToShip(state.scrapBoxes[i], state.ship, dt)
+      const collectorRange = isPrologue ? PROLOGUE_SHIP.collectorRange : undefined
+      const collected = attractScrapBoxToShip(state.scrapBoxes[i], state.ship, dt, collectorRange)
       if (collected) {
         result.scrapCollected.push({ id: state.scrapBoxes[i].id, value: SCRAP_BOX_VALUE })
         result.scrapCollectedEvent = true
@@ -613,7 +837,8 @@ export function tick(state: TickState, input: TickInput): TickResult {
     updateMetalChunk(metal, dt)
 
     if (input.collecting) {
-      const collected = attractMetalToShip(metal, state.ship, dt)
+      const metalRange = isPrologue ? PROLOGUE_SHIP.collectorRange : undefined
+      const collected = attractMetalToShip(metal, state.ship, dt, metalRange)
       if (collected) {
         if (state.firstMetalCollectedTime === null) {
           state.firstMetalCollectedTime = state.elapsedTime

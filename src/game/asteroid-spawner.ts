@@ -15,13 +15,13 @@ const CRYSTALLINE_MAX_DISTANCE = 180
 /** Minimum spacing between asteroids. */
 const MIN_ASTEROID_SPACING = 20
 
-/** HP values per asteroid type and size. */
+/** HP values per asteroid type and size. Size 0 = moon (prologue only). */
 const HP_TABLE: Record<AsteroidType, Record<number, number>> = {
-  common: { 1: 15, 2: 8, 3: 4 },
-  dense: { 1: 25, 2: 14, 3: 8 },
-  precious: { 1: 10, 2: 6, 3: 3 },
-  comet: { 1: 18, 2: 10, 3: 5 },
-  crystalline: { 1: 30, 2: 18, 3: 10 },
+  common: { 0: 40, 1: 15, 2: 8, 3: 4 },
+  dense: { 0: 60, 1: 25, 2: 14, 3: 8 },
+  precious: { 0: 25, 1: 10, 2: 6, 3: 3 },
+  comet: { 0: 45, 1: 18, 2: 10, 3: 5 },
+  crystalline: { 0: 80, 1: 30, 2: 18, 3: 10 },
 }
 
 /** Weighted type distribution for random selection. */
@@ -118,6 +118,109 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
       y,
       velocityX,
       velocityY,
+      type,
+      hp,
+      maxHp: hp,
+      size,
+    })
+    positions.push({ x, y })
+  }
+
+  return asteroids
+}
+
+/** Prologue-specific size weights: more large + moon asteroids. */
+const PROLOGUE_SIZE_WEIGHTS: { size: number; weight: number }[] = [
+  { size: 0, weight: 10 },
+  { size: 1, weight: 40 },
+  { size: 2, weight: 35 },
+  { size: 3, weight: 15 },
+]
+
+/** Minimum spacing for prologue field (tighter than normal). */
+const PROLOGUE_MIN_SPACING = 12
+
+/** Spawn a dense asteroid field for the prologue sequence. */
+export function spawnPrologueField(
+  cx: number,
+  cy: number,
+  count: number,
+  moonCount: number,
+  seed?: number,
+): Asteroid[] {
+  const asteroids: Asteroid[] = []
+  const positions: { x: number; y: number }[] = []
+
+  let s = seed ?? Date.now() % 2147483647
+  function rand(): number {
+    s = (s * 16807 + 0) % 2147483647
+    return (s - 1) / 2147483646
+  }
+
+  // Spawn moon-size asteroids first in a ring around center
+  for (let i = 0; i < moonCount; i++) {
+    const angle = (i / moonCount) * Math.PI * 2 + rand() * 0.5
+    const distance = 60 + rand() * 40
+    const x = cx + Math.cos(angle) * distance
+    const y = cy + Math.sin(angle) * distance
+
+    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
+    const type = TYPE_WEIGHTS[typeIdx].type
+    const hp = HP_TABLE[type][0]
+
+    const driftAngle = rand() * Math.PI * 2
+    const driftSpeed = rand() * 1.5
+    asteroids.push({
+      id: `prologue-moon-${i}`,
+      x,
+      y,
+      velocityX: Math.cos(driftAngle) * driftSpeed,
+      velocityY: Math.sin(driftAngle) * driftSpeed,
+      type,
+      hp,
+      maxHp: hp,
+      size: 0,
+    })
+    positions.push({ x, y })
+  }
+
+  // Spawn remaining asteroids in a tighter ring
+  let attempts = 0
+  const maxAttempts = count * 20
+  while (asteroids.length < count + moonCount && attempts < maxAttempts) {
+    attempts++
+
+    const typeIdx = pickWeighted(TYPE_WEIGHTS, rand)
+    const type = TYPE_WEIGHTS[typeIdx].type
+
+    const angle = rand() * Math.PI * 2
+    const distance = 30 + rand() * 90
+    const x = cx + Math.cos(angle) * distance
+    const y = cy + Math.sin(angle) * distance
+
+    let tooClose = false
+    for (const pos of positions) {
+      const dx = x - pos.x
+      const dy = y - pos.y
+      if (dx * dx + dy * dy < PROLOGUE_MIN_SPACING * PROLOGUE_MIN_SPACING) {
+        tooClose = true
+        break
+      }
+    }
+    if (tooClose) continue
+
+    const sizeIdx = pickWeighted(PROLOGUE_SIZE_WEIGHTS, rand)
+    const size = PROLOGUE_SIZE_WEIGHTS[sizeIdx].size
+    const hp = HP_TABLE[type][size]
+
+    const driftAngle = rand() * Math.PI * 2
+    const driftSpeed = rand() * MAX_DRIFT_SPEED
+    asteroids.push({
+      id: `prologue-asteroid-${asteroids.length}`,
+      x,
+      y,
+      velocityX: Math.cos(driftAngle) * driftSpeed,
+      velocityY: Math.sin(driftAngle) * driftSpeed,
       type,
       hp,
       maxHp: hp,

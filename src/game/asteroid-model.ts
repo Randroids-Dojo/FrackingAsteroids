@@ -93,8 +93,9 @@ export function createLargeAsteroidModel(): THREE.Group {
   return asteroid
 }
 
-/** Collision radius per asteroid size (1 = large, 2 = medium, 3 = small). */
+/** Collision radius per asteroid size (0 = moon, 1 = large, 2 = medium, 3 = small). */
 export const ASTEROID_SIZE_RADIUS: Record<number, number> = {
+  0: 16,
   1: 8,
   2: 5,
   3: 3,
@@ -128,9 +129,9 @@ export function createAsteroidModel(
   const palette = TYPE_PALETTES[type]
   const rand = seededRandom(shapeSeed)
 
-  // Scale voxel size and grid radius by asteroid size
-  const voxelSize = size === 1 ? 2.0 : size === 2 ? 1.4 : 1.0
-  const coreRadius = size === 1 ? 4 : size === 2 ? 3 : 2
+  // Scale voxel size and grid radius by asteroid size (0 = moon, 1 = large, 2 = med, 3 = small)
+  const voxelSize = size === 0 ? 3.0 : size === 1 ? 2.0 : size === 2 ? 1.4 : 1.0
+  const coreRadius = size === 0 ? 6 : size === 1 ? 4 : size === 2 ? 3 : 2
   const topRadius = Math.max(1, coreRadius - 1)
 
   // Core layer (z=0) — irregular shape using manhattan distance with random threshold
@@ -165,6 +166,22 @@ export function createAsteroidModel(
       const dist = Math.abs(x) + Math.abs(y)
       if (dist <= topRadius && rand() < 0.8) {
         addVoxel(asteroid, x, y, -1, palette.dark, voxelSize)
+      }
+    }
+  }
+
+  // Extra layers for moon-size asteroids (z = ±2)
+  if (size === 0) {
+    const innerRadius = Math.max(1, topRadius - 1)
+    for (let x = -innerRadius; x <= innerRadius; x++) {
+      for (let y = -innerRadius; y <= innerRadius; y++) {
+        const dist = Math.abs(x) + Math.abs(y)
+        if (dist <= innerRadius && rand() < 0.75) {
+          addVoxel(asteroid, x, y, 2, palette.light, voxelSize)
+        }
+        if (dist <= innerRadius && rand() < 0.7) {
+          addVoxel(asteroid, x, y, -2, palette.dark, voxelSize)
+        }
       }
     }
   }
