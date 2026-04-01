@@ -17,13 +17,7 @@ const COLORS = {
   eye: 0x00ffff,
 }
 
-function addVoxel(
-  group: THREE.Group,
-  x: number,
-  y: number,
-  z: number,
-  color: number,
-): void {
+function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: number): void {
   const geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL)
   const mat = new THREE.MeshStandardMaterial({ color, flatShading: true })
   const mesh = new THREE.Mesh(geo, mat)

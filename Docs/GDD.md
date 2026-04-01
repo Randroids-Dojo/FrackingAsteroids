@@ -174,6 +174,38 @@ anywhere on screen. The popup appears every time the player deflects off crystal
 - Drive-through repair: restores HP to full when passing close
 - Trade menu: sell materials for scrap, buy upgrades
 
+### The Prologue
+
+New games begin with a cinematic prologue that showcases end-game power before stripping it away.
+
+**Maxed-Out Ship**: The player starts with a fully upgraded ship (Blaster Mk5, Collector Mk5, Storage Mk5, Lazer unlocked) that is visually larger than the normal ship with detachable module add-ons: weapon turrets, collector scoop, cargo pods, and lazer emitter. Gold accents signal the maxed state.
+
+**Auto-Behavior**: During the prologue, the ship operates autonomously:
+- **Auto-fire**: Targets nearest asteroid/enemy automatically
+- **Auto-mine**: Lazer beam shreds asteroids including moon-sized rocks (size 0, ~30 world units)
+- **Auto-collect**: Magnet collector with 40-unit range vacuums all debris
+
+**Phases**:
+1. **Mining** — Lazer annihilates a dense field of 30 asteroids + 3 moon-size rocks
+2. **Combat** — Triple-fire blaster destroys a 6-ship enemy fleet
+3. **Speed** — Boosted max speed (180 u/s) showcase
+4. **The Arbiter** — A massive AI construct (~20×20 world units) warps in and freezes the ship
+5. **Strip** — The Arbiter removes modules one by one (turrets → scoop → cargo → lazer)
+6. **Fade** — "Systems offline." → "Rebooting..." → player respawns with tier-1 ship
+
+**The Arbiter**: An all-powerful AI that enforces balance in the asteroid belt. Delivers three lines of dialogue:
+- *"You have grown too powerful, fracker."*
+- *"The belt was not built for one to dominate."*
+- *"I am restoring balance."*
+
+After the prologue, the existing tutorial begins with the player motivated to rebuild.
+
+**Skip**: "SKIP INTRO" button available at any time during prologue. Loading a saved game skips the prologue entirely.
+
+### Moon-Size Asteroids
+
+Size 0 asteroids (moon) are prologue-only, with voxel size 3.0, collision radius 16, and HP ranging from 25 (precious) to 80 (crystalline). They use 5 voxel layers for imposing depth.
+
 ## 4. Technical Design
 
 ### Data Models (Zod Schemas)
@@ -301,3 +333,4 @@ All audio is procedurally synthesized using the Web Audio API — no external au
 - [x] **M8: Persistence** — Auto-save on game events, KV backend storage
 - [x] **M9: Polish** — Background music, SFX, particles, screen shake, background effects
 - [x] **M10: Lazer & Crystalline** — Crystalline asteroid type, Lazer mining tool, HUD tool switcher, trade station purchase
+- [x] **M11: Prologue** — Maxed ship intro with auto-fire/mine/collect, The Arbiter antagonist, module strip, prologue-to-tutorial transition

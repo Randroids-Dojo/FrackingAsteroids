@@ -105,9 +105,7 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
         )}
 
         {step === 'prologue-strip' && (
-          <p className="text-hud-red text-sm sm:text-base animate-pulse">
-            Systems failing...
-          </p>
+          <p className="text-hud-red text-sm sm:text-base animate-pulse">Systems failing...</p>
         )}
       </div>
 

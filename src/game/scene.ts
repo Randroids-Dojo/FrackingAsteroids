@@ -3,7 +3,12 @@ import { createShipModel } from './ship-model'
 import { createAsteroidModel } from './asteroid-model'
 import { spawnAsteroidField, spawnPrologueField } from './asteroid-spawner'
 import { createArbiterModel } from './arbiter-model'
-import { PROLOGUE_ASTEROID_COUNT, PROLOGUE_MOON_COUNT, ARBITER_SPAWN_DISTANCE, ARBITER_APPROACH_SPEED } from './prologue-config'
+import {
+  PROLOGUE_ASTEROID_COUNT,
+  PROLOGUE_MOON_COUNT,
+  ARBITER_SPAWN_DISTANCE,
+  ARBITER_APPROACH_SPEED,
+} from './prologue-config'
 import {
   createGasStationModel,
   initGasStationNeon,

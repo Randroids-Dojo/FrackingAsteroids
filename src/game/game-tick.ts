@@ -54,7 +54,13 @@ import {
 } from './enemy-ship'
 import { createScrapBox, updateScrapBox, attractScrapBoxToShip, SCRAP_BOX_VALUE } from './scrap-box'
 import { HITS_PER_BREAK } from './asteroid-debris'
-import { PROLOGUE_SHIP, PROLOGUE_ENEMY_FLEET_SIZE, PROLOGUE_MINING_TARGET, PROLOGUE_SPEED_DURATION, ARBITER_STRIP_DELAY } from './prologue-config'
+import {
+  PROLOGUE_SHIP,
+  PROLOGUE_ENEMY_FLEET_SIZE,
+  PROLOGUE_MINING_TARGET,
+  PROLOGUE_SPEED_DURATION,
+  ARBITER_STRIP_DELAY,
+} from './prologue-config'
 import { SHIP_MAX_SPEED } from './ship-constants'
 
 // ---------------------------------------------------------------------------
