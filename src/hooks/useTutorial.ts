@@ -3,6 +3,13 @@
 import { useState, useCallback, useEffect } from 'react'
 
 export type TutorialStep =
+  | 'prologue-start'
+  | 'prologue-mining'
+  | 'prologue-combat'
+  | 'prologue-speed'
+  | 'prologue-arbiter'
+  | 'prologue-strip'
+  | 'prologue-fade'
   | 'move'
   | 'shoot'
   | 'wait-for-metal'
@@ -14,11 +21,16 @@ export type TutorialStep =
   | 'trade-sell'
   | 'trade-buy'
   | 'drive-through'
-  | 'ambush'
-  | 'ambush-fade'
   | 'done'
 
 export type TutorialEvent =
+  | 'prologue-ready'
+  | 'asteroids-cleared'
+  | 'fleet-destroyed'
+  | 'speed-reached'
+  | 'arbiter-arrived'
+  | 'strip-complete'
+  | 'prologue-respawn-complete'
   | 'ship-moved'
   | 'asteroid-hit'
   | 'metal-spawned'
@@ -31,8 +43,6 @@ export type TutorialEvent =
   | 'sold-materials'
   | 'bought-upgrade'
   | 'drove-through-station'
-  | 'player-killed'
-  | 'ambush-complete'
   | 'unfreeze'
   | 'skip'
 
@@ -47,10 +57,38 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
   if (!state.active) return state
 
   if (event === 'skip') {
+    // During prologue, skip to tutorial start; during tutorial, skip to done
+    if (state.step.startsWith('prologue-')) {
+      return { active: true, step: 'move', frozen: false }
+    }
     return { active: false, step: 'done', frozen: false }
   }
 
   switch (state.step) {
+    // --- Prologue steps ---
+    case 'prologue-start':
+      if (event === 'prologue-ready') return { ...state, step: 'prologue-mining' }
+      return state
+    case 'prologue-mining':
+      if (event === 'asteroids-cleared') return { ...state, step: 'prologue-combat' }
+      return state
+    case 'prologue-combat':
+      if (event === 'fleet-destroyed') return { ...state, step: 'prologue-speed' }
+      return state
+    case 'prologue-speed':
+      if (event === 'speed-reached') return { ...state, step: 'prologue-arbiter' }
+      return state
+    case 'prologue-arbiter':
+      if (event === 'arbiter-arrived') return { ...state, step: 'prologue-strip' }
+      return state
+    case 'prologue-strip':
+      if (event === 'strip-complete') return { ...state, step: 'prologue-fade' }
+      return state
+    case 'prologue-fade':
+      if (event === 'prologue-respawn-complete') return { ...state, step: 'move', frozen: false }
+      return state
+
+    // --- Tutorial steps ---
     case 'move':
       if (event === 'ship-moved') return { ...state, step: 'shoot' }
       return state
@@ -84,13 +122,7 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'bought-upgrade') return { ...state, step: 'drive-through' }
       return state
     case 'drive-through':
-      if (event === 'drove-through-station') return { ...state, step: 'ambush' }
-      return state
-    case 'ambush':
-      if (event === 'player-killed') return { ...state, step: 'ambush-fade', frozen: true }
-      return state
-    case 'ambush-fade':
-      if (event === 'ambush-complete') return { active: false, step: 'done', frozen: false }
+      if (event === 'drove-through-station') return { active: false, step: 'done', frozen: false }
       return state
     default:
       return state
@@ -101,6 +133,15 @@ export interface TutorialHook {
   active: boolean
   step: TutorialStep
   frozen: boolean
+  // Prologue callbacks
+  onPrologueReady: () => void
+  onAsteroidsCleared: () => void
+  onFleetDestroyed: () => void
+  onSpeedReached: () => void
+  onArbiterArrived: () => void
+  onStripComplete: () => void
+  onPrologueRespawnComplete: () => void
+  // Tutorial callbacks
   onShipMoved: () => void
   onAsteroidHit: () => void
   onMetalSpawned: () => void
@@ -113,8 +154,6 @@ export interface TutorialHook {
   onSoldMaterials: () => void
   onBoughtUpgrade: () => void
   onDroveThroughStation: () => void
-  onPlayerKilled: () => void
-  onAmbushComplete: () => void
   unfreeze: () => void
   skip: () => void
 }
@@ -129,7 +168,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
   // Activate every time enabled flips to true (fresh new game)
   useEffect(() => {
     if (enabled) {
-      setState({ active: true, step: 'move', frozen: false })
+      setState({ active: true, step: 'prologue-start', frozen: false })
     }
   }, [enabled])
 
@@ -141,6 +180,19 @@ export function useTutorial(enabled: boolean): TutorialHook {
     })
   }, [])
 
+  // Prologue callbacks
+  const onPrologueReady = useCallback(() => dispatch('prologue-ready'), [dispatch])
+  const onAsteroidsCleared = useCallback(() => dispatch('asteroids-cleared'), [dispatch])
+  const onFleetDestroyed = useCallback(() => dispatch('fleet-destroyed'), [dispatch])
+  const onSpeedReached = useCallback(() => dispatch('speed-reached'), [dispatch])
+  const onArbiterArrived = useCallback(() => dispatch('arbiter-arrived'), [dispatch])
+  const onStripComplete = useCallback(() => dispatch('strip-complete'), [dispatch])
+  const onPrologueRespawnComplete = useCallback(
+    () => dispatch('prologue-respawn-complete'),
+    [dispatch],
+  )
+
+  // Tutorial callbacks
   const onShipMoved = useCallback(() => dispatch('ship-moved'), [dispatch])
   const onAsteroidHit = useCallback(() => dispatch('asteroid-hit'), [dispatch])
   const onMetalSpawned = useCallback(() => dispatch('metal-spawned'), [dispatch])
@@ -153,8 +205,6 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onSoldMaterials = useCallback(() => dispatch('sold-materials'), [dispatch])
   const onBoughtUpgrade = useCallback(() => dispatch('bought-upgrade'), [dispatch])
   const onDroveThroughStation = useCallback(() => dispatch('drove-through-station'), [dispatch])
-  const onPlayerKilled = useCallback(() => dispatch('player-killed'), [dispatch])
-  const onAmbushComplete = useCallback(() => dispatch('ambush-complete'), [dispatch])
   const unfreeze = useCallback(() => dispatch('unfreeze'), [dispatch])
   const skip = useCallback(() => dispatch('skip'), [dispatch])
 
@@ -162,6 +212,13 @@ export function useTutorial(enabled: boolean): TutorialHook {
     active: state.active,
     step: state.step,
     frozen: state.frozen,
+    onPrologueReady,
+    onAsteroidsCleared,
+    onFleetDestroyed,
+    onSpeedReached,
+    onArbiterArrived,
+    onStripComplete,
+    onPrologueRespawnComplete,
     onShipMoved,
     onAsteroidHit,
     onMetalSpawned,
@@ -174,8 +231,6 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onSoldMaterials,
     onBoughtUpgrade,
     onDroveThroughStation,
-    onPlayerKilled,
-    onAmbushComplete,
     unfreeze,
     skip,
   }

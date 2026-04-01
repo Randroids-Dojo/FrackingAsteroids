@@ -4,10 +4,56 @@ import { advanceTutorial } from '../../src/hooks/useTutorial'
 import type { TutorialState, TutorialEvent } from '../../src/hooks/useTutorial'
 
 describe('advanceTutorial', () => {
-  const initial: TutorialState = { active: true, step: 'move', frozen: false }
+  const initial: TutorialState = { active: true, step: 'prologue-start', frozen: false }
+
+  // --- Prologue transitions ---
+
+  it('prologue-start → prologue-mining on prologue-ready', () => {
+    const next = advanceTutorial(initial, 'prologue-ready')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-mining', frozen: false })
+  })
+
+  it('prologue-mining → prologue-combat on asteroids-cleared', () => {
+    const state: TutorialState = { active: true, step: 'prologue-mining', frozen: false }
+    const next = advanceTutorial(state, 'asteroids-cleared')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-combat', frozen: false })
+  })
+
+  it('prologue-combat → prologue-speed on fleet-destroyed', () => {
+    const state: TutorialState = { active: true, step: 'prologue-combat', frozen: false }
+    const next = advanceTutorial(state, 'fleet-destroyed')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-speed', frozen: false })
+  })
+
+  it('prologue-speed → prologue-arbiter on speed-reached', () => {
+    const state: TutorialState = { active: true, step: 'prologue-speed', frozen: false }
+    const next = advanceTutorial(state, 'speed-reached')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-arbiter', frozen: false })
+  })
+
+  it('prologue-arbiter → prologue-strip on arbiter-arrived', () => {
+    const state: TutorialState = { active: true, step: 'prologue-arbiter', frozen: false }
+    const next = advanceTutorial(state, 'arbiter-arrived')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-strip', frozen: false })
+  })
+
+  it('prologue-strip → prologue-fade on strip-complete', () => {
+    const state: TutorialState = { active: true, step: 'prologue-strip', frozen: false }
+    const next = advanceTutorial(state, 'strip-complete')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-fade', frozen: false })
+  })
+
+  it('prologue-fade → move on prologue-respawn-complete', () => {
+    const state: TutorialState = { active: true, step: 'prologue-fade', frozen: false }
+    const next = advanceTutorial(state, 'prologue-respawn-complete')
+    assert.deepStrictEqual(next, { active: true, step: 'move', frozen: false })
+  })
+
+  // --- Tutorial transitions ---
 
   it('move → shoot on ship-moved', () => {
-    const next = advanceTutorial(initial, 'ship-moved')
+    const state: TutorialState = { active: true, step: 'move', frozen: false }
+    const next = advanceTutorial(state, 'ship-moved')
     assert.deepStrictEqual(next, { active: true, step: 'shoot', frozen: false })
   })
 
@@ -77,50 +123,29 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'drive-through', frozen: false })
   })
 
-  it('drive-through transitions to ambush on drove-through-station', () => {
+  it('drive-through completes tutorial on drove-through-station', () => {
     const state: TutorialState = { active: true, step: 'drive-through', frozen: false }
     const next = advanceTutorial(state, 'drove-through-station')
-    assert.deepStrictEqual(next, { active: true, step: 'ambush', frozen: false })
-  })
-
-  it('ambush transitions to ambush-fade on player-killed', () => {
-    const state: TutorialState = { active: true, step: 'ambush', frozen: false }
-    const next = advanceTutorial(state, 'player-killed')
-    assert.deepStrictEqual(next, { active: true, step: 'ambush-fade', frozen: true })
-  })
-
-  it('ambush-fade completes on ambush-complete', () => {
-    const state: TutorialState = { active: true, step: 'ambush-fade', frozen: true }
-    const next = advanceTutorial(state, 'ambush-complete')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
-  it('ignores wrong event for current step', () => {
+  // --- Skip behavior ---
+
+  it('skip from prologue jumps to move (tutorial start)', () => {
+    const state: TutorialState = { active: true, step: 'prologue-mining', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: true, step: 'move', frozen: false })
+  })
+
+  it('skip from prologue-arbiter jumps to move', () => {
+    const state: TutorialState = { active: true, step: 'prologue-arbiter', frozen: false }
+    const next = advanceTutorial(state, 'skip')
+    assert.deepStrictEqual(next, { active: true, step: 'move', frozen: false })
+  })
+
+  it('skip from tutorial move completes', () => {
     const state: TutorialState = { active: true, step: 'move', frozen: false }
-    const next = advanceTutorial(state, 'asteroid-hit')
-    assert.strictEqual(next, state)
-  })
-
-  it('ignores events when not active', () => {
-    const state: TutorialState = { active: false, step: 'done', frozen: false }
-    const next = advanceTutorial(state, 'ship-moved')
-    assert.strictEqual(next, state)
-  })
-
-  it('ignores enemy-nearby when not active', () => {
-    const state: TutorialState = { active: false, step: 'done', frozen: false }
-    const next = advanceTutorial(state, 'enemy-nearby')
-    assert.strictEqual(next, state)
-  })
-
-  it('unfreeze is no-op when destroy-enemy is not frozen', () => {
-    const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: false }
-    const next = advanceTutorial(state, 'unfreeze')
-    assert.strictEqual(next, state)
-  })
-
-  it('skip from move', () => {
-    const next = advanceTutorial(initial, 'skip')
+    const next = advanceTutorial(state, 'skip')
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
@@ -184,20 +209,41 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
   })
 
-  it('skip from ambush', () => {
-    const state: TutorialState = { active: true, step: 'ambush', frozen: false }
-    const next = advanceTutorial(state, 'skip')
-    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  // --- Edge cases ---
+
+  it('ignores wrong event for current step', () => {
+    const state: TutorialState = { active: true, step: 'move', frozen: false }
+    const next = advanceTutorial(state, 'asteroid-hit')
+    assert.strictEqual(next, state)
   })
 
-  it('skip from ambush-fade', () => {
-    const state: TutorialState = { active: true, step: 'ambush-fade', frozen: true }
-    const next = advanceTutorial(state, 'skip')
-    assert.deepStrictEqual(next, { active: false, step: 'done', frozen: false })
+  it('ignores events when not active', () => {
+    const state: TutorialState = { active: false, step: 'done', frozen: false }
+    const next = advanceTutorial(state, 'ship-moved')
+    assert.strictEqual(next, state)
+  })
+
+  it('ignores enemy-nearby when not active', () => {
+    const state: TutorialState = { active: false, step: 'done', frozen: false }
+    const next = advanceTutorial(state, 'enemy-nearby')
+    assert.strictEqual(next, state)
+  })
+
+  it('unfreeze is no-op when destroy-enemy is not frozen', () => {
+    const state: TutorialState = { active: true, step: 'destroy-enemy', frozen: false }
+    const next = advanceTutorial(state, 'unfreeze')
+    assert.strictEqual(next, state)
   })
 
   it('returns same reference for no-op transitions', () => {
     const steps: TutorialState['step'][] = [
+      'prologue-start',
+      'prologue-mining',
+      'prologue-combat',
+      'prologue-speed',
+      'prologue-arbiter',
+      'prologue-strip',
+      'prologue-fade',
       'move',
       'shoot',
       'wait-for-metal',
@@ -209,10 +255,71 @@ describe('advanceTutorial', () => {
       'trade-sell',
       'trade-buy',
       'drive-through',
-      'ambush',
-      'ambush-fade',
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
+      'prologue-start': [
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'speed-reached',
+        'arbiter-arrived',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-mining': [
+        'prologue-ready',
+        'fleet-destroyed',
+        'speed-reached',
+        'arbiter-arrived',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-combat': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'speed-reached',
+        'arbiter-arrived',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-speed': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'arbiter-arrived',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-arbiter': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'speed-reached',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-strip': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'speed-reached',
+        'arbiter-arrived',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-fade': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'speed-reached',
+        'arbiter-arrived',
+        'strip-complete',
+        'ship-moved',
+      ],
       move: [
         'asteroid-hit',
         'metal-spawned',
@@ -225,8 +332,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       shoot: [
@@ -241,8 +346,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'wait-for-metal': [
@@ -257,8 +360,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       collect: [
@@ -273,8 +374,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'destroy-enemy': [
@@ -288,8 +387,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
       ],
       'collect-scrap': [
         'ship-moved',
@@ -303,8 +400,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'go-to-station': [
@@ -319,8 +414,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'approach-station': [
@@ -335,8 +428,6 @@ describe('advanceTutorial', () => {
         'sold-materials',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'trade-sell': [
@@ -351,8 +442,6 @@ describe('advanceTutorial', () => {
         'entered-station',
         'bought-upgrade',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'trade-buy': [
@@ -367,8 +456,6 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'drove-through-station',
-        'player-killed',
-        'ambush-complete',
         'unfreeze',
       ],
       'drive-through': [
@@ -383,40 +470,6 @@ describe('advanceTutorial', () => {
         'entered-station',
         'sold-materials',
         'bought-upgrade',
-        'player-killed',
-        'ambush-complete',
-        'unfreeze',
-      ],
-      ambush: [
-        'ship-moved',
-        'asteroid-hit',
-        'metal-spawned',
-        'metal-collected',
-        'enemy-nearby',
-        'enemy-destroyed',
-        'scrap-collected',
-        'near-station',
-        'entered-station',
-        'sold-materials',
-        'bought-upgrade',
-        'drove-through-station',
-        'ambush-complete',
-        'unfreeze',
-      ],
-      'ambush-fade': [
-        'ship-moved',
-        'asteroid-hit',
-        'metal-spawned',
-        'metal-collected',
-        'enemy-nearby',
-        'enemy-destroyed',
-        'scrap-collected',
-        'near-station',
-        'entered-station',
-        'sold-materials',
-        'bought-upgrade',
-        'drove-through-station',
-        'player-killed',
         'unfreeze',
       ],
     }
@@ -430,8 +483,26 @@ describe('advanceTutorial', () => {
     }
   })
 
-  it('full progression through all steps', () => {
-    let state: TutorialState = { active: true, step: 'move', frozen: false }
+  it('full progression through prologue and tutorial', () => {
+    // Prologue
+    let state: TutorialState = { active: true, step: 'prologue-start', frozen: false }
+    state = advanceTutorial(state, 'prologue-ready')
+    assert.equal(state.step, 'prologue-mining')
+    state = advanceTutorial(state, 'asteroids-cleared')
+    assert.equal(state.step, 'prologue-combat')
+    state = advanceTutorial(state, 'fleet-destroyed')
+    assert.equal(state.step, 'prologue-speed')
+    state = advanceTutorial(state, 'speed-reached')
+    assert.equal(state.step, 'prologue-arbiter')
+    state = advanceTutorial(state, 'arbiter-arrived')
+    assert.equal(state.step, 'prologue-strip')
+    state = advanceTutorial(state, 'strip-complete')
+    assert.equal(state.step, 'prologue-fade')
+    state = advanceTutorial(state, 'prologue-respawn-complete')
+    assert.equal(state.step, 'move')
+    assert.equal(state.active, true)
+
+    // Tutorial
     state = advanceTutorial(state, 'ship-moved')
     assert.equal(state.step, 'shoot')
     state = advanceTutorial(state, 'asteroid-hit')
@@ -460,12 +531,6 @@ describe('advanceTutorial', () => {
     state = advanceTutorial(state, 'bought-upgrade')
     assert.equal(state.step, 'drive-through')
     state = advanceTutorial(state, 'drove-through-station')
-    assert.equal(state.step, 'ambush')
-    assert.equal(state.active, true)
-    state = advanceTutorial(state, 'player-killed')
-    assert.equal(state.step, 'ambush-fade')
-    assert.equal(state.frozen, true)
-    state = advanceTutorial(state, 'ambush-complete')
     assert.equal(state.step, 'done')
     assert.equal(state.active, false)
     assert.equal(state.frozen, false)

@@ -119,7 +119,6 @@ export interface GameSceneOptions {
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
-  onPlayerKilled?: () => void
   onCrystallineDeflect?: () => void
   onToolChange?: (tool: MiningTool) => void
 }
@@ -154,7 +153,6 @@ export function createGameScene(
   const onNearStation = options?.onNearStation
   const onStationRange = options?.onStationRange
   const onStationDriveThrough = options?.onStationDriveThrough
-  const onPlayerKilled = options?.onPlayerKilled
   const onCrystallineDeflect = options?.onCrystallineDeflect
   const onToolChange = options?.onToolChange
 
@@ -785,7 +783,7 @@ export function createGameScene(
       if (result.nearStation) onNearStation?.()
       if (result.stationRangeChanged !== null) onStationRange?.(result.stationRangeChanged)
       if (result.stationRepaired) onStationDriveThrough?.()
-      if (result.playerKilled) onPlayerKilled?.()
+      // playerKilled event handled by prologue system
 
       // --- Update asteroid health meters & visibility ---
       for (const a of asteroids) {

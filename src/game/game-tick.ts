@@ -64,9 +64,6 @@ const ENEMY_NEARBY_DISTANCE = 60
 const STATION_NEAR_DISTANCE = 80
 const STATION_ENTER_DISTANCE = 60
 const STATION_REPAIR_DISTANCE = 15
-const AMBUSH_ENEMY_COUNT = 3
-const AMBUSH_SPAWN_OFFSET_Y = 70
-const AMBUSH_SPAWN_SPREAD_X = 25
 const AMBUSH_SHOOT_MIN = 0.3
 const AMBUSH_SHOOT_MAX = 0.5
 const AMBUSH_PROJECTILE_DAMAGE = 20
@@ -667,22 +664,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
     result.playerDamaged = true // triggers onPlayerDamage callback with restored HP
   }
 
-  // --- Ambush ---
-  if (tutStep === 'ambush' && !state.ambushSpawned && !inStationRange) {
-    state.ambushSpawned = true
-    for (let i = 0; i < AMBUSH_ENEMY_COUNT; i++) {
-      const offsetX = (i - 1) * AMBUSH_SPAWN_SPREAD_X
-      const ax = state.ship.x + offsetX
-      const ay = state.ship.y + AMBUSH_SPAWN_OFFSET_Y
-      const ae = createEnemyShip(ax, ay)
-      ae.shootTimer = AMBUSH_SHOOT_MIN
-      ae.hp = 100
-      ae.maxHp = 100
-      state.ambushEnemies.push(ae)
-      result.ambushEnemiesSpawned.push(ae)
-    }
-  }
-
+  // --- Ambush enemies (used by prologue) ---
   if (state.ambushEnemies.length > 0) {
     for (const ae of state.ambushEnemies) {
       if (!ae.alive) continue
@@ -696,11 +678,6 @@ export function tick(state: TickState, input: TickInput): TickResult {
         result.newEnemyProjectiles.push(proj)
       }
     }
-  }
-
-  if (tutStep === 'ambush' && state.playerHp <= 0 && !state.playerKilledFired) {
-    state.playerKilledFired = true
-    result.playerKilled = true
   }
 
   return result

@@ -178,65 +178,12 @@ export default function Home() {
     setLazerPopupVisible(false)
   }, [])
 
-  const handlePlayerKilled = useCallback(() => {
-    tutorial.onPlayerKilled()
-  }, [tutorial])
-
   const handleSkipTutorial = useCallback(() => {
     tutorial.skip()
     setTradeMenuOpen(false)
     // Spawn the real asteroid field so the player has a proper game world
     gameCanvasRef.current?.resetShipToStation()
   }, [tutorial])
-
-  // --- Ambush fade-to-black and respawn sequence ---
-  const [ambushFade, setAmbushFade] = useState<
-    'none' | 'fading-in' | 'black' | 'loaded' | 'fading-out'
-  >('none')
-
-  // Stable ref for the completion callback so the effect doesn't re-trigger
-  const ambushCompleteRef = useRef(tutorial.onAmbushComplete)
-  useEffect(() => {
-    ambushCompleteRef.current = tutorial.onAmbushComplete
-  }, [tutorial.onAmbushComplete])
-
-  useEffect(() => {
-    if (tutorialStep !== 'ambush-fade') return
-    const timers: ReturnType<typeof setTimeout>[] = []
-    // Start fade to black
-    setAmbushFade('fading-in')
-
-    // After fade-in completes (1.5s), hold black with "You Died"
-    timers.push(
-      setTimeout(() => {
-        setAmbushFade('black')
-        gameCanvasRef.current?.resetShipToStation()
-
-        // After a hold (1.5s), switch to "Loading last save" text
-        timers.push(
-          setTimeout(() => {
-            setAmbushFade('loaded')
-
-            // Hold "Loading last save" on black (2s), then fade out
-            timers.push(
-              setTimeout(() => {
-                setAmbushFade('fading-out')
-
-                timers.push(
-                  setTimeout(() => {
-                    setAmbushFade('none')
-                    ambushCompleteRef.current()
-                  }, 1500),
-                )
-              }, 2000),
-            )
-          }, 1500),
-        )
-      }, 1500),
-    )
-
-    return () => timers.forEach(clearTimeout)
-  }, [tutorialStep])
 
   // Tutorial catch-up: auto-advance trade steps when their conditions are already met.
   // This prevents the tutorial from getting stuck if the player performed actions
@@ -299,7 +246,6 @@ export default function Home() {
         onNearStation={tutorial.onNearStation}
         onStationRange={handleStationRange}
         onStationDriveThrough={handleStationDriveThrough}
-        onPlayerKilled={handlePlayerKilled}
         onCrystallineDeflect={handleCrystallineDeflect}
         onToolChange={handleToolChange}
       />
@@ -350,30 +296,6 @@ export default function Home() {
       )}
       {paused && <FeedbackFab />}
       {paused && <SoundFab />}
-      {ambushFade !== 'none' && (
-        <div
-          className="absolute inset-0 bg-black z-50 flex items-center justify-center"
-          style={
-            ambushFade === 'fading-in'
-              ? { animation: 'fadeIn 1.5s ease-in forwards' }
-              : ambushFade === 'fading-out'
-                ? { animation: 'fadeOut 1.5s ease-out forwards' }
-                : undefined
-          }
-          data-testid="ambush-fade"
-        >
-          {(ambushFade === 'fading-in' || ambushFade === 'black') && (
-            <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
-              You Died
-            </p>
-          )}
-          {(ambushFade === 'loaded' || ambushFade === 'fading-out') && (
-            <p className="font-mono text-lg sm:text-2xl tracking-widest text-hud-green/90 animate-pulse">
-              Loading last save
-            </p>
-          )}
-        </div>
-      )}
     </main>
   )
 }
