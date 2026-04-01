@@ -30,6 +30,13 @@ interface GameCanvasProps {
   onStationDriveThrough?: () => void
   onCrystallineDeflect?: () => void
   onToolChange?: (tool: MiningTool) => void
+  // Prologue callbacks
+  onPrologueReady?: () => void
+  onAsteroidsCleared?: () => void
+  onFleetDestroyed?: () => void
+  onSpeedReached?: () => void
+  onArbiterArrived?: () => void
+  onStripComplete?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -52,6 +59,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onStationDriveThrough,
     onCrystallineDeflect,
     onToolChange,
+    onPrologueReady,
+    onAsteroidsCleared,
+    onFleetDestroyed,
+    onSpeedReached,
+    onArbiterArrived,
+    onStripComplete,
   },
   ref,
 ) {
@@ -75,6 +88,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onStationDriveThroughRef = useRef(onStationDriveThrough)
   const onCrystallineDeflectRef = useRef(onCrystallineDeflect)
   const onToolChangeRef = useRef(onToolChange)
+  const onPrologueReadyRef = useRef(onPrologueReady)
+  const onAsteroidsClearedRef = useRef(onAsteroidsCleared)
+  const onFleetDestroyedRef = useRef(onFleetDestroyed)
+  const onSpeedReachedRef = useRef(onSpeedReached)
+  const onArbiterArrivedRef = useRef(onArbiterArrived)
+  const onStripCompleteRef = useRef(onStripComplete)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -161,6 +180,30 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onToolChangeRef.current = onToolChange
   }, [onToolChange])
 
+  useEffect(() => {
+    onPrologueReadyRef.current = onPrologueReady
+  }, [onPrologueReady])
+
+  useEffect(() => {
+    onAsteroidsClearedRef.current = onAsteroidsCleared
+  }, [onAsteroidsCleared])
+
+  useEffect(() => {
+    onFleetDestroyedRef.current = onFleetDestroyed
+  }, [onFleetDestroyed])
+
+  useEffect(() => {
+    onSpeedReachedRef.current = onSpeedReached
+  }, [onSpeedReached])
+
+  useEffect(() => {
+    onArbiterArrivedRef.current = onArbiterArrived
+  }, [onArbiterArrived])
+
+  useEffect(() => {
+    onStripCompleteRef.current = onStripComplete
+  }, [onStripComplete])
+
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
   useEffect(() => {
@@ -188,6 +231,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
           onCrystallineDeflect: () => onCrystallineDeflectRef.current?.(),
           onToolChange: (tool: MiningTool) => onToolChangeRef.current?.(tool),
+          onPrologueReady: () => onPrologueReadyRef.current?.(),
+          onAsteroidsCleared: () => onAsteroidsClearedRef.current?.(),
+          onFleetDestroyed: () => onFleetDestroyedRef.current?.(),
+          onSpeedReached: () => onSpeedReachedRef.current?.(),
+          onArbiterArrived: () => onArbiterArrivedRef.current?.(),
+          onStripComplete: () => onStripCompleteRef.current?.(),
         })
       })
       .catch((err: unknown) => {

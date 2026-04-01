@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import { createShipModel } from './ship-model'
-import { createLargeAsteroidModel, createAsteroidModel } from './asteroid-model'
-import { spawnAsteroidField } from './asteroid-spawner'
+import { createAsteroidModel } from './asteroid-model'
+import { spawnAsteroidField, spawnPrologueField } from './asteroid-spawner'
+import { createArbiterModel } from './arbiter-model'
+import { PROLOGUE_ASTEROID_COUNT, PROLOGUE_MOON_COUNT, ARBITER_SPAWN_DISTANCE, ARBITER_APPROACH_SPEED } from './prologue-config'
 import {
   createGasStationModel,
   initGasStationNeon,
@@ -121,6 +123,13 @@ export interface GameSceneOptions {
   onStationDriveThrough?: () => void
   onCrystallineDeflect?: () => void
   onToolChange?: (tool: MiningTool) => void
+  // Prologue callbacks
+  onPrologueReady?: () => void
+  onAsteroidsCleared?: () => void
+  onFleetDestroyed?: () => void
+  onSpeedReached?: () => void
+  onArbiterArrived?: () => void
+  onStripComplete?: () => void
 }
 
 export interface GameScene {
@@ -155,6 +164,12 @@ export function createGameScene(
   const onStationDriveThrough = options?.onStationDriveThrough
   const onCrystallineDeflect = options?.onCrystallineDeflect
   const onToolChange = options?.onToolChange
+  const onPrologueReady = options?.onPrologueReady
+  const onAsteroidsCleared = options?.onAsteroidsCleared
+  const onFleetDestroyed = options?.onFleetDestroyed
+  const onSpeedReached = options?.onSpeedReached
+  const onArbiterArrived = options?.onArbiterArrived
+  const onStripComplete = options?.onStripComplete
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -193,8 +208,12 @@ export function createGameScene(
   scene.add(stars)
 
   // --- Ship ---
-  const shipModel = createShipModel()
+  let shipModel = createShipModel('prologue')
   scene.add(shipModel)
+
+  // --- Arbiter (added to scene during prologue-arbiter step) ---
+  let arbiterModel: THREE.Group | null = null
+  let arbiterTargetReached = false
 
   // --- Recharge Meter (positioned at ship, but not parented to avoid rotation) ---
   const rechargeMeter = createRechargeMeter()
@@ -205,20 +224,8 @@ export function createGameScene(
   scene.add(lazerBeam)
 
   // --- Asteroids ---
-  // Tutorial asteroid (single, hardcoded)
-  const tutorialAsteroidModel = createLargeAsteroidModel()
-  tutorialAsteroidModel.position.set(30, 30, 0)
-  scene.add(tutorialAsteroidModel)
-
-  const tutorialHealthMeter = createHealthMeter()
-  tutorialAsteroidModel.add(tutorialHealthMeter)
-
   // Map of asteroid id → { model, healthMeter } for all asteroids in the world
   const asteroidModels = new Map<string, { model: THREE.Group; healthMeter: THREE.Group }>()
-  asteroidModels.set('asteroid-0', {
-    model: tutorialAsteroidModel,
-    healthMeter: tutorialHealthMeter,
-  })
 
   // --- Space Gas Station (north of the tutorial asteroid) ---
   const GAS_STATION_X = 30
@@ -272,22 +279,25 @@ export function createGameScene(
   // Station proximity flags are now in tickState
 
   // --- Game State (shared with game-tick.ts) ---
+  // Start with prologue asteroid field; resetShipToStation replaces it with the real field
+  const prologueAsteroids = spawnPrologueField(0, 0, PROLOGUE_ASTEROID_COUNT, PROLOGUE_MOON_COUNT)
   const tickState: TickState = createTickState({
-    asteroids: [
-      {
-        id: 'asteroid-0',
-        x: 30,
-        y: 30,
-        velocityX: 0,
-        velocityY: 0,
-        type: 'common',
-        hp: 15,
-        maxHp: 15,
-        size: 1,
-      },
-    ],
+    asteroids: prologueAsteroids,
     stationPosition: { x: GAS_STATION_X, y: GAS_STATION_Y },
+    blasterTier: 5,
+    miningTool: 'lazer',
+    fireRateBonus: 1.1 ** 4,
   })
+
+  // Create 3D models for prologue asteroids
+  for (const a of prologueAsteroids) {
+    const model = createAsteroidModel(a.type, a.size, hashString(a.id))
+    model.position.set(a.x, a.y, 0)
+    scene.add(model)
+    const hm = createHealthMeter()
+    model.add(hm)
+    asteroidModels.set(a.id, { model, healthMeter: hm })
+  }
 
   // Convenience aliases for rendering code
   const ship = tickState.ship
@@ -783,7 +793,50 @@ export function createGameScene(
       if (result.nearStation) onNearStation?.()
       if (result.stationRangeChanged !== null) onStationRange?.(result.stationRangeChanged)
       if (result.stationRepaired) onStationDriveThrough?.()
-      // playerKilled event handled by prologue system
+      // --- Prologue events ---
+      if (result.prologueReady) onPrologueReady?.()
+      if (result.asteroidsCleared) onAsteroidsCleared?.()
+      if (result.fleetDestroyed) onFleetDestroyed?.()
+      if (result.speedReached) onSpeedReached?.()
+      if (result.arbiterArrived) onArbiterArrived?.()
+      if (result.stripComplete) onStripComplete?.()
+
+      // --- Arbiter visual management ---
+      const currentStep = getTutorialStep()
+      if (currentStep === 'prologue-arbiter' && !arbiterModel) {
+        arbiterModel = createArbiterModel()
+        // Spawn above ship
+        const spawnX = ship.x
+        const spawnY = ship.y + ARBITER_SPAWN_DISTANCE
+        arbiterModel.position.set(spawnX, spawnY, 0)
+        scene.add(arbiterModel)
+        arbiterTargetReached = false
+      }
+
+      // Animate Arbiter approach
+      if (arbiterModel && !arbiterTargetReached) {
+        const targetY = ship.y + 25
+        if (arbiterModel.position.y > targetY) {
+          arbiterModel.position.y -= ARBITER_APPROACH_SPEED * dt
+          arbiterModel.position.x = ship.x
+        } else {
+          arbiterTargetReached = true
+          onArbiterArrived?.()
+        }
+      }
+
+      // Strip modules during prologue-strip
+      if (currentStep === 'prologue-strip' && result.stripAdvanced) {
+        const moduleNames = ['turrets', 'scoop', 'cargoPods', 'lazerLens']
+        const phase = tickState.prologueStripPhase - 1
+        if (phase >= 0 && phase < moduleNames.length) {
+          const mod = shipModel.getObjectByName(moduleNames[phase])
+          if (mod) {
+            shipModel.remove(mod)
+            mod.traverse(disposeMesh)
+          }
+        }
+      }
 
       // --- Update asteroid health meters & visibility ---
       for (const a of asteroids) {
@@ -1024,7 +1077,7 @@ export function createGameScene(
     toolToggleButton?.setTool(tool)
   }
 
-  /** Reset ship to just north of station with full HP and clear ambush entities. */
+  /** Reset ship to just north of station with full HP, swap to normal ship, clear prologue. */
   function resetShipToStation() {
     // Move ship to just north of the station (outside station range)
     ship.x = GAS_STATION_X
@@ -1035,6 +1088,26 @@ export function createGameScene(
     // Restore full HP
     tickState.playerHp = PLAYER_MAX_HP
     onPlayerDamage?.(tickState.playerHp)
+
+    // Reset to tier-1 ship
+    tickState.blasterTier = 1
+    tickState.fireRateBonus = 1.0
+    tickState.activeMiningTool = 'blaster'
+    tickState.prologueShipFrozen = false
+
+    // Swap ship model to normal variant
+    scene.remove(shipModel)
+    shipModel.traverse(disposeMesh)
+    shipModel = createShipModel('normal')
+    scene.add(shipModel)
+
+    // Remove Arbiter
+    if (arbiterModel) {
+      scene.remove(arbiterModel)
+      arbiterModel.traverse(disposeMesh)
+      arbiterModel = null
+      arbiterTargetReached = false
+    }
 
     // Remove ambush enemies
     for (const ae of tickState.ambushEnemies) {

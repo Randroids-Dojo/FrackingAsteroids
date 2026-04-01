@@ -8,6 +8,7 @@ import { FeedbackFab } from '@/components/FeedbackFab'
 import { SoundFab } from '@/components/SoundFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
+import { PrologueOverlay } from '@/components/PrologueOverlay'
 import { TradeMenu, LAZER_COST } from '@/components/TradeMenu'
 import { LazerTutorialPopup } from '@/components/LazerTutorialPopup'
 import { ShopFab } from '@/components/ShopFab'
@@ -185,6 +186,59 @@ export default function Home() {
     gameCanvasRef.current?.resetShipToStation()
   }, [tutorial])
 
+  // --- Prologue fade-to-black and respawn sequence ---
+  const [prologueFade, setPrologueFade] = useState<
+    'none' | 'fading-in' | 'black' | 'rebooting' | 'fading-out'
+  >('none')
+
+  const prologueRespawnRef = useRef(tutorial.onPrologueRespawnComplete)
+  useEffect(() => {
+    prologueRespawnRef.current = tutorial.onPrologueRespawnComplete
+  }, [tutorial.onPrologueRespawnComplete])
+
+  useEffect(() => {
+    if (tutorialStep !== 'prologue-fade') return
+    const timers: ReturnType<typeof setTimeout>[] = []
+    setPrologueFade('fading-in')
+
+    timers.push(
+      setTimeout(() => {
+        setPrologueFade('black')
+        gameCanvasRef.current?.resetShipToStation()
+
+        timers.push(
+          setTimeout(() => {
+            setPrologueFade('rebooting')
+
+            timers.push(
+              setTimeout(() => {
+                setPrologueFade('fading-out')
+
+                timers.push(
+                  setTimeout(() => {
+                    setPrologueFade('none')
+                    prologueRespawnRef.current()
+                  }, 1500),
+                )
+              }, 2000),
+            )
+          }, 1500),
+        )
+      }, 1500),
+    )
+
+    return () => timers.forEach(clearTimeout)
+  }, [tutorialStep])
+
+  // When tutorial completes (drive-through → done), spawn asteroid field
+  useEffect(() => {
+    if (tutorialStep === 'done' && !tutorialActive) {
+      gameCanvasRef.current?.resetShipToStation()
+    }
+  }, [tutorialStep, tutorialActive])
+
+  const inPrologue = tutorialStep.startsWith('prologue-')
+
   // Tutorial catch-up: auto-advance trade steps when their conditions are already met.
   // This prevents the tutorial from getting stuck if the player performed actions
   // (opened trade, sold materials, bought upgrades) before the tutorial reached those steps.
@@ -248,6 +302,12 @@ export default function Home() {
         onStationDriveThrough={handleStationDriveThrough}
         onCrystallineDeflect={handleCrystallineDeflect}
         onToolChange={handleToolChange}
+        onPrologueReady={tutorial.onPrologueReady}
+        onAsteroidsCleared={tutorial.onAsteroidsCleared}
+        onFleetDestroyed={tutorial.onFleetDestroyed}
+        onSpeedReached={tutorial.onSpeedReached}
+        onArbiterArrived={tutorial.onArbiterArrived}
+        onStripComplete={tutorial.onStripComplete}
       />
       <HUD
         scrap={scrap}
@@ -260,7 +320,10 @@ export default function Home() {
         hasLazer={hasLazer}
         onPause={togglePause}
       />
-      {tutorial.active && (
+      {tutorial.active && inPrologue && (
+        <PrologueOverlay step={tutorial.step} onSkip={handleSkipTutorial} />
+      )}
+      {tutorial.active && !inPrologue && (
         <TutorialOverlay
           step={tutorial.step}
           frozen={tutorial.frozen}
@@ -296,6 +359,30 @@ export default function Home() {
       )}
       {paused && <FeedbackFab />}
       {paused && <SoundFab />}
+      {prologueFade !== 'none' && (
+        <div
+          className="absolute inset-0 bg-black z-50 flex items-center justify-center"
+          style={
+            prologueFade === 'fading-in'
+              ? { animation: 'fadeIn 1.5s ease-in forwards' }
+              : prologueFade === 'fading-out'
+                ? { animation: 'fadeOut 1.5s ease-out forwards' }
+                : undefined
+          }
+          data-testid="prologue-fade"
+        >
+          {(prologueFade === 'fading-in' || prologueFade === 'black') && (
+            <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
+              Systems offline.
+            </p>
+          )}
+          {(prologueFade === 'rebooting' || prologueFade === 'fading-out') && (
+            <p className="font-mono text-lg sm:text-2xl tracking-widest text-hud-green/90 animate-pulse">
+              Rebooting...
+            </p>
+          )}
+        </div>
+      )}
     </main>
   )
 }
