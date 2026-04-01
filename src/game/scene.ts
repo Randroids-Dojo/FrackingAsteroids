@@ -3,12 +3,7 @@ import { createShipModel } from './ship-model'
 import { createAsteroidModel } from './asteroid-model'
 import { spawnAsteroidField, spawnPrologueField } from './asteroid-spawner'
 import { createArbiterModel } from './arbiter-model'
-import {
-  PROLOGUE_ASTEROID_COUNT,
-  PROLOGUE_MOON_COUNT,
-  ARBITER_SPAWN_DISTANCE,
-  ARBITER_APPROACH_SPEED,
-} from './prologue-config'
+import { PROLOGUE_ASTEROID_COUNT, PROLOGUE_MOON_COUNT } from './prologue-config'
 import {
   createGasStationModel,
   initGasStationNeon,
@@ -218,7 +213,6 @@ export function createGameScene(
 
   // --- Arbiter (added to scene during prologue-arbiter step) ---
   let arbiterModel: THREE.Group | null = null
-  let arbiterTargetReached = false
 
   // --- Recharge Meter (positioned at ship, but not parented to avoid rotation) ---
   const rechargeMeter = createRechargeMeter()
@@ -807,31 +801,19 @@ export function createGameScene(
       if (result.stripComplete) onStripComplete?.()
 
       // --- Arbiter visual management ---
-      const currentStep = getTutorialStep()
-      if (currentStep === 'prologue-arbiter' && !arbiterModel) {
+      // Spawn arbiter model when prologueArbiterSpawned becomes true
+      if (tickState.prologueArbiterSpawned && !arbiterModel) {
         arbiterModel = createArbiterModel()
-        // Spawn above ship
-        const spawnX = ship.x
-        const spawnY = ship.y + ARBITER_SPAWN_DISTANCE
-        arbiterModel.position.set(spawnX, spawnY, 0)
         scene.add(arbiterModel)
-        arbiterTargetReached = false
       }
 
-      // Animate Arbiter approach
-      if (arbiterModel && !arbiterTargetReached) {
-        const targetY = ship.y + 25
-        if (arbiterModel.position.y > targetY) {
-          arbiterModel.position.y -= ARBITER_APPROACH_SPEED * dt
-          arbiterModel.position.x = ship.x
-        } else {
-          arbiterTargetReached = true
-          onArbiterArrived?.()
-        }
+      // Position arbiter based on TickState distance (game-tick drives approach)
+      if (arbiterModel) {
+        arbiterModel.position.set(ship.x, ship.y + tickState.prologueArbiterDistance, 0)
       }
 
       // Strip modules during prologue-strip
-      if (currentStep === 'prologue-strip' && result.stripAdvanced) {
+      if (result.stripAdvanced) {
         const moduleNames = ['turrets', 'scoop', 'cargoPods', 'lazerLens']
         const phase = tickState.prologueStripPhase - 1
         if (phase >= 0 && phase < moduleNames.length) {
@@ -1094,11 +1076,20 @@ export function createGameScene(
     tickState.playerHp = PLAYER_MAX_HP
     onPlayerDamage?.(tickState.playerHp)
 
-    // Reset to tier-1 ship
+    // Reset to tier-1 ship and clear prologue state
     tickState.blasterTier = 1
     tickState.fireRateBonus = 1.0
     tickState.activeMiningTool = 'blaster'
     tickState.prologueShipFrozen = false
+    tickState.prologueAutoAim = null
+    tickState.prologueAutoCollect = false
+    tickState.prologueAutoPilotForward = false
+    tickState.nearStationFired = false
+    tickState.wasInStationRange = false
+    tickState.repairedThisVisit = false
+    tickState.enemySpawned = false
+    tickState.enemyNearbyFired = false
+    tickState.firstMetalCollectedTime = null
 
     // Swap ship model to normal variant
     scene.remove(shipModel)
@@ -1111,7 +1102,6 @@ export function createGameScene(
       scene.remove(arbiterModel)
       arbiterModel.traverse(disposeMesh)
       arbiterModel = null
-      arbiterTargetReached = false
     }
 
     // Remove ambush enemies

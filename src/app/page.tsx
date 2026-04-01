@@ -182,6 +182,7 @@ export default function Home() {
   const handleSkipTutorial = useCallback(() => {
     tutorial.skip()
     setTradeMenuOpen(false)
+    setPrologueFade('none')
     // Spawn the real asteroid field so the player has a proper game world
     gameCanvasRef.current?.resetShipToStation()
   }, [tutorial])

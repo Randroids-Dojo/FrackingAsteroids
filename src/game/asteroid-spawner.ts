@@ -129,10 +129,9 @@ export function spawnAsteroidField(stationX: number, stationY: number, seed?: nu
   return asteroids
 }
 
-/** Prologue-specific size weights: more large + moon asteroids. */
+/** Prologue-specific size weights: biased toward large asteroids (moons are spawned explicitly). */
 const PROLOGUE_SIZE_WEIGHTS: { size: number; weight: number }[] = [
-  { size: 0, weight: 10 },
-  { size: 1, weight: 40 },
+  { size: 1, weight: 50 },
   { size: 2, weight: 35 },
   { size: 3, weight: 15 },
 ]

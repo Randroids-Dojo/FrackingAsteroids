@@ -60,6 +60,8 @@ import {
   PROLOGUE_MINING_TARGET,
   PROLOGUE_SPEED_DURATION,
   ARBITER_STRIP_DELAY,
+  ARBITER_SPAWN_DISTANCE,
+  ARBITER_APPROACH_SPEED,
 } from './prologue-config'
 import { SHIP_MAX_SPEED } from './ship-constants'
 
@@ -141,6 +143,14 @@ export interface TickState {
   prologueShipFrozen: boolean
   prologueStripPhase: number
   prologueStripTimer: number
+  /** Arbiter approach distance remaining (scene.ts decrements, tick checks). */
+  prologueArbiterDistance: number
+  /** Auto-aim target set by prologueTick, consumed by ship update. */
+  prologueAutoAim: { x: number; y: number } | null
+  /** Whether prologue auto-collect is active. */
+  prologueAutoCollect: boolean
+  /** Whether prologue auto-pilots the ship forward. */
+  prologueAutoPilotForward: boolean
 }
 
 /** Per-frame inputs — NOT owned by tick(), only read. */
@@ -280,6 +290,10 @@ export function createTickState(config?: TickStateConfig): TickState {
     prologueShipFrozen: false,
     prologueStripPhase: 0,
     prologueStripTimer: 0,
+    prologueArbiterDistance: ARBITER_SPAWN_DISTANCE,
+    prologueAutoAim: null,
+    prologueAutoCollect: false,
+    prologueAutoPilotForward: false,
   }
 }
 
@@ -371,10 +385,21 @@ function findNearestTarget(
   return target
 }
 
-/** Phase-specific prologue logic. Sets auto-fire/auto-aim and fires events. */
+/**
+ * Phase-specific prologue logic.
+ *
+ * Sets TickState fields for auto-fire/auto-aim/auto-collect — never mutates
+ * TickInput directly. The main tick() function reads these TickState fields
+ * to drive ship rotation, firing, and collection.
+ */
 function prologueTick(state: TickState, input: TickInput, result: TickResult): void {
   const { dt } = input
   const step = input.tutorialStep
+
+  // Reset per-frame auto-behavior flags (set below per phase)
+  state.prologueAutoAim = null
+  state.prologueAutoCollect = false
+  state.prologueAutoPilotForward = false
 
   // --- prologue-start: initialize maxed ship and fire ready ---
   if (step === 'prologue-start') {
@@ -391,12 +416,13 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
   // --- prologue-mining: auto-lazer at asteroids ---
   if (step === 'prologue-mining') {
     state.activeMiningTool = 'lazer'
+    state.prologueAutoCollect = true
     const target = findNearestTarget(state, false)
     if (target) {
       state.aimActive = true
       state.mouseHoldingFire = true
       state.fireTarget = { x: target.x, y: target.y }
-      input.aimWorldPosition = { x: target.x, y: target.y }
+      state.prologueAutoAim = target
     }
     // Count destroyed asteroids
     const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
@@ -412,6 +438,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
   // --- prologue-combat: spawn enemies, auto-blaster ---
   if (step === 'prologue-combat') {
     state.activeMiningTool = 'blaster'
+    state.prologueAutoCollect = true
     if (!state.prologueEnemiesSpawned) {
       state.prologueEnemiesSpawned = true
       for (let i = 0; i < PROLOGUE_ENEMY_FLEET_SIZE; i++) {
@@ -429,7 +456,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
       state.aimActive = true
       state.mouseHoldingFire = true
       state.fireTarget = { x: target.x, y: target.y }
-      input.aimWorldPosition = { x: target.x, y: target.y }
+      state.prologueAutoAim = target
     }
     // Check if all enemies are dead
     const allDead = state.ambushEnemies.every((e) => !e.alive)
@@ -443,8 +470,8 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
   if (step === 'prologue-speed') {
     state.mouseHoldingFire = false
     state.fireTarget = null
-    // Synthesize forward input
-    input.inputState = { ...input.inputState, up: true }
+    state.prologueAutoCollect = true
+    state.prologueAutoPilotForward = true
     const speed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
     if (speed > SHIP_MAX_SPEED * 1.25) {
       state.prologueSpeedTime += dt
@@ -455,15 +482,20 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     return
   }
 
-  // --- prologue-arbiter: freeze ship, wait for arbiter approach ---
+  // --- prologue-arbiter: freeze ship, track approach distance ---
   if (step === 'prologue-arbiter') {
     state.prologueShipFrozen = true
     state.mouseHoldingFire = false
     state.fireTarget = null
     if (!state.prologueArbiterSpawned) {
       state.prologueArbiterSpawned = true
+      state.prologueArbiterDistance = ARBITER_SPAWN_DISTANCE
     }
-    // Arbiter arrival is timed by scene.ts animation
+    // Decrement approach distance (scene.ts moves the model to match)
+    state.prologueArbiterDistance -= ARBITER_APPROACH_SPEED * dt
+    if (state.prologueArbiterDistance <= 25) {
+      result.arbiterArrived = true
+    }
     return
   }
 
@@ -481,8 +513,6 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     }
     return
   }
-
-  // --- prologue-ambush: not used (Arbiter replaces ambush) ---
 }
 
 /**
@@ -539,21 +569,28 @@ export function tick(state: TickState, input: TickInput): TickResult {
       state.ship.velocityY = 0
       return result
     }
-
-    // Auto-collect during prologue
-    input.collecting = true
   }
 
+  // Resolve effective collecting flag (prologue auto-collect OR player input)
+  const collecting = state.prologueAutoCollect || input.collecting
+
   // --- Ship update ---
+  // Prologue auto-aim uses TickState field; normal aim uses TickInput
   let aimRotation: number | null = null
-  if (state.aimActive && input.aimWorldPosition) {
-    const adx = input.aimWorldPosition.x - state.ship.x
-    const ady = input.aimWorldPosition.y - state.ship.y
+  const effectiveAim = state.prologueAutoAim ?? input.aimWorldPosition
+  if (state.aimActive && effectiveAim) {
+    const adx = effectiveAim.x - state.ship.x
+    const ady = effectiveAim.y - state.ship.y
     if (Math.abs(adx) > 0.5 || Math.abs(ady) > 0.5) {
       aimRotation = Math.atan2(-adx, ady)
     }
   }
-  updateShip(state.ship, input.inputState, dt, aimRotation)
+
+  // Prologue auto-pilot: synthesize forward input without mutating TickInput
+  const effectiveInput = state.prologueAutoPilotForward
+    ? { ...input.inputState, up: true }
+    : input.inputState
+  updateShip(state.ship, effectiveInput, dt, aimRotation)
 
   // Prologue speed override: allow higher max speed
   if (isPrologue) {
@@ -825,7 +862,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
   // --- Scrap box update & collection ---
   for (let i = state.scrapBoxes.length - 1; i >= 0; i--) {
     updateScrapBox(state.scrapBoxes[i], dt)
-    if (input.collecting) {
+    if (collecting) {
       const collectorRange = isPrologue ? PROLOGUE_SHIP.collectorRange : undefined
       const collected = attractScrapBoxToShip(state.scrapBoxes[i], state.ship, dt, collectorRange)
       if (collected) {
@@ -842,7 +879,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
     const metal = state.metalChunks[i]
     updateMetalChunk(metal, dt)
 
-    if (input.collecting) {
+    if (collecting) {
       const metalRange = isPrologue ? PROLOGUE_SHIP.collectorRange : undefined
       const collected = attractMetalToShip(metal, state.ship, dt, metalRange)
       if (collected) {
@@ -856,7 +893,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
       }
     }
 
-    if (!input.collecting) {
+    if (!collecting) {
       bounceMetalOffShip(metal, state.ship)
     }
     for (const a of state.asteroids) {
