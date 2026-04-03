@@ -386,6 +386,35 @@ function findNearestTarget(
 }
 
 /**
+ * Auto-fire in the ship's current facing direction when any target is within range.
+ *
+ * Fires along the ship's rotation vector (not toward the target). The player
+ * controls rotation via joystick; this just pulls the trigger automatically
+ * when something is close enough. The player can also manually fire on top.
+ */
+function autoFireInFacingDirection(state: TickState, preferEnemies: boolean): void {
+  const nearest = findNearestTarget(state, preferEnemies)
+  if (!nearest) return
+
+  const dist = Math.hypot(nearest.x - state.ship.x, nearest.y - state.ship.y)
+  if (dist > PROLOGUE_SHIP.autoFireRange) return
+
+  // Compute a point along the ship's facing direction (far enough for fire logic)
+  const facingX = -Math.sin(state.ship.rotation)
+  const facingY = Math.cos(state.ship.rotation)
+  const fireRange = 100
+
+  // Only auto-fire if player is not already manually firing
+  if (!state.fireTarget) {
+    state.mouseHoldingFire = true
+    state.fireTarget = {
+      x: state.ship.x + facingX * fireRange,
+      y: state.ship.y + facingY * fireRange,
+    }
+  }
+}
+
+/**
  * Phase-specific prologue logic.
  *
  * Sets TickState fields for auto-fire/auto-aim/auto-collect — never mutates
@@ -413,17 +442,10 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     return
   }
 
-  // --- prologue-mining: auto-lazer at asteroids ---
+  // --- prologue-mining: auto-fire lazer in ship's facing direction ---
   if (step === 'prologue-mining') {
-    // Tool was set to lazer by prologue-start init; don't override player toggle
     state.prologueAutoCollect = true
-    const target = findNearestTarget(state, false)
-    if (target) {
-      state.aimActive = true
-      state.mouseHoldingFire = true
-      state.fireTarget = { x: target.x, y: target.y }
-      state.prologueAutoAim = target
-    }
+    autoFireInFacingDirection(state, false)
     // Count destroyed asteroids
     const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
     if (destroyed > state.prologueAsteroidsDestroyed) {
@@ -435,11 +457,10 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     return
   }
 
-  // --- prologue-combat: spawn enemies, auto-blaster ---
+  // --- prologue-combat: spawn enemies, auto-fire blaster in facing direction ---
   if (step === 'prologue-combat') {
     state.prologueAutoCollect = true
     if (!state.prologueEnemiesSpawned) {
-      // Switch to blaster once when combat starts
       state.activeMiningTool = 'blaster'
       state.prologueEnemiesSpawned = true
       for (let i = 0; i < PROLOGUE_ENEMY_FLEET_SIZE; i++) {
@@ -452,13 +473,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
         result.ambushEnemiesSpawned.push(enemy)
       }
     }
-    const target = findNearestTarget(state, true)
-    if (target) {
-      state.aimActive = true
-      state.mouseHoldingFire = true
-      state.fireTarget = { x: target.x, y: target.y }
-      state.prologueAutoAim = target
-    }
+    autoFireInFacingDirection(state, true)
     // Check if all enemies are dead
     const allDead = state.ambushEnemies.every((e) => !e.alive)
     if (state.prologueEnemiesSpawned && allDead && state.ambushEnemies.length > 0) {
@@ -492,6 +507,14 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     if (state.prologueArbiterDistance <= 25) {
       result.arbiterArrived = true
     }
+    return
+  }
+
+  // --- prologue-dialogue: ship frozen, waiting for player clicks ---
+  if (step === 'prologue-dialogue') {
+    state.prologueShipFrozen = true
+    state.mouseHoldingFire = false
+    state.fireTarget = null
     return
   }
 

@@ -7,6 +7,7 @@ import { ARBITER_DIALOGUE } from '@/game/prologue-config'
 interface PrologueOverlayProps {
   step: TutorialStep
   onSkip: () => void
+  onDialogueComplete: () => void
 }
 
 /** Auto-fading text that appears then disappears. */
@@ -29,15 +30,48 @@ function FadingText({ text, color = 'text-hud-green' }: { text: string; color?: 
   )
 }
 
-/** Typewriter-style Arbiter dialogue. */
-function ArbiterDialogue() {
+/** Click-to-advance Arbiter dialogue. Each tap reveals the next line. */
+function ArbiterDialogue({ onComplete }: { onComplete: () => void }) {
   const [lineIndex, setLineIndex] = useState(0)
+  const allRevealed = lineIndex >= ARBITER_DIALOGUE.length
 
+  const advance = useCallback(() => {
+    setLineIndex((i) => {
+      const next = i + 1
+      if (next >= ARBITER_DIALOGUE.length) {
+        // Defer onComplete to avoid setState-during-render
+        setTimeout(onComplete, 0)
+      }
+      return next
+    })
+  }, [onComplete])
+
+  // Listen for any tap/click/key to advance dialogue
   useEffect(() => {
-    if (lineIndex >= ARBITER_DIALOGUE.length) return
-    const timer = setTimeout(() => setLineIndex((i) => i + 1), 2000)
-    return () => clearTimeout(timer)
-  }, [lineIndex])
+    if (allRevealed) return
+
+    let handler: ((e: Event) => void) | null = null
+
+    // Small grace period so the tap that triggered this step doesn't advance immediately
+    const timerId = setTimeout(() => {
+      handler = (e: Event) => {
+        e.preventDefault()
+        advance()
+      }
+      window.addEventListener('mousedown', handler, { once: true })
+      window.addEventListener('touchstart', handler, { once: true })
+      window.addEventListener('keydown', handler, { once: true })
+    }, 300)
+
+    return () => {
+      clearTimeout(timerId)
+      if (handler) {
+        window.removeEventListener('mousedown', handler)
+        window.removeEventListener('touchstart', handler)
+        window.removeEventListener('keydown', handler)
+      }
+    }
+  }, [lineIndex, allRevealed, advance])
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -45,17 +79,18 @@ function ArbiterDialogue() {
         <p
           key={i}
           className={`font-mono text-sm sm:text-lg tracking-wide ${
-            i === lineIndex ? 'text-hud-red animate-pulse' : 'text-hud-red/60'
+            i === lineIndex && !allRevealed ? 'text-hud-red animate-pulse' : 'text-hud-red/60'
           }`}
         >
           &quot;{line}&quot;
         </p>
       ))}
+      {!allRevealed && <p className="text-white/40 text-xs mt-2 animate-pulse">Tap to continue</p>}
     </div>
   )
 }
 
-export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
+export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOverlayProps) {
   const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
@@ -79,7 +114,10 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
 
   // Steps that show persistent text in a panel
   const showPanel =
-    step === 'prologue-start' || step === 'prologue-arbiter' || step === 'prologue-strip'
+    step === 'prologue-start' ||
+    step === 'prologue-arbiter' ||
+    step === 'prologue-dialogue' ||
+    step === 'prologue-strip'
 
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="prologue-overlay">
@@ -92,13 +130,20 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
             </p>
           )}
 
-          {(step === 'prologue-arbiter' || step === 'prologue-strip') && (
+          {step === 'prologue-arbiter' && (
+            <p className="text-white/60 text-xs uppercase tracking-widest animate-pulse">
+              Signal detected
+            </p>
+          )}
+
+          {step === 'prologue-dialogue' && (
             <div className="space-y-4">
-              <p className="text-white/60 text-xs uppercase tracking-widest animate-pulse">
-                {step === 'prologue-arbiter' ? 'Signal detected' : 'Systems failing...'}
-              </p>
-              <ArbiterDialogue />
+              <ArbiterDialogue onComplete={onDialogueComplete} />
             </div>
+          )}
+
+          {step === 'prologue-strip' && (
+            <p className="text-hud-red text-sm sm:text-base animate-pulse">Systems failing...</p>
           )}
         </div>
       )}

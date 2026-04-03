@@ -324,7 +324,11 @@ export default function Home() {
         onPause={togglePause}
       />
       {tutorial.active && inPrologue && (
-        <PrologueOverlay step={tutorial.step} onSkip={handleSkipTutorial} />
+        <PrologueOverlay
+          step={tutorial.step}
+          onSkip={handleSkipTutorial}
+          onDialogueComplete={tutorial.onDialogueComplete}
+        />
       )}
       {tutorial.active && !inPrologue && (
         <TutorialOverlay

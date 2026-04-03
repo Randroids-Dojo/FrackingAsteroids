@@ -15,6 +15,8 @@ export const PROLOGUE_SHIP = {
   acceleration: 300,
   collectorRange: 40,
   collisionRadius: 5,
+  /** Auto-fire triggers when any target is within this range (world units). */
+  autoFireRange: 100,
 }
 
 export const PROLOGUE_ASTEROID_COUNT = 30

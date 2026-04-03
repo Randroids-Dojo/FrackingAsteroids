@@ -63,7 +63,7 @@ describe('prologue flow', () => {
     h.sim.step()
 
     assert.equal(h.sim.tickState.prologueAutoCollect, true, 'should enable auto-collect')
-    assert.ok(h.sim.tickState.prologueAutoAim !== null, 'should set auto-aim')
+    assert.ok(h.sim.tickState.fireTarget !== null, 'should auto-fire in facing direction')
     assert.equal(h.sim.tickState.mouseHoldingFire, true, 'should hold fire')
   })
 
@@ -191,14 +191,16 @@ describe('prologue flow', () => {
   })
 
   it('full prologue progression from start to arbiter arrival', () => {
+    // Place asteroids directly ahead of ship (y > 0) so lazer beam hits them
+    // Ship starts at (0,0) facing up (rotation=0), lazer fires along +Y
     const asteroids = Array.from({ length: 10 }, (_, i) => ({
       id: `a${i}`,
-      x: 20 + i * 15,
-      y: 20,
+      x: 0,
+      y: 10 + i * 10,
       velocityX: 0,
       velocityY: 0,
       type: 'common' as const,
-      hp: 1, // 1 HP so lazer kills instantly
+      hp: 1,
       maxHp: 15,
       size: 1,
     }))

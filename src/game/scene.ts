@@ -873,8 +873,10 @@ export function createGameScene(
       }
 
       // --- Collector VFX & Audio ---
-      updateCollectorVfx(collectorVfx, dt, collecting, ship.x, ship.y)
-      if (collecting) {
+      // During prologue, always show magnet collector animation
+      const collectingActive = collecting || tickState.prologueAutoCollect
+      updateCollectorVfx(collectorVfx, dt, collectingActive, ship.x, ship.y)
+      if (collectingActive) {
         startCollectorHum()
       } else {
         stopCollectorHum()

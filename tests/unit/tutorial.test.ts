@@ -31,9 +31,15 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'prologue-arbiter', frozen: false })
   })
 
-  it('prologue-arbiter → prologue-strip on arbiter-arrived', () => {
+  it('prologue-arbiter → prologue-dialogue on arbiter-arrived', () => {
     const state: TutorialState = { active: true, step: 'prologue-arbiter', frozen: false }
     const next = advanceTutorial(state, 'arbiter-arrived')
+    assert.deepStrictEqual(next, { active: true, step: 'prologue-dialogue', frozen: false })
+  })
+
+  it('prologue-dialogue → prologue-strip on dialogue-complete', () => {
+    const state: TutorialState = { active: true, step: 'prologue-dialogue', frozen: false }
+    const next = advanceTutorial(state, 'dialogue-complete')
     assert.deepStrictEqual(next, { active: true, step: 'prologue-strip', frozen: false })
   })
 
@@ -262,6 +268,7 @@ describe('advanceTutorial', () => {
         'fleet-destroyed',
         'speed-reached',
         'arbiter-arrived',
+        'dialogue-complete',
         'strip-complete',
         'prologue-respawn-complete',
         'ship-moved',
@@ -271,6 +278,7 @@ describe('advanceTutorial', () => {
         'fleet-destroyed',
         'speed-reached',
         'arbiter-arrived',
+        'dialogue-complete',
         'strip-complete',
         'prologue-respawn-complete',
         'ship-moved',
@@ -280,6 +288,7 @@ describe('advanceTutorial', () => {
         'asteroids-cleared',
         'speed-reached',
         'arbiter-arrived',
+        'dialogue-complete',
         'strip-complete',
         'prologue-respawn-complete',
         'ship-moved',
@@ -289,6 +298,7 @@ describe('advanceTutorial', () => {
         'asteroids-cleared',
         'fleet-destroyed',
         'arbiter-arrived',
+        'dialogue-complete',
         'strip-complete',
         'prologue-respawn-complete',
         'ship-moved',
@@ -298,6 +308,17 @@ describe('advanceTutorial', () => {
         'asteroids-cleared',
         'fleet-destroyed',
         'speed-reached',
+        'dialogue-complete',
+        'strip-complete',
+        'prologue-respawn-complete',
+        'ship-moved',
+      ],
+      'prologue-dialogue': [
+        'prologue-ready',
+        'asteroids-cleared',
+        'fleet-destroyed',
+        'speed-reached',
+        'arbiter-arrived',
         'strip-complete',
         'prologue-respawn-complete',
         'ship-moved',
@@ -308,6 +329,7 @@ describe('advanceTutorial', () => {
         'fleet-destroyed',
         'speed-reached',
         'arbiter-arrived',
+        'dialogue-complete',
         'prologue-respawn-complete',
         'ship-moved',
       ],
@@ -317,6 +339,7 @@ describe('advanceTutorial', () => {
         'fleet-destroyed',
         'speed-reached',
         'arbiter-arrived',
+        'dialogue-complete',
         'strip-complete',
         'ship-moved',
       ],
@@ -495,6 +518,8 @@ describe('advanceTutorial', () => {
     state = advanceTutorial(state, 'speed-reached')
     assert.equal(state.step, 'prologue-arbiter')
     state = advanceTutorial(state, 'arbiter-arrived')
+    assert.equal(state.step, 'prologue-dialogue')
+    state = advanceTutorial(state, 'dialogue-complete')
     assert.equal(state.step, 'prologue-strip')
     state = advanceTutorial(state, 'strip-complete')
     assert.equal(state.step, 'prologue-fade')

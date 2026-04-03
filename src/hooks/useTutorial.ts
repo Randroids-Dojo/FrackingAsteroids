@@ -8,6 +8,7 @@ export type TutorialStep =
   | 'prologue-combat'
   | 'prologue-speed'
   | 'prologue-arbiter'
+  | 'prologue-dialogue'
   | 'prologue-strip'
   | 'prologue-fade'
   | 'move'
@@ -30,6 +31,7 @@ export type TutorialEvent =
   | 'speed-reached'
   | 'arbiter-arrived'
   | 'strip-complete'
+  | 'dialogue-complete'
   | 'prologue-respawn-complete'
   | 'ship-moved'
   | 'asteroid-hit'
@@ -79,7 +81,10 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'speed-reached') return { ...state, step: 'prologue-arbiter' }
       return state
     case 'prologue-arbiter':
-      if (event === 'arbiter-arrived') return { ...state, step: 'prologue-strip' }
+      if (event === 'arbiter-arrived') return { ...state, step: 'prologue-dialogue' }
+      return state
+    case 'prologue-dialogue':
+      if (event === 'dialogue-complete') return { ...state, step: 'prologue-strip' }
       return state
     case 'prologue-strip':
       if (event === 'strip-complete') return { ...state, step: 'prologue-fade' }
@@ -139,6 +144,7 @@ export interface TutorialHook {
   onFleetDestroyed: () => void
   onSpeedReached: () => void
   onArbiterArrived: () => void
+  onDialogueComplete: () => void
   onStripComplete: () => void
   onPrologueRespawnComplete: () => void
   // Tutorial callbacks
@@ -186,6 +192,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
   const onFleetDestroyed = useCallback(() => dispatch('fleet-destroyed'), [dispatch])
   const onSpeedReached = useCallback(() => dispatch('speed-reached'), [dispatch])
   const onArbiterArrived = useCallback(() => dispatch('arbiter-arrived'), [dispatch])
+  const onDialogueComplete = useCallback(() => dispatch('dialogue-complete'), [dispatch])
   const onStripComplete = useCallback(() => dispatch('strip-complete'), [dispatch])
   const onPrologueRespawnComplete = useCallback(
     () => dispatch('prologue-respawn-complete'),
@@ -217,6 +224,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
     onFleetDestroyed,
     onSpeedReached,
     onArbiterArrived,
+    onDialogueComplete,
     onStripComplete,
     onPrologueRespawnComplete,
     onShipMoved,
