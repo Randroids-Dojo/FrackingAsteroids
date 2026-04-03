@@ -152,12 +152,14 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
               <button
                 onClick={handleSkipClick}
                 className="px-3 py-1 text-hud-red text-xs font-mono border border-hud-red/40 rounded hover:bg-hud-red/20 transition-colors"
+                data-testid="prologue-skip-yes"
               >
                 YES
               </button>
               <button
                 onClick={handleCancelSkip}
                 className="px-3 py-1 text-white/50 text-xs font-mono border border-white/20 rounded hover:bg-white/10 transition-colors"
+                data-testid="prologue-skip-no"
               >
                 NO
               </button>
