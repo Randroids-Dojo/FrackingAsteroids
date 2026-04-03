@@ -850,9 +850,12 @@ describe('game-tick', () => {
         ],
       })
 
+      // prologue-start sets tool to lazer; simulate that first
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-start' }))
+      assert.equal(state.activeMiningTool, 'lazer')
+
       tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
 
-      assert.equal(state.activeMiningTool, 'lazer')
       assert.equal(state.prologueAutoCollect, true)
       assert.ok(state.prologueAutoAim !== null, 'should set auto-aim target')
       assert.ok(state.mouseHoldingFire, 'should hold fire')

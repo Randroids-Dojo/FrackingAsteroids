@@ -92,17 +92,13 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
             </p>
           )}
 
-          {step === 'prologue-arbiter' && (
+          {(step === 'prologue-arbiter' || step === 'prologue-strip') && (
             <div className="space-y-4">
               <p className="text-white/60 text-xs uppercase tracking-widest animate-pulse">
-                Signal detected
+                {step === 'prologue-arbiter' ? 'Signal detected' : 'Systems failing...'}
               </p>
               <ArbiterDialogue />
             </div>
-          )}
-
-          {step === 'prologue-strip' && (
-            <p className="text-hud-red text-sm sm:text-base animate-pulse">Systems failing...</p>
           )}
         </div>
       )}

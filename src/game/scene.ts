@@ -1086,6 +1086,17 @@ export function createGameScene(
     tickState.prologueAutoAim = null
     tickState.prologueAutoCollect = false
     tickState.prologueAutoPilotForward = false
+    tickState.aimActive = false
+    tickState.mouseHoldingFire = false
+    tickState.fireTarget = null
+    tickState.prologueArbiterSpawned = false
+    tickState.prologueArbiterDistance = 0
+    tickState.prologueFieldSpawned = false
+    tickState.prologueEnemiesSpawned = false
+    tickState.prologueStripPhase = 0
+    tickState.prologueStripTimer = 0
+    tickState.ambushSpawned = false
+    tickState.playerKilledFired = false
     tickState.nearStationFired = false
     tickState.wasInStationRange = false
     tickState.repairedThisVisit = false

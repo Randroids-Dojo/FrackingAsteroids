@@ -415,7 +415,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
 
   // --- prologue-mining: auto-lazer at asteroids ---
   if (step === 'prologue-mining') {
-    state.activeMiningTool = 'lazer'
+    // Tool was set to lazer by prologue-start init; don't override player toggle
     state.prologueAutoCollect = true
     const target = findNearestTarget(state, false)
     if (target) {
@@ -437,9 +437,10 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
 
   // --- prologue-combat: spawn enemies, auto-blaster ---
   if (step === 'prologue-combat') {
-    state.activeMiningTool = 'blaster'
     state.prologueAutoCollect = true
     if (!state.prologueEnemiesSpawned) {
+      // Switch to blaster once when combat starts
+      state.activeMiningTool = 'blaster'
       state.prologueEnemiesSpawned = true
       for (let i = 0; i < PROLOGUE_ENEMY_FLEET_SIZE; i++) {
         const angle = (i / PROLOGUE_ENEMY_FLEET_SIZE) * Math.PI * 2
@@ -570,12 +571,13 @@ export function tick(state: TickState, input: TickInput): TickResult {
   const collecting = state.prologueAutoCollect || input.collecting
 
   // --- Ship update ---
-  // Prologue auto-aim uses TickState field; normal aim uses TickInput
+  // During prologue: player controls rotation via joystick/input, auto-fire aims
+  // independently. prologueAutoAim only drives fireTarget, NOT ship facing.
+  // During normal play: mouse aim drives both rotation and fire direction.
   let aimRotation: number | null = null
-  const effectiveAim = state.prologueAutoAim ?? input.aimWorldPosition
-  if (state.aimActive && effectiveAim) {
-    const adx = effectiveAim.x - state.ship.x
-    const ady = effectiveAim.y - state.ship.y
+  if (!isPrologue && state.aimActive && input.aimWorldPosition) {
+    const adx = input.aimWorldPosition.x - state.ship.x
+    const ady = input.aimWorldPosition.y - state.ship.y
     if (Math.abs(adx) > 0.5 || Math.abs(ady) > 0.5) {
       aimRotation = Math.atan2(-adx, ady)
     }
