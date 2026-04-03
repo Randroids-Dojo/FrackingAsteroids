@@ -1005,6 +1005,41 @@ describe('game-tick', () => {
       assert.equal(result.stripComplete, true)
     })
 
+    it('prologue-combat: projectiles damage ambush enemies', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+      const { createEnemyShip } = await import('../../src/game/enemy-ship')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      // Spawn an enemy at a known position
+      const enemy = createEnemyShip(20, 0)
+      enemy.hp = 1
+      enemy.maxHp = 10
+      state.ambushEnemies.push(enemy)
+      state.prologueEnemiesSpawned = true
+
+      // Place a projectile heading toward the enemy
+      state.projectiles.push({
+        id: 'p1',
+        x: 18,
+        y: 0,
+        velocityX: 200,
+        velocityY: 0,
+        damage: 3,
+        tool: 'blaster',
+      })
+      state.projectileElapsed.set('p1', 0)
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+
+      // Enemy should take damage (or die)
+      assert.ok(enemy.hp < 1 || !enemy.alive, 'enemy should take damage from projectile')
+      assert.ok(
+        result.expiredProjectileIds.includes('p1') || state.projectiles.length === 0,
+        'projectile should be consumed',
+      )
+    })
+
     it('prologue-fade returns early with empty result', async () => {
       const { tick, createTickState } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')

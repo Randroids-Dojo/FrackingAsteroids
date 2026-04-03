@@ -1080,6 +1080,8 @@ export function createGameScene(
     tickState.blasterTier = 1
     tickState.fireRateBonus = 1.0
     tickState.activeMiningTool = 'blaster'
+    toolToggleButton?.setTool('blaster')
+    onToolChange?.('blaster')
     tickState.prologueShipFrozen = false
     tickState.prologueAutoAim = null
     tickState.prologueAutoCollect = false

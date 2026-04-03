@@ -82,6 +82,34 @@ describe('prologue flow', () => {
     assert.equal(h.sim.tickState.prologueAutoCollect, true, 'should enable auto-collect')
   })
 
+  it('prologue-combat: projectiles damage ambush enemies', () => {
+    const h = new GameTestHarness({
+      stationPosition: { x: 500, y: 500 },
+      blasterTier: 5,
+      fireRateBonus: 1.1 ** 4,
+    })
+    h.sim.setTutorialStep('prologue-combat')
+    h.sim.step() // spawns fleet
+
+    // Set one enemy to 1 HP and put projectile right next to it
+    const target = h.sim.tickState.ambushEnemies[0]
+    target.hp = 1
+    h.sim.tickState.projectiles.push({
+      id: 'test-proj',
+      x: target.x,
+      y: target.y,
+      velocityX: 0,
+      velocityY: 0,
+      damage: 5,
+      tool: 'blaster',
+    })
+    h.sim.tickState.projectileElapsed.set('test-proj', 0)
+
+    h.sim.step()
+
+    assert.equal(target.alive, false, 'enemy should die from projectile hit')
+  })
+
   it('prologue-speed auto-pilots forward and tracks time at speed', () => {
     const h = new GameTestHarness({
       stationPosition: { x: 500, y: 500 },

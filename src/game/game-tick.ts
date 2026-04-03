@@ -960,6 +960,29 @@ export function tick(state: TickState, input: TickInput): TickResult {
         result.newEnemyProjectiles.push(proj)
       }
     }
+
+    // Projectile collision check against ambush enemies
+    if (state.projectiles.length > 0) {
+      for (const ae of state.ambushEnemies) {
+        if (!ae.alive) continue
+        const { surviving, hitProjectileIds } = checkProjectileEnemyCollisions(
+          state.projectiles,
+          ae,
+        )
+        for (const hitId of hitProjectileIds) {
+          state.projectileElapsed.delete(hitId)
+          result.expiredProjectileIds.push(hitId)
+        }
+        state.projectiles = surviving
+
+        if (!ae.alive) {
+          const box = createScrapBox(ae.x, ae.y)
+          state.scrapBoxes.push(box)
+          result.enemyDestroyed = { x: ae.x, y: ae.y }
+          result.enemyDestroyedEvent = true
+        }
+      }
+    }
   }
 
   return result

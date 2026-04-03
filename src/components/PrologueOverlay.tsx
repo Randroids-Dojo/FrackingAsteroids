@@ -88,7 +88,7 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
         <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-md px-4 sm:px-6 py-3 sm:py-4 bg-space-800/80 border border-hud-green/30 rounded-lg font-mono text-center">
           {step === 'prologue-start' && (
             <p className="text-hud-green text-sm sm:text-base animate-pulse">
-              Systems online. Full power.
+              Systems online. Autopilot engaged.
             </p>
           )}
 
@@ -121,6 +121,13 @@ export function PrologueOverlay({ step, onSkip }: PrologueOverlayProps) {
       {step === 'prologue-speed' && (
         <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
           <FadingText text="Full throttle." />
+        </div>
+      )}
+
+      {/* Autopilot indicator during autonomous phases */}
+      {(step === 'prologue-mining' || step === 'prologue-combat' || step === 'prologue-speed') && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono">
+          <p className="text-hud-green/50 text-xs uppercase tracking-[0.3em]">Autopilot</p>
         </div>
       )}
 
