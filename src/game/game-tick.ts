@@ -386,31 +386,22 @@ function findNearestTarget(
 }
 
 /**
- * Auto-fire in the ship's current facing direction when any target is within range.
+ * Auto-fire at the nearest target when one is within range.
  *
- * Fires along the ship's rotation vector (not toward the target). The player
- * controls rotation via joystick; this just pulls the trigger automatically
- * when something is close enough. The player can also manually fire on top.
+ * Fires directly toward the target (smart aim). Player can still
+ * manually fire in the ship's facing direction via the fire button.
  */
-function autoFireInFacingDirection(state: TickState, preferEnemies: boolean): void {
+function autoFireAtTarget(state: TickState, preferEnemies: boolean): void {
   const nearest = findNearestTarget(state, preferEnemies)
   if (!nearest) return
 
   const dist = Math.hypot(nearest.x - state.ship.x, nearest.y - state.ship.y)
   if (dist > PROLOGUE_SHIP.autoFireRange) return
 
-  // Compute a point along the ship's facing direction (far enough for fire logic)
-  const facingX = -Math.sin(state.ship.rotation)
-  const facingY = Math.cos(state.ship.rotation)
-  const fireRange = 100
-
   // Only auto-fire if player is not already manually firing
   if (!state.fireTarget) {
     state.mouseHoldingFire = true
-    state.fireTarget = {
-      x: state.ship.x + facingX * fireRange,
-      y: state.ship.y + facingY * fireRange,
-    }
+    state.fireTarget = { x: nearest.x, y: nearest.y }
   }
 }
 
@@ -445,7 +436,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
   // --- prologue-mining: auto-fire lazer in ship's facing direction ---
   if (step === 'prologue-mining') {
     state.prologueAutoCollect = true
-    autoFireInFacingDirection(state, false)
+    autoFireAtTarget(state, false)
     // Count destroyed asteroids
     const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
     if (destroyed > state.prologueAsteroidsDestroyed) {
@@ -473,7 +464,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
         result.ambushEnemiesSpawned.push(enemy)
       }
     }
-    autoFireInFacingDirection(state, true)
+    autoFireAtTarget(state, true)
     // Check if all enemies are dead
     const allDead = state.ambushEnemies.every((e) => !e.alive)
     if (state.prologueEnemiesSpawned && allDead && state.ambushEnemies.length > 0) {

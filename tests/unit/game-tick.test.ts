@@ -857,7 +857,7 @@ describe('game-tick', () => {
       tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
 
       assert.equal(state.prologueAutoCollect, true)
-      assert.ok(state.fireTarget !== null, 'should auto-fire in facing direction')
+      assert.ok(state.fireTarget !== null, 'should auto-fire at nearest target')
       assert.ok(state.mouseHoldingFire, 'should hold fire')
     })
 

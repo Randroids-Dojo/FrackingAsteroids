@@ -63,7 +63,7 @@ describe('prologue flow', () => {
     h.sim.step()
 
     assert.equal(h.sim.tickState.prologueAutoCollect, true, 'should enable auto-collect')
-    assert.ok(h.sim.tickState.fireTarget !== null, 'should auto-fire in facing direction')
+    assert.ok(h.sim.tickState.fireTarget !== null, 'should auto-fire at nearest target')
     assert.equal(h.sim.tickState.mouseHoldingFire, true, 'should hold fire')
   })
 
