@@ -566,141 +566,6 @@ describe('game-tick', () => {
   })
 
   // -------------------------------------------------------------------------
-  // 14. Ambush spawn
-  // -------------------------------------------------------------------------
-  describe('ambush spawn', () => {
-    it('spawns 3 enemies when tutorialStep=ambush and outside station', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      // Ship far from station so not in station range
-      const state = createTickState({
-        shipPosition: { x: 0, y: 0 },
-        stationPosition: { x: 500, y: 500 },
-      })
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'ambush',
-        }),
-      )
-
-      assert.equal(state.ambushSpawned, true)
-      assert.equal(state.ambushEnemies.length, 3)
-      assert.equal(result.ambushEnemiesSpawned.length, 3)
-    })
-
-    it('does not spawn ambush when inside station range', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      // Ship at station
-      const state = createTickState({
-        shipPosition: { x: 30, y: 200 },
-        stationPosition: { x: 30, y: 200 },
-      })
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'ambush',
-        }),
-      )
-
-      assert.equal(state.ambushSpawned, false, 'should not spawn while in station range')
-      assert.equal(result.ambushEnemiesSpawned.length, 0)
-    })
-
-    it('does not spawn ambush twice', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({
-        shipPosition: { x: 0, y: 0 },
-        stationPosition: { x: 500, y: 500 },
-      })
-      state.ambushSpawned = true
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'ambush',
-        }),
-      )
-
-      assert.equal(result.ambushEnemiesSpawned.length, 0)
-    })
-  })
-
-  // -------------------------------------------------------------------------
-  // 15. Player killed
-  // -------------------------------------------------------------------------
-  describe('player killed', () => {
-    it('fires playerKilled when hp<=0 during ambush', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({
-        shipPosition: { x: 0, y: 0 },
-        stationPosition: { x: 500, y: 500 },
-        playerHp: 0,
-      })
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'ambush',
-        }),
-      )
-
-      assert.equal(result.playerKilled, true)
-      assert.equal(state.playerKilledFired, true)
-    })
-
-    it('does not fire playerKilled twice', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({
-        shipPosition: { x: 0, y: 0 },
-        stationPosition: { x: 500, y: 500 },
-        playerHp: 0,
-      })
-      state.playerKilledFired = true
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'ambush',
-        }),
-      )
-
-      assert.equal(result.playerKilled, false, 'should not fire twice')
-    })
-
-    it('does not fire playerKilled when not in ambush step', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({
-        shipPosition: { x: 0, y: 0 },
-        stationPosition: { x: 500, y: 500 },
-        playerHp: 0,
-      })
-
-      const result = tick(
-        state,
-        makeInput(createInputState, {
-          tutorialStep: 'done',
-        }),
-      )
-
-      assert.equal(result.playerKilled, false, 'should not fire outside ambush step')
-    })
-  })
-
-  // -------------------------------------------------------------------------
   // Projectile expiry
   // -------------------------------------------------------------------------
   describe('projectile expiry', () => {
@@ -944,6 +809,286 @@ describe('game-tick', () => {
 
       tick(state, makeInput(createInputState, { dt: 0.25 }))
       assert.ok(Math.abs(state.elapsedTime - 0.75) < 0.001)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Prologue auto-behavior
+  // -------------------------------------------------------------------------
+  describe('prologue', () => {
+    it('prologue-start initializes maxed ship config', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-start' }))
+
+      assert.equal(state.blasterTier, 5)
+      assert.ok(state.fireRateBonus > 1.4)
+      assert.equal(state.activeMiningTool, 'lazer')
+      assert.equal(state.prologueFieldSpawned, true)
+      assert.equal(result.prologueReady, true)
+    })
+
+    it('prologue-mining auto-targets nearest asteroid', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 20,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+
+      // prologue-start sets tool to lazer; simulate that first
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-start' }))
+      assert.equal(state.activeMiningTool, 'lazer')
+
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      assert.equal(state.prologueAutoCollect, true)
+      assert.ok(state.fireTarget !== null, 'should auto-fire at nearest target')
+      assert.ok(state.mouseHoldingFire, 'should hold fire')
+    })
+
+    it('prologue-mining spawns enemies alongside asteroids', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      assert.equal(state.prologueEnemiesSpawned, true)
+      assert.ok(state.ambushEnemies.length > 0, 'should spawn enemies')
+      assert.equal(state.prologueAutoCollect, true)
+    })
+
+    it('prologue-mining fires fieldCleared when asteroids + enemies done', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const asteroids = Array.from({ length: 30 }, (_, i) => ({
+        id: `a${i}`,
+        x: 50 + i * 20,
+        y: 50,
+        velocityX: 0,
+        velocityY: 0,
+        type: 'common' as const,
+        hp: 0,
+        maxHp: 15,
+        size: 1,
+      }))
+      const state = createTickState({ asteroids, stationPosition: { x: 500, y: 500 } })
+
+      // First tick spawns enemies
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+      // Kill all enemies
+      for (const e of state.ambushEnemies) {
+        e.alive = false
+      }
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+      assert.equal(result.fieldCleared, true)
+    })
+
+    it('prologue-mining does not fire fieldCleared if enemies still alive', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const asteroids = Array.from({ length: 10 }, (_, i) => ({
+        id: `a${i}`,
+        x: 50 + i * 20,
+        y: 50,
+        velocityX: 0,
+        velocityY: 0,
+        type: 'common' as const,
+        hp: 0,
+        maxHp: 15,
+        size: 1,
+      }))
+      const state = createTickState({ asteroids, stationPosition: { x: 500, y: 500 } })
+
+      // First tick spawns enemies — don't kill them
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+      assert.equal(result.fieldCleared, false, 'should not clear while enemies alive')
+    })
+
+    it('prologue-arbiter freezes ship and tracks approach', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-arbiter', dt: 0.5 }))
+
+      assert.equal(state.prologueShipFrozen, true)
+      assert.equal(state.prologueArbiterSpawned, true)
+      assert.ok(state.prologueArbiterDistance < 80, 'distance should decrease')
+      assert.equal(state.ship.velocityX, 0)
+      assert.equal(state.ship.velocityY, 0)
+    })
+
+    it('prologue-arbiter fires arbiterArrived when close enough', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueArbiterSpawned = true
+      state.prologueArbiterDistance = 26
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-arbiter', dt: 0.1 }),
+      )
+
+      assert.equal(result.arbiterArrived, true)
+    })
+
+    it('prologue-strip advances phases on timer', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueShipFrozen = true
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-strip', dt: 1.6 }),
+      )
+
+      assert.equal(state.prologueStripPhase, 1)
+      assert.equal(result.stripAdvanced, true)
+      assert.equal(result.stripComplete, false)
+    })
+
+    it('prologue-strip fires stripComplete after 4 phases', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      state.prologueShipFrozen = true
+      state.prologueStripPhase = 3
+      state.prologueStripTimer = 1.4
+
+      const result = tick(
+        state,
+        makeInput(createInputState, { tutorialStep: 'prologue-strip', dt: 0.2 }),
+      )
+
+      assert.equal(state.prologueStripPhase, 4)
+      assert.equal(result.stripAdvanced, true)
+      assert.equal(result.stripComplete, true)
+    })
+
+    it('prologue-mining: projectiles damage ambush enemies', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+      const { createEnemyShip } = await import('../../src/game/enemy-ship')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      // Spawn an enemy at a known position
+      const enemy = createEnemyShip(20, 0)
+      enemy.hp = 1
+      enemy.maxHp = 10
+      state.ambushEnemies.push(enemy)
+      state.prologueEnemiesSpawned = true
+
+      // Place a projectile heading toward the enemy
+      state.projectiles.push({
+        id: 'p1',
+        x: 18,
+        y: 0,
+        velocityX: 200,
+        velocityY: 0,
+        damage: 3,
+        tool: 'blaster',
+      })
+      state.projectileElapsed.set('p1', 0)
+
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      // Enemy should take damage (or die)
+      assert.ok(enemy.hp < 1 || !enemy.alive, 'enemy should take damage from projectile')
+      assert.ok(
+        result.expiredProjectileIds.includes('p1') || state.projectiles.length === 0,
+        'projectile should be consumed',
+      )
+    })
+
+    it('prologue-fade returns early with empty result', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState()
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-fade' }))
+
+      assert.equal(result.shipMoved, false)
+      assert.equal(result.newProjectiles.length, 0)
+    })
+
+    it('prologue does not mutate input.collecting', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 10,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+      const input = makeInput(createInputState, { tutorialStep: 'prologue-mining' })
+      assert.equal(input.collecting, false)
+
+      tick(state, input)
+
+      assert.equal(input.collecting, false, 'input.collecting should not be mutated')
+    })
+
+    it('prologue does not mutate input.aimWorldPosition', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({
+        asteroids: [
+          {
+            id: 'a1',
+            x: 20,
+            y: 0,
+            velocityX: 0,
+            velocityY: 0,
+            type: 'common',
+            hp: 15,
+            maxHp: 15,
+            size: 1,
+          },
+        ],
+      })
+      const input = makeInput(createInputState, { tutorialStep: 'prologue-mining' })
+      assert.equal(input.aimWorldPosition, null)
+
+      tick(state, input)
+
+      assert.equal(input.aimWorldPosition, null, 'input.aimWorldPosition should not be mutated')
     })
   })
 })

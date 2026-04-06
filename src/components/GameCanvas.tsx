@@ -28,9 +28,13 @@ interface GameCanvasProps {
   onNearStation?: () => void
   onStationRange?: (inRange: boolean) => void
   onStationDriveThrough?: () => void
-  onPlayerKilled?: () => void
   onCrystallineDeflect?: () => void
   onToolChange?: (tool: MiningTool) => void
+  // Prologue callbacks
+  onPrologueReady?: () => void
+  onFieldCleared?: () => void
+  onArbiterArrived?: () => void
+  onStripComplete?: () => void
 }
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function GameCanvas(
@@ -51,9 +55,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onNearStation,
     onStationRange,
     onStationDriveThrough,
-    onPlayerKilled,
     onCrystallineDeflect,
     onToolChange,
+    onPrologueReady,
+    onFieldCleared,
+    onArbiterArrived,
+    onStripComplete,
   },
   ref,
 ) {
@@ -75,9 +82,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onNearStationRef = useRef(onNearStation)
   const onStationRangeRef = useRef(onStationRange)
   const onStationDriveThroughRef = useRef(onStationDriveThrough)
-  const onPlayerKilledRef = useRef(onPlayerKilled)
   const onCrystallineDeflectRef = useRef(onCrystallineDeflect)
   const onToolChangeRef = useRef(onToolChange)
+  const onPrologueReadyRef = useRef(onPrologueReady)
+  const onFieldClearedRef = useRef(onFieldCleared)
+  const onArbiterArrivedRef = useRef(onArbiterArrived)
+  const onStripCompleteRef = useRef(onStripComplete)
 
   useImperativeHandle(ref, () => ({
     setFireRateBonus: (multiplier: number) => {
@@ -157,16 +167,28 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   }, [onStationDriveThrough])
 
   useEffect(() => {
-    onPlayerKilledRef.current = onPlayerKilled
-  }, [onPlayerKilled])
-
-  useEffect(() => {
     onCrystallineDeflectRef.current = onCrystallineDeflect
   }, [onCrystallineDeflect])
 
   useEffect(() => {
     onToolChangeRef.current = onToolChange
   }, [onToolChange])
+
+  useEffect(() => {
+    onPrologueReadyRef.current = onPrologueReady
+  }, [onPrologueReady])
+
+  useEffect(() => {
+    onFieldClearedRef.current = onFieldCleared
+  }, [onFieldCleared])
+
+  useEffect(() => {
+    onArbiterArrivedRef.current = onArbiterArrived
+  }, [onArbiterArrived])
+
+  useEffect(() => {
+    onStripCompleteRef.current = onStripComplete
+  }, [onStripComplete])
 
   const getPaused = useCallback(() => pausedRef.current || frozenRef.current, [])
 
@@ -193,9 +215,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onNearStation: () => onNearStationRef.current?.(),
           onStationRange: (inRange: boolean) => onStationRangeRef.current?.(inRange),
           onStationDriveThrough: () => onStationDriveThroughRef.current?.(),
-          onPlayerKilled: () => onPlayerKilledRef.current?.(),
           onCrystallineDeflect: () => onCrystallineDeflectRef.current?.(),
           onToolChange: (tool: MiningTool) => onToolChangeRef.current?.(tool),
+          onPrologueReady: () => onPrologueReadyRef.current?.(),
+          onFieldCleared: () => onFieldClearedRef.current?.(),
+          onArbiterArrived: () => onArbiterArrivedRef.current?.(),
+          onStripComplete: () => onStripCompleteRef.current?.(),
         })
       })
       .catch((err: unknown) => {

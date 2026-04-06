@@ -8,6 +8,7 @@ import { FeedbackFab } from '@/components/FeedbackFab'
 import { SoundFab } from '@/components/SoundFab'
 import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
+import { PrologueOverlay } from '@/components/PrologueOverlay'
 import { TradeMenu, LAZER_COST } from '@/components/TradeMenu'
 import { LazerTutorialPopup } from '@/components/LazerTutorialPopup'
 import { ShopFab } from '@/components/ShopFab'
@@ -171,61 +172,55 @@ export default function Home() {
   }, [])
 
   const handleCrystallineDeflect = useCallback(() => {
+    // Don't show lazer tutorial popup during prologue — ship already has lazer
+    if (tutorialStep.startsWith('prologue-')) return
     setLazerPopupVisible(true)
-  }, [])
+  }, [tutorialStep])
 
   const handleDismissLazerPopup = useCallback(() => {
     setLazerPopupVisible(false)
   }, [])
 
-  const handlePlayerKilled = useCallback(() => {
-    tutorial.onPlayerKilled()
-  }, [tutorial])
-
   const handleSkipTutorial = useCallback(() => {
     tutorial.skip()
     setTradeMenuOpen(false)
+    setPrologueFade('none')
     // Spawn the real asteroid field so the player has a proper game world
     gameCanvasRef.current?.resetShipToStation()
   }, [tutorial])
 
-  // --- Ambush fade-to-black and respawn sequence ---
-  const [ambushFade, setAmbushFade] = useState<
-    'none' | 'fading-in' | 'black' | 'loaded' | 'fading-out'
+  // --- Prologue fade-to-black and respawn sequence ---
+  const [prologueFade, setPrologueFade] = useState<
+    'none' | 'fading-in' | 'black' | 'rebooting' | 'fading-out'
   >('none')
 
-  // Stable ref for the completion callback so the effect doesn't re-trigger
-  const ambushCompleteRef = useRef(tutorial.onAmbushComplete)
+  const prologueRespawnRef = useRef(tutorial.onPrologueRespawnComplete)
   useEffect(() => {
-    ambushCompleteRef.current = tutorial.onAmbushComplete
-  }, [tutorial.onAmbushComplete])
+    prologueRespawnRef.current = tutorial.onPrologueRespawnComplete
+  }, [tutorial.onPrologueRespawnComplete])
 
   useEffect(() => {
-    if (tutorialStep !== 'ambush-fade') return
+    if (tutorialStep !== 'prologue-fade') return
     const timers: ReturnType<typeof setTimeout>[] = []
-    // Start fade to black
-    setAmbushFade('fading-in')
+    setPrologueFade('fading-in')
 
-    // After fade-in completes (1.5s), hold black with "You Died"
     timers.push(
       setTimeout(() => {
-        setAmbushFade('black')
+        setPrologueFade('black')
         gameCanvasRef.current?.resetShipToStation()
 
-        // After a hold (1.5s), switch to "Loading last save" text
         timers.push(
           setTimeout(() => {
-            setAmbushFade('loaded')
+            setPrologueFade('rebooting')
 
-            // Hold "Loading last save" on black (2s), then fade out
             timers.push(
               setTimeout(() => {
-                setAmbushFade('fading-out')
+                setPrologueFade('fading-out')
 
                 timers.push(
                   setTimeout(() => {
-                    setAmbushFade('none')
-                    ambushCompleteRef.current()
+                    setPrologueFade('none')
+                    prologueRespawnRef.current()
                   }, 1500),
                 )
               }, 2000),
@@ -237,6 +232,15 @@ export default function Home() {
 
     return () => timers.forEach(clearTimeout)
   }, [tutorialStep])
+
+  // When tutorial completes (drive-through → done), spawn asteroid field
+  useEffect(() => {
+    if (tutorialStep === 'done' && !tutorialActive) {
+      gameCanvasRef.current?.resetShipToStation()
+    }
+  }, [tutorialStep, tutorialActive])
+
+  const inPrologue = tutorialStep.startsWith('prologue-')
 
   // Tutorial catch-up: auto-advance trade steps when their conditions are already met.
   // This prevents the tutorial from getting stuck if the player performed actions
@@ -299,9 +303,12 @@ export default function Home() {
         onNearStation={tutorial.onNearStation}
         onStationRange={handleStationRange}
         onStationDriveThrough={handleStationDriveThrough}
-        onPlayerKilled={handlePlayerKilled}
         onCrystallineDeflect={handleCrystallineDeflect}
         onToolChange={handleToolChange}
+        onPrologueReady={tutorial.onPrologueReady}
+        onFieldCleared={tutorial.onFieldCleared}
+        onArbiterArrived={tutorial.onArbiterArrived}
+        onStripComplete={tutorial.onStripComplete}
       />
       <HUD
         scrap={scrap}
@@ -314,7 +321,14 @@ export default function Home() {
         hasLazer={hasLazer}
         onPause={togglePause}
       />
-      {tutorial.active && (
+      {tutorial.active && inPrologue && (
+        <PrologueOverlay
+          step={tutorial.step}
+          onSkip={handleSkipTutorial}
+          onDialogueComplete={tutorial.onDialogueComplete}
+        />
+      )}
+      {tutorial.active && !inPrologue && (
         <TutorialOverlay
           step={tutorial.step}
           frozen={tutorial.frozen}
@@ -350,26 +364,26 @@ export default function Home() {
       )}
       {paused && <FeedbackFab />}
       {paused && <SoundFab />}
-      {ambushFade !== 'none' && (
+      {prologueFade !== 'none' && (
         <div
           className="absolute inset-0 bg-black z-50 flex items-center justify-center"
           style={
-            ambushFade === 'fading-in'
+            prologueFade === 'fading-in'
               ? { animation: 'fadeIn 1.5s ease-in forwards' }
-              : ambushFade === 'fading-out'
+              : prologueFade === 'fading-out'
                 ? { animation: 'fadeOut 1.5s ease-out forwards' }
                 : undefined
           }
-          data-testid="ambush-fade"
+          data-testid="prologue-fade"
         >
-          {(ambushFade === 'fading-in' || ambushFade === 'black') && (
+          {(prologueFade === 'fading-in' || prologueFade === 'black') && (
             <p className="font-mono text-2xl sm:text-4xl tracking-widest text-hud-red/90 animate-pulse">
-              You Died
+              Systems offline.
             </p>
           )}
-          {(ambushFade === 'loaded' || ambushFade === 'fading-out') && (
+          {(prologueFade === 'rebooting' || prologueFade === 'fading-out') && (
             <p className="font-mono text-lg sm:text-2xl tracking-widest text-hud-green/90 animate-pulse">
-              Loading last save
+              Rebooting...
             </p>
           )}
         </div>

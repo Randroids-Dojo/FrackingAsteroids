@@ -16,6 +16,7 @@ import type {
   MetalVariant,
 } from '../../src/game/game-tick'
 import type { Asteroid, MiningTool } from '../../src/game/types'
+import type { TutorialStep } from '../../src/hooks/useTutorial'
 import type { InputState } from '../../src/game/input'
 import type { MetalChunk } from '../../src/game/metal-chunk'
 import type { EnemyShip } from '../../src/game/enemy-ship'
@@ -237,6 +238,12 @@ export class GameSimulation {
     this.tickState.playerHp = hp
   }
 
+  private tutorialStep: TutorialStep = 'done'
+
+  setTutorialStep(step: TutorialStep): void {
+    this.tutorialStep = step
+  }
+
   clearEvents(): void {
     this.events = emptyEvents()
   }
@@ -254,7 +261,7 @@ export class GameSimulation {
       inputState: this.inputState,
       aimWorldPosition,
       collecting: this.collecting,
-      tutorialStep: 'done',
+      tutorialStep: this.tutorialStep,
     }
 
     const result = tick(this.tickState, input)
