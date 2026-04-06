@@ -32,9 +32,7 @@ interface GameCanvasProps {
   onToolChange?: (tool: MiningTool) => void
   // Prologue callbacks
   onPrologueReady?: () => void
-  onAsteroidsCleared?: () => void
-  onFleetDestroyed?: () => void
-  onSpeedReached?: () => void
+  onFieldCleared?: () => void
   onArbiterArrived?: () => void
   onStripComplete?: () => void
 }
@@ -60,9 +58,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     onCrystallineDeflect,
     onToolChange,
     onPrologueReady,
-    onAsteroidsCleared,
-    onFleetDestroyed,
-    onSpeedReached,
+    onFieldCleared,
     onArbiterArrived,
     onStripComplete,
   },
@@ -89,9 +85,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   const onCrystallineDeflectRef = useRef(onCrystallineDeflect)
   const onToolChangeRef = useRef(onToolChange)
   const onPrologueReadyRef = useRef(onPrologueReady)
-  const onAsteroidsClearedRef = useRef(onAsteroidsCleared)
-  const onFleetDestroyedRef = useRef(onFleetDestroyed)
-  const onSpeedReachedRef = useRef(onSpeedReached)
+  const onFieldClearedRef = useRef(onFieldCleared)
   const onArbiterArrivedRef = useRef(onArbiterArrived)
   const onStripCompleteRef = useRef(onStripComplete)
 
@@ -185,16 +179,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   }, [onPrologueReady])
 
   useEffect(() => {
-    onAsteroidsClearedRef.current = onAsteroidsCleared
-  }, [onAsteroidsCleared])
-
-  useEffect(() => {
-    onFleetDestroyedRef.current = onFleetDestroyed
-  }, [onFleetDestroyed])
-
-  useEffect(() => {
-    onSpeedReachedRef.current = onSpeedReached
-  }, [onSpeedReached])
+    onFieldClearedRef.current = onFieldCleared
+  }, [onFieldCleared])
 
   useEffect(() => {
     onArbiterArrivedRef.current = onArbiterArrived
@@ -232,9 +218,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
           onCrystallineDeflect: () => onCrystallineDeflectRef.current?.(),
           onToolChange: (tool: MiningTool) => onToolChangeRef.current?.(tool),
           onPrologueReady: () => onPrologueReadyRef.current?.(),
-          onAsteroidsCleared: () => onAsteroidsClearedRef.current?.(),
-          onFleetDestroyed: () => onFleetDestroyedRef.current?.(),
-          onSpeedReached: () => onSpeedReachedRef.current?.(),
+          onFieldCleared: () => onFieldClearedRef.current?.(),
           onArbiterArrived: () => onArbiterArrivedRef.current?.(),
           onStripComplete: () => onStripCompleteRef.current?.(),
         })

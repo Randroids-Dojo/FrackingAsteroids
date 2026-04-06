@@ -306,9 +306,7 @@ export default function Home() {
         onCrystallineDeflect={handleCrystallineDeflect}
         onToolChange={handleToolChange}
         onPrologueReady={tutorial.onPrologueReady}
-        onAsteroidsCleared={tutorial.onAsteroidsCleared}
-        onFleetDestroyed={tutorial.onFleetDestroyed}
-        onSpeedReached={tutorial.onSpeedReached}
+        onFieldCleared={tutorial.onFieldCleared}
         onArbiterArrived={tutorial.onArbiterArrived}
         onStripComplete={tutorial.onStripComplete}
       />

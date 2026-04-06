@@ -861,7 +861,19 @@ describe('game-tick', () => {
       assert.ok(state.mouseHoldingFire, 'should hold fire')
     })
 
-    it('prologue-mining fires asteroidsCleared when enough destroyed', async () => {
+    it('prologue-mining spawns enemies alongside asteroids', async () => {
+      const { tick, createTickState } = await import('../../src/game/game-tick')
+      const { createInputState } = await import('../../src/game/input')
+
+      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+
+      assert.equal(state.prologueEnemiesSpawned, true)
+      assert.ok(state.ambushEnemies.length > 0, 'should spawn enemies')
+      assert.equal(state.prologueAutoCollect, true)
+    })
+
+    it('prologue-mining fires fieldCleared when asteroids + enemies done', async () => {
       const { tick, createTickState } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')
 
@@ -876,70 +888,41 @@ describe('game-tick', () => {
         maxHp: 15,
         size: 1,
       }))
-      const state = createTickState({ asteroids })
+      const state = createTickState({ asteroids, stationPosition: { x: 500, y: 500 } })
 
-      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
-
-      assert.equal(result.asteroidsCleared, true)
-    })
-
-    it('prologue-combat spawns enemy fleet', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
-      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
-
-      assert.equal(state.prologueEnemiesSpawned, true)
-      assert.ok(state.ambushEnemies.length > 0, 'should spawn enemies')
-      assert.ok(result.ambushEnemiesSpawned.length > 0, 'should report spawned enemies')
-      assert.equal(state.activeMiningTool, 'blaster')
-      assert.equal(state.prologueAutoCollect, true)
-    })
-
-    it('prologue-combat fires fleetDestroyed when all enemies dead', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState({ stationPosition: { x: 500, y: 500 } })
       // First tick spawns enemies
-      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
       // Kill all enemies
       for (const e of state.ambushEnemies) {
         e.alive = false
       }
-      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
 
-      assert.equal(result.fleetDestroyed, true)
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+      assert.equal(result.fieldCleared, true)
     })
 
-    it('prologue-speed enables auto-pilot and tracks time', async () => {
+    it('prologue-mining does not fire fieldCleared if enemies still alive', async () => {
       const { tick, createTickState } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')
 
-      const state = createTickState()
-      // Give ship high velocity; updateShip will clamp to 120 and apply friction
-      // but with auto-pilot (up=true) the ship stays near max speed
-      state.ship.velocityY = 120
+      const asteroids = Array.from({ length: 10 }, (_, i) => ({
+        id: `a${i}`,
+        x: 50 + i * 20,
+        y: 50,
+        velocityX: 0,
+        velocityY: 0,
+        type: 'common' as const,
+        hp: 0,
+        maxHp: 15,
+        size: 1,
+      }))
+      const state = createTickState({ asteroids, stationPosition: { x: 500, y: 500 } })
 
-      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-speed' }))
+      // First tick spawns enemies — don't kill them
+      tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
 
-      assert.equal(state.prologueAutoPilotForward, true)
-      assert.equal(state.prologueAutoCollect, true)
-      assert.ok(state.prologueSpeedTime > 0, 'should accumulate speed time')
-    })
-
-    it('prologue-speed fires speedReached after enough time', async () => {
-      const { tick, createTickState } = await import('../../src/game/game-tick')
-      const { createInputState } = await import('../../src/game/input')
-
-      const state = createTickState()
-      state.ship.velocityY = 120
-      state.prologueSpeedTime = 3.99
-
-      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-speed' }))
-
-      assert.equal(result.speedReached, true)
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
+      assert.equal(result.fieldCleared, false, 'should not clear while enemies alive')
     })
 
     it('prologue-arbiter freezes ship and tracks approach', async () => {
@@ -1008,7 +991,7 @@ describe('game-tick', () => {
       assert.equal(result.stripComplete, true)
     })
 
-    it('prologue-combat: projectiles damage ambush enemies', async () => {
+    it('prologue-mining: projectiles damage ambush enemies', async () => {
       const { tick, createTickState } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')
       const { createEnemyShip } = await import('../../src/game/enemy-ship')
@@ -1033,7 +1016,7 @@ describe('game-tick', () => {
       })
       state.projectileElapsed.set('p1', 0)
 
-      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-combat' }))
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
 
       // Enemy should take damage (or die)
       assert.ok(enemy.hp < 1 || !enemy.alive, 'enemy should take damage from projectile')

@@ -67,31 +67,19 @@ describe('prologue flow', () => {
     assert.equal(h.sim.tickState.mouseHoldingFire, true, 'should hold fire')
   })
 
-  it('prologue-combat spawns fleet and auto-fires blaster', () => {
+  it('prologue-mining spawns enemies and damages them', () => {
     const h = new GameTestHarness({
       stationPosition: { x: 500, y: 500 },
       blasterTier: 5,
       fireRateBonus: 1.1 ** 4,
     })
-    h.sim.setTutorialStep('prologue-combat')
-    h.sim.step()
+    h.sim.setTutorialStep('prologue-mining')
+    h.sim.step() // spawns enemies
 
-    assert.equal(h.sim.tickState.activeMiningTool, 'blaster', 'should switch to blaster')
     assert.equal(h.sim.tickState.prologueEnemiesSpawned, true, 'should spawn enemies')
     assert.ok(h.sim.tickState.ambushEnemies.length > 0, 'should have enemies')
-    assert.equal(h.sim.tickState.prologueAutoCollect, true, 'should enable auto-collect')
-  })
 
-  it('prologue-combat: projectiles damage ambush enemies', () => {
-    const h = new GameTestHarness({
-      stationPosition: { x: 500, y: 500 },
-      blasterTier: 5,
-      fireRateBonus: 1.1 ** 4,
-    })
-    h.sim.setTutorialStep('prologue-combat')
-    h.sim.step() // spawns fleet
-
-    // Set one enemy to 1 HP and put projectile right next to it
+    // Place projectile on top of enemy to test collision
     const target = h.sim.tickState.ambushEnemies[0]
     target.hp = 1
     h.sim.tickState.projectiles.push({
@@ -106,21 +94,7 @@ describe('prologue flow', () => {
     h.sim.tickState.projectileElapsed.set('test-proj', 0)
 
     h.sim.step()
-
     assert.equal(target.alive, false, 'enemy should die from projectile hit')
-  })
-
-  it('prologue-speed auto-pilots forward and tracks time at speed', () => {
-    const h = new GameTestHarness({
-      stationPosition: { x: 500, y: 500 },
-    })
-    h.sim.tickState.ship.velocityY = 120
-    h.sim.setTutorialStep('prologue-speed')
-    // Multiple small steps so ship maintains speed via auto-pilot acceleration
-    h.sim.stepN(10)
-
-    assert.equal(h.sim.tickState.prologueAutoPilotForward, true, 'should enable auto-pilot')
-    assert.ok(h.sim.tickState.prologueSpeedTime > 0, 'should accumulate speed time')
   })
 
   it('prologue-arbiter freezes ship and tracks approach', () => {
@@ -222,23 +196,10 @@ describe('prologue flow', () => {
       h.sim.tickState.prologueAsteroidsDestroyed >= 8,
       `should destroy enough asteroids, got ${h.sim.tickState.prologueAsteroidsDestroyed}`,
     )
+    // Enemies should also have spawned during mining
+    assert.ok(h.sim.tickState.ambushEnemies.length > 0, 'enemies should spawn during mining')
 
-    // Phase 3: prologue-combat
-    h.sim.setTutorialStep('prologue-combat')
-    h.sim.step()
-    assert.ok(h.sim.tickState.ambushEnemies.length > 0, 'fleet should spawn')
-
-    // Phase 4: prologue-speed — boost acceleration pushes ship past normal max
-    h.sim.setTutorialStep('prologue-speed')
-    // Give ship initial forward velocity so boost can build on it
-    h.sim.tickState.ship.velocityY = 100
-    h.sim.stepN(600) // 10 seconds at 60fps
-    assert.ok(
-      h.sim.tickState.prologueSpeedTime >= 4,
-      `should accumulate enough speed time, got ${h.sim.tickState.prologueSpeedTime}`,
-    )
-
-    // Phase 5: prologue-arbiter
+    // Phase 3: prologue-arbiter
     h.sim.setTutorialStep('prologue-arbiter')
     h.sim.stepN(180) // 3 seconds
     assert.equal(h.sim.tickState.prologueShipFrozen, true)

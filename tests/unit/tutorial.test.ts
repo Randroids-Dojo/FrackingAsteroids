@@ -13,21 +13,9 @@ describe('advanceTutorial', () => {
     assert.deepStrictEqual(next, { active: true, step: 'prologue-mining', frozen: false })
   })
 
-  it('prologue-mining → prologue-combat on asteroids-cleared', () => {
+  it('prologue-mining → prologue-arbiter on field-cleared', () => {
     const state: TutorialState = { active: true, step: 'prologue-mining', frozen: false }
-    const next = advanceTutorial(state, 'asteroids-cleared')
-    assert.deepStrictEqual(next, { active: true, step: 'prologue-combat', frozen: false })
-  })
-
-  it('prologue-combat → prologue-speed on fleet-destroyed', () => {
-    const state: TutorialState = { active: true, step: 'prologue-combat', frozen: false }
-    const next = advanceTutorial(state, 'fleet-destroyed')
-    assert.deepStrictEqual(next, { active: true, step: 'prologue-speed', frozen: false })
-  })
-
-  it('prologue-speed → prologue-arbiter on speed-reached', () => {
-    const state: TutorialState = { active: true, step: 'prologue-speed', frozen: false }
-    const next = advanceTutorial(state, 'speed-reached')
+    const next = advanceTutorial(state, 'field-cleared')
     assert.deepStrictEqual(next, { active: true, step: 'prologue-arbiter', frozen: false })
   })
 
@@ -245,9 +233,8 @@ describe('advanceTutorial', () => {
     const steps: TutorialState['step'][] = [
       'prologue-start',
       'prologue-mining',
-      'prologue-combat',
-      'prologue-speed',
       'prologue-arbiter',
+      'prologue-dialogue',
       'prologue-strip',
       'prologue-fade',
       'move',
@@ -264,9 +251,7 @@ describe('advanceTutorial', () => {
     ]
     const wrongEvents: Record<string, TutorialEvent[]> = {
       'prologue-start': [
-        'asteroids-cleared',
-        'fleet-destroyed',
-        'speed-reached',
+        'field-cleared',
         'arbiter-arrived',
         'dialogue-complete',
         'strip-complete',
@@ -275,28 +260,6 @@ describe('advanceTutorial', () => {
       ],
       'prologue-mining': [
         'prologue-ready',
-        'fleet-destroyed',
-        'speed-reached',
-        'arbiter-arrived',
-        'dialogue-complete',
-        'strip-complete',
-        'prologue-respawn-complete',
-        'ship-moved',
-      ],
-      'prologue-combat': [
-        'prologue-ready',
-        'asteroids-cleared',
-        'speed-reached',
-        'arbiter-arrived',
-        'dialogue-complete',
-        'strip-complete',
-        'prologue-respawn-complete',
-        'ship-moved',
-      ],
-      'prologue-speed': [
-        'prologue-ready',
-        'asteroids-cleared',
-        'fleet-destroyed',
         'arbiter-arrived',
         'dialogue-complete',
         'strip-complete',
@@ -305,9 +268,7 @@ describe('advanceTutorial', () => {
       ],
       'prologue-arbiter': [
         'prologue-ready',
-        'asteroids-cleared',
-        'fleet-destroyed',
-        'speed-reached',
+        'field-cleared',
         'dialogue-complete',
         'strip-complete',
         'prologue-respawn-complete',
@@ -315,9 +276,7 @@ describe('advanceTutorial', () => {
       ],
       'prologue-dialogue': [
         'prologue-ready',
-        'asteroids-cleared',
-        'fleet-destroyed',
-        'speed-reached',
+        'field-cleared',
         'arbiter-arrived',
         'strip-complete',
         'prologue-respawn-complete',
@@ -325,9 +284,7 @@ describe('advanceTutorial', () => {
       ],
       'prologue-strip': [
         'prologue-ready',
-        'asteroids-cleared',
-        'fleet-destroyed',
-        'speed-reached',
+        'field-cleared',
         'arbiter-arrived',
         'dialogue-complete',
         'prologue-respawn-complete',
@@ -335,9 +292,7 @@ describe('advanceTutorial', () => {
       ],
       'prologue-fade': [
         'prologue-ready',
-        'asteroids-cleared',
-        'fleet-destroyed',
-        'speed-reached',
+        'field-cleared',
         'arbiter-arrived',
         'dialogue-complete',
         'strip-complete',
@@ -511,11 +466,7 @@ describe('advanceTutorial', () => {
     let state: TutorialState = { active: true, step: 'prologue-start', frozen: false }
     state = advanceTutorial(state, 'prologue-ready')
     assert.equal(state.step, 'prologue-mining')
-    state = advanceTutorial(state, 'asteroids-cleared')
-    assert.equal(state.step, 'prologue-combat')
-    state = advanceTutorial(state, 'fleet-destroyed')
-    assert.equal(state.step, 'prologue-speed')
-    state = advanceTutorial(state, 'speed-reached')
+    state = advanceTutorial(state, 'field-cleared')
     assert.equal(state.step, 'prologue-arbiter')
     state = advanceTutorial(state, 'arbiter-arrived')
     assert.equal(state.step, 'prologue-dialogue')

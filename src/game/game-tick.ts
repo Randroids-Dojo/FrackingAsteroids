@@ -58,12 +58,10 @@ import {
   PROLOGUE_SHIP,
   PROLOGUE_ENEMY_FLEET_SIZE,
   PROLOGUE_MINING_TARGET,
-  PROLOGUE_SPEED_DURATION,
   ARBITER_STRIP_DELAY,
   ARBITER_SPAWN_DISTANCE,
   ARBITER_APPROACH_SPEED,
 } from './prologue-config'
-import { SHIP_MAX_SPEED } from './ship-constants'
 
 // ---------------------------------------------------------------------------
 // Constants (mirrored from scene.ts)
@@ -138,7 +136,6 @@ export interface TickState {
   prologueAsteroidsDestroyed: number
   prologueEnemiesSpawned: boolean
   prologueEnemiesKilled: number
-  prologueSpeedTime: number
   prologueArbiterSpawned: boolean
   prologueShipFrozen: boolean
   prologueStripPhase: number
@@ -209,9 +206,7 @@ export interface TickResult {
   scrapCollectedEvent: boolean
   // Prologue events
   prologueReady: boolean
-  asteroidsCleared: boolean
-  fleetDestroyed: boolean
-  speedReached: boolean
+  fieldCleared: boolean
   arbiterArrived: boolean
   stripAdvanced: boolean
   stripComplete: boolean
@@ -285,7 +280,6 @@ export function createTickState(config?: TickStateConfig): TickState {
     prologueAsteroidsDestroyed: 0,
     prologueEnemiesSpawned: false,
     prologueEnemiesKilled: 0,
-    prologueSpeedTime: 0,
     prologueArbiterSpawned: false,
     prologueShipFrozen: false,
     prologueStripPhase: 0,
@@ -335,9 +329,7 @@ function emptyResult(): TickResult {
     enemyDestroyedEvent: false,
     scrapCollectedEvent: false,
     prologueReady: false,
-    asteroidsCleared: false,
-    fleetDestroyed: false,
-    speedReached: false,
+    fieldCleared: false,
     arbiterArrived: false,
     stripAdvanced: false,
     stripComplete: false,
@@ -433,26 +425,15 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     return
   }
 
-  // --- prologue-mining: auto-fire lazer in ship's facing direction ---
+  // --- prologue-mining: free play — mine asteroids and fight enemies ---
+  // Enemies spawn alongside asteroids. Auto-fires at nearest target
+  // (enemies prioritized). Advances when enough asteroids destroyed AND
+  // all enemies dead.
   if (step === 'prologue-mining') {
     state.prologueAutoCollect = true
-    autoFireAtTarget(state, false)
-    // Count destroyed asteroids
-    const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
-    if (destroyed > state.prologueAsteroidsDestroyed) {
-      state.prologueAsteroidsDestroyed = destroyed
-    }
-    if (state.prologueAsteroidsDestroyed >= PROLOGUE_MINING_TARGET) {
-      result.asteroidsCleared = true
-    }
-    return
-  }
 
-  // --- prologue-combat: spawn enemies, auto-fire blaster in facing direction ---
-  if (step === 'prologue-combat') {
-    state.prologueAutoCollect = true
+    // Spawn enemy fleet once (alongside asteroids)
     if (!state.prologueEnemiesSpawned) {
-      state.activeMiningTool = 'blaster'
       state.prologueEnemiesSpawned = true
       for (let i = 0; i < PROLOGUE_ENEMY_FLEET_SIZE; i++) {
         const angle = (i / PROLOGUE_ENEMY_FLEET_SIZE) * Math.PI * 2
@@ -464,23 +445,23 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
         result.ambushEnemiesSpawned.push(enemy)
       }
     }
-    autoFireAtTarget(state, true)
-    // Check if all enemies are dead
-    const allDead = state.ambushEnemies.every((e) => !e.alive)
-    if (state.prologueEnemiesSpawned && allDead && state.ambushEnemies.length > 0) {
-      result.fleetDestroyed = true
-    }
-    return
-  }
 
-  // --- prologue-speed: auto-pilot forward, track time at speed ---
-  // Speed time is tracked in the main tick after updateShip, since prologueTick
-  // runs before ship physics. Here we just set the auto-pilot flag.
-  if (step === 'prologue-speed') {
-    state.mouseHoldingFire = false
-    state.fireTarget = null
-    state.prologueAutoCollect = true
-    state.prologueAutoPilotForward = true
+    // Auto-fire: prioritize enemies when any are alive
+    const hasLiveEnemies = state.ambushEnemies.some((e) => e.alive)
+    autoFireAtTarget(state, hasLiveEnemies)
+
+    // Track progress
+    const destroyed = state.asteroids.filter((a) => a.hp <= 0).length
+    if (destroyed > state.prologueAsteroidsDestroyed) {
+      state.prologueAsteroidsDestroyed = destroyed
+    }
+    const allEnemiesDead =
+      state.prologueEnemiesSpawned && state.ambushEnemies.every((e) => !e.alive)
+
+    // Advance when most asteroids destroyed AND all enemies dead
+    if (state.prologueAsteroidsDestroyed >= PROLOGUE_MINING_TARGET && allEnemiesDead) {
+      result.fieldCleared = true
+    }
     return
   }
 
@@ -621,14 +602,6 @@ export function tick(state: TickState, input: TickInput): TickResult {
       const scale = PROLOGUE_SHIP.maxSpeed / speed
       state.ship.velocityX *= scale
       state.ship.velocityY *= scale
-    }
-    // Track time at speed for prologue-speed phase (after physics applied)
-    const finalSpeed = Math.sqrt(state.ship.velocityX ** 2 + state.ship.velocityY ** 2)
-    if (input.tutorialStep === 'prologue-speed' && finalSpeed > SHIP_MAX_SPEED * 0.8) {
-      state.prologueSpeedTime += dt
-      if (state.prologueSpeedTime >= PROLOGUE_SPEED_DURATION) {
-        result.speedReached = true
-      }
     }
   }
 

@@ -126,9 +126,7 @@ export interface GameSceneOptions {
   onToolChange?: (tool: MiningTool) => void
   // Prologue callbacks
   onPrologueReady?: () => void
-  onAsteroidsCleared?: () => void
-  onFleetDestroyed?: () => void
-  onSpeedReached?: () => void
+  onFieldCleared?: () => void
   onArbiterArrived?: () => void
   onStripComplete?: () => void
 }
@@ -166,9 +164,7 @@ export function createGameScene(
   const onCrystallineDeflect = options?.onCrystallineDeflect
   const onToolChange = options?.onToolChange
   const onPrologueReady = options?.onPrologueReady
-  const onAsteroidsCleared = options?.onAsteroidsCleared
-  const onFleetDestroyed = options?.onFleetDestroyed
-  const onSpeedReached = options?.onSpeedReached
+  const onFieldCleared = options?.onFieldCleared
   const onArbiterArrived = options?.onArbiterArrived
   const onStripComplete = options?.onStripComplete
 
@@ -799,9 +795,7 @@ export function createGameScene(
       if (result.stationRepaired) onStationDriveThrough?.()
       // --- Prologue events ---
       if (result.prologueReady) onPrologueReady?.()
-      if (result.asteroidsCleared) onAsteroidsCleared?.()
-      if (result.fleetDestroyed) onFleetDestroyed?.()
-      if (result.speedReached) onSpeedReached?.()
+      if (result.fieldCleared) onFieldCleared?.()
       if (result.arbiterArrived) onArbiterArrived?.()
       if (result.stripComplete) onStripComplete?.()
 

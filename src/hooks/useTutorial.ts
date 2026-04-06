@@ -5,8 +5,6 @@ import { useState, useCallback, useEffect } from 'react'
 export type TutorialStep =
   | 'prologue-start'
   | 'prologue-mining'
-  | 'prologue-combat'
-  | 'prologue-speed'
   | 'prologue-arbiter'
   | 'prologue-dialogue'
   | 'prologue-strip'
@@ -26,9 +24,7 @@ export type TutorialStep =
 
 export type TutorialEvent =
   | 'prologue-ready'
-  | 'asteroids-cleared'
-  | 'fleet-destroyed'
-  | 'speed-reached'
+  | 'field-cleared'
   | 'arbiter-arrived'
   | 'strip-complete'
   | 'dialogue-complete'
@@ -72,13 +68,7 @@ export function advanceTutorial(state: TutorialState, event: TutorialEvent): Tut
       if (event === 'prologue-ready') return { ...state, step: 'prologue-mining' }
       return state
     case 'prologue-mining':
-      if (event === 'asteroids-cleared') return { ...state, step: 'prologue-combat' }
-      return state
-    case 'prologue-combat':
-      if (event === 'fleet-destroyed') return { ...state, step: 'prologue-speed' }
-      return state
-    case 'prologue-speed':
-      if (event === 'speed-reached') return { ...state, step: 'prologue-arbiter' }
+      if (event === 'field-cleared') return { ...state, step: 'prologue-arbiter' }
       return state
     case 'prologue-arbiter':
       if (event === 'arbiter-arrived') return { ...state, step: 'prologue-dialogue' }
@@ -140,9 +130,7 @@ export interface TutorialHook {
   frozen: boolean
   // Prologue callbacks
   onPrologueReady: () => void
-  onAsteroidsCleared: () => void
-  onFleetDestroyed: () => void
-  onSpeedReached: () => void
+  onFieldCleared: () => void
   onArbiterArrived: () => void
   onDialogueComplete: () => void
   onStripComplete: () => void
@@ -188,9 +176,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
 
   // Prologue callbacks
   const onPrologueReady = useCallback(() => dispatch('prologue-ready'), [dispatch])
-  const onAsteroidsCleared = useCallback(() => dispatch('asteroids-cleared'), [dispatch])
-  const onFleetDestroyed = useCallback(() => dispatch('fleet-destroyed'), [dispatch])
-  const onSpeedReached = useCallback(() => dispatch('speed-reached'), [dispatch])
+  const onFieldCleared = useCallback(() => dispatch('field-cleared'), [dispatch])
   const onArbiterArrived = useCallback(() => dispatch('arbiter-arrived'), [dispatch])
   const onDialogueComplete = useCallback(() => dispatch('dialogue-complete'), [dispatch])
   const onStripComplete = useCallback(() => dispatch('strip-complete'), [dispatch])
@@ -220,9 +206,7 @@ export function useTutorial(enabled: boolean): TutorialHook {
     step: state.step,
     frozen: state.frozen,
     onPrologueReady,
-    onAsteroidsCleared,
-    onFleetDestroyed,
-    onSpeedReached,
+    onFieldCleared,
     onArbiterArrived,
     onDialogueComplete,
     onStripComplete,

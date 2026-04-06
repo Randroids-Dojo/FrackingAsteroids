@@ -148,25 +148,15 @@ export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOv
         </div>
       )}
 
-      {/* Fading text (mining, combat, speed) — no background panel */}
+      {/* Fading text during free-play mining phase */}
       {step === 'prologue-mining' && (
         <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
-          <FadingText text="LAZER engaged." />
-        </div>
-      )}
-      {step === 'prologue-combat' && (
-        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
-          <FadingText text="Hostiles detected." color="text-hud-red" />
-        </div>
-      )}
-      {step === 'prologue-speed' && (
-        <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 font-mono text-center">
-          <FadingText text="Full throttle." />
+          <FadingText text="Clear the field." />
         </div>
       )}
 
-      {/* Autopilot indicator during autonomous phases */}
-      {(step === 'prologue-mining' || step === 'prologue-combat' || step === 'prologue-speed') && (
+      {/* Autopilot indicator during mining phase */}
+      {step === 'prologue-mining' && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono">
           <p className="text-hud-green/50 text-xs uppercase tracking-[0.3em]">Autopilot</p>
         </div>
