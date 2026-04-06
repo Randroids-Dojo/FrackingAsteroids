@@ -22,7 +22,7 @@ export const PROLOGUE_SHIP = {
 export const PROLOGUE_ASTEROID_COUNT = 30
 export const PROLOGUE_MOON_COUNT = 3
 export const PROLOGUE_ENEMY_FLEET_SIZE = 6
-export const PROLOGUE_MINING_TARGET = 8
+export const PROLOGUE_MINING_TARGET = 25
 export const PROLOGUE_SPEED_DURATION = 4
 export const PROLOGUE_AMBUSH_SIZE = 10
 

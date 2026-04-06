@@ -877,7 +877,7 @@ describe('game-tick', () => {
       const { tick, createTickState } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')
 
-      const asteroids = Array.from({ length: 10 }, (_, i) => ({
+      const asteroids = Array.from({ length: 30 }, (_, i) => ({
         id: `a${i}`,
         x: 50 + i * 20,
         y: 50,
