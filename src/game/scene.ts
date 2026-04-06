@@ -897,12 +897,9 @@ export function createGameScene(
       updateEngineTrail(engineTrail, dt, ship.x, ship.y, ship.rotation, speedNorm)
       updateEngineSound(speedNorm)
 
-      // --- Warp Streaks (active during Arbiter approach, dialogue, strip) ---
+      // --- Warp Streaks (active during all autopilot prologue phases) ---
       const currentStep = getTutorialStep()
-      const warpActive =
-        currentStep === 'prologue-arbiter' ||
-        currentStep === 'prologue-dialogue' ||
-        currentStep === 'prologue-strip'
+      const warpActive = currentStep.startsWith('prologue-') && currentStep !== 'prologue-fade'
       updateWarpStreaks(warpStreaks, dt, warpActive, ship.x, ship.y, tickState.elapsedTime)
 
       // --- Screen Shake ---
