@@ -761,12 +761,31 @@ export function createGameScene(
         if (lastBox) scene.add(lastBox.mesh)
       }
 
-      // Ambush enemies — add meshes
+      // Ambush enemies — add meshes for newly spawned
       for (const ae of result.ambushEnemiesSpawned) {
         scene.add(ae.mesh)
       }
 
-      // Update ambush enemy mesh positions
+      // Ambush enemies destroyed — remove mesh, spawn explosion + wreckage
+      for (const ae of result.ambushEnemiesDestroyed) {
+        scene.remove(ae.mesh)
+        disposeEnemyShip(ae)
+
+        const wreck = createShipwreckDebris(ae.x, ae.y)
+        scene.add(wreck.group)
+        shipwreckDebrisList.push(wreck)
+
+        const bigExplosion = createExplosion(ae.x, ae.y)
+        scene.add(bigExplosion.group)
+        explosions.push(bigExplosion)
+        playExplosion()
+
+        // Scrap box mesh was created by tick
+        const lastBox = tickState.scrapBoxes[tickState.scrapBoxes.length - 1]
+        if (lastBox) scene.add(lastBox.mesh)
+      }
+
+      // Update ambush enemy mesh positions (alive only)
       for (const ae of tickState.ambushEnemies) {
         if (ae.alive) {
           ae.mesh.position.set(ae.x, ae.y, 0)

@@ -190,6 +190,7 @@ export interface TickResult {
   enemyProjectileHits: { id: string; x: number; y: number; damage: number }[]
   // Ambush
   ambushEnemiesSpawned: EnemyShip[]
+  ambushEnemiesDestroyed: EnemyShip[]
   // Callback events (booleans/counts for scene.ts callbacks)
   shipMoved: boolean
   asteroidHit: boolean
@@ -315,6 +316,7 @@ function emptyResult(): TickResult {
     expiredEnemyProjectileIds: [],
     enemyProjectileHits: [],
     ambushEnemiesSpawned: [],
+    ambushEnemiesDestroyed: [],
     shipMoved: false,
     asteroidHit: false,
     crystallineDeflect: false,
@@ -969,6 +971,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
           state.scrapBoxes.push(box)
           result.enemyDestroyed = { x: ae.x, y: ae.y }
           result.enemyDestroyedEvent = true
+          result.ambushEnemiesDestroyed.push(ae)
         }
       }
     }
