@@ -126,7 +126,7 @@ export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOv
         <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-md px-4 sm:px-6 py-3 sm:py-4 bg-space-800/80 border border-hud-green/30 rounded-lg font-mono text-center">
           {step === 'prologue-start' && (
             <p className="text-hud-green text-sm sm:text-base animate-pulse">
-              Systems online. Autopilot engaged.
+              Systems online. Full power.
             </p>
           )}
 
@@ -155,12 +155,14 @@ export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOv
         </div>
       )}
 
-      {/* Autopilot indicator when the Arbiter takes control */}
+      {/* Tractor beam indicator when the Arbiter takes control */}
       {(step === 'prologue-arbiter' ||
         step === 'prologue-dialogue' ||
         step === 'prologue-strip') && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono">
-          <p className="text-hud-red/50 text-xs uppercase tracking-[0.3em]">Autopilot Override</p>
+          <p className="text-hud-red/50 text-xs uppercase tracking-[0.3em]">
+            Stuck in Tractor Beam
+          </p>
         </div>
       )}
 
