@@ -71,6 +71,7 @@ import {
 import type { TwinkleStars, NebulaSystem, BlackHole } from './background-effects'
 import { createEngineTrail, updateEngineTrail, disposeEngineTrail } from './engine-trail'
 import type { EngineTrail } from './engine-trail'
+import { createWarpStreaks, updateWarpStreaks, disposeWarpStreaks } from './warp-streaks'
 import {
   disposeEnemyProjectile,
   disposeEnemyShip,
@@ -328,6 +329,10 @@ export function createGameScene(
   // --- Engine Trail ---
   const engineTrail: EngineTrail = createEngineTrail()
   scene.add(engineTrail.group)
+
+  // --- Warp Streaks (Arbiter approach effect) ---
+  const warpStreaks = createWarpStreaks()
+  scene.add(warpStreaks.group)
 
   // Hit counts are tracked in tickState.asteroidHitCounts
 
@@ -898,6 +903,14 @@ export function createGameScene(
       updateEngineTrail(engineTrail, dt, ship.x, ship.y, ship.rotation, speedNorm)
       updateEngineSound(speedNorm)
 
+      // --- Warp Streaks (active during Arbiter approach, dialogue, strip) ---
+      const currentStep = getTutorialStep()
+      const warpActive =
+        currentStep === 'prologue-arbiter' ||
+        currentStep === 'prologue-dialogue' ||
+        currentStep === 'prologue-strip'
+      updateWarpStreaks(warpStreaks, dt, warpActive, ship.x, ship.y, tickState.elapsedTime)
+
       // --- Screen Shake ---
       updateScreenShake(screenShake, dt, now / 1000)
 
@@ -1047,6 +1060,7 @@ export function createGameScene(
     disposeNebulaSystem(nebulaSystem)
     disposeBlackHole(blackHole)
     disposeEngineTrail(engineTrail)
+    disposeWarpStreaks(warpStreaks)
 
     // Dispose all Three.js geometries and materials
     scene.traverse(disposeMesh)
