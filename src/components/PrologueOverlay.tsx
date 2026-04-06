@@ -155,10 +155,12 @@ export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOv
         </div>
       )}
 
-      {/* Autopilot indicator during mining phase */}
-      {step === 'prologue-mining' && (
+      {/* Autopilot indicator when the Arbiter takes control */}
+      {(step === 'prologue-arbiter' ||
+        step === 'prologue-dialogue' ||
+        step === 'prologue-strip') && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 font-mono">
-          <p className="text-hud-green/50 text-xs uppercase tracking-[0.3em]">Autopilot</p>
+          <p className="text-hud-red/50 text-xs uppercase tracking-[0.3em]">Autopilot Override</p>
         </div>
       )}
 
