@@ -31,6 +31,19 @@
 
 <main id="entries">
 
+  <article data-slice="adopt-vibekit-kv" data-date="2026-05-09">
+    <h3>Adopt @randroids-dojo/vibekit v0.1.0 (kv slice)</h3>
+    <dl>
+      <dt>Branch</dt><dd><code>chore/deps/adopt-vibekit-v0.1.0</code></dd>
+      <dt>PR</dt><dd>TBD</dd>
+      <dt>Changed</dt><dd>added <code>@randroids-dojo/vibekit</code> at <code>github:Randroids-Dojo/VibeKit#v0.1.0</code>. Replaced the body of <code>src/lib/kv.ts</code> with <code>export { getKv } from '@randroids-dojo/vibekit/server'</code>. Updated <code>src/lib/persistence.ts</code> and <code>src/app/api/feedback/route.ts</code> to handle the new <code>Redis | null</code> return (degrade gracefully when KV env vars are unset rather than throwing). Added <code>transpilePackages: ['@randroids-dojo/vibekit']</code> to <code>next.config.ts</code> so webpack accepts the kit's source-shipped <code>.ts</code> files.</dd>
+      <dt>Verification</dt><dd><code>npm run type-check</code> (clean), <code>npm run lint</code> (clean), <code>npm run format:check</code> (clean), <code>npm run test:unit</code> (530/530 pass), <code>npm run test:integration</code> (26/26 pass), <code>npm run build</code> (clean), <code>npm run test:smoke</code> (3/3 pass against the production server).</dd>
+      <dt>Assumptions</dt><dd>returning <code>null</code> from <code>getKv()</code> when env vars are missing is semantically equivalent to the existing try/catch swallow; both result in a no-op write and a null read. The feedback route's pre-existing "log but do not fail the request" pattern is preserved.</dd>
+      <dt>GDD coverage</dt><dd>REQ-034 (Persistence via Upstash Redis) and REQ-035 (API routes) implementation refs unchanged; behavior preserved.</dd>
+      <dt>Followups</dt><dd>none.</dd>
+    </dl>
+  </article>
+
   <article data-slice="mobile-firing-joystick" data-date="2026-05-28">
     <h3>Mobile Firing Joystick</h3>
     <dl>
