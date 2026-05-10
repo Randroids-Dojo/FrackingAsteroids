@@ -182,11 +182,16 @@ export default function Home() {
   }, [])
 
   const handleSkipTutorial = useCallback(() => {
+    // Capture current step before dispatching skip — only the prologue needs the
+    // world reset (to swap the prologue ship and spawn the real asteroid field).
+    // Skipping mid-tutorial keeps the player's progress and current world state.
+    const wasInPrologue = tutorial.step.startsWith('prologue-')
     tutorial.skip()
     setTradeMenuOpen(false)
     setPrologueFade('none')
-    // Spawn the real asteroid field so the player has a proper game world
-    gameCanvasRef.current?.resetShipToStation()
+    if (wasInPrologue) {
+      gameCanvasRef.current?.resetShipToStation()
+    }
   }, [tutorial])
 
   // --- Prologue fade-to-black and respawn sequence ---
@@ -232,13 +237,6 @@ export default function Home() {
 
     return () => timers.forEach(clearTimeout)
   }, [tutorialStep])
-
-  // When tutorial completes (drive-through → done), spawn asteroid field
-  useEffect(() => {
-    if (tutorialStep === 'done' && !tutorialActive) {
-      gameCanvasRef.current?.resetShipToStation()
-    }
-  }, [tutorialStep, tutorialActive])
 
   const inPrologue = tutorialStep.startsWith('prologue-')
 

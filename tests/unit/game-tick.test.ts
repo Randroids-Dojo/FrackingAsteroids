@@ -501,7 +501,7 @@ describe('game-tick', () => {
   // 13. Station repair
   // -------------------------------------------------------------------------
   describe('station repair', () => {
-    it('heals player within STATION_REPAIR_DISTANCE (15)', async () => {
+    it('heals player within STATION_REPAIR_DISTANCE (30)', async () => {
       const { tick, createTickState, PLAYER_MAX_HP } = await import('../../src/game/game-tick')
       const { createInputState } = await import('../../src/game/input')
 
