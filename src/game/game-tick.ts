@@ -47,6 +47,7 @@ import {
   createEnemyShip,
   updateEnemyShip,
   checkProjectileEnemyCollisions,
+  checkBeamEnemyCollision,
   checkEnemyProjectilePlayerCollisions,
   updateEnemyProjectile,
   ENEMY_SPAWN_DISTANCE,
@@ -681,11 +682,63 @@ export function tick(state: TickState, input: TickInput): TickResult {
         liveAsteroids,
       )
 
+      // Beam-vs-enemies: lazer should also damage live enemies, not just asteroids.
+      // Shortens the rendered beam to whichever target (asteroid or enemy) is closest.
+      const fullBeamDx = beamEndX - state.ship.x
+      const fullBeamDy = beamEndY - state.ship.y
+      const fullLen = Math.sqrt(fullBeamDx * fullBeamDx + fullBeamDy * fullBeamDy)
+      const renderedDx = beamResult.beamEndX - state.ship.x
+      const renderedDy = beamResult.beamEndY - state.ship.y
+      const renderedLen = Math.sqrt(renderedDx * renderedDx + renderedDy * renderedDy)
+      let nearestT = fullLen > 0.0001 ? renderedLen / fullLen : 1
+      const beamEnemyDamage = Math.ceil(frameDamage * 1.5)
+      for (const enemy of state.ambushEnemies) {
+        if (!enemy.alive) continue
+        const r = checkBeamEnemyCollision(
+          state.ship.x,
+          state.ship.y,
+          beamEndX,
+          beamEndY,
+          beamEnemyDamage,
+          enemy,
+        )
+        if (r.hit) {
+          if (r.t < nearestT) nearestT = r.t
+          if (!enemy.alive) {
+            const box = createScrapBox(enemy.x, enemy.y)
+            state.scrapBoxes.push(box)
+            result.enemyDestroyed = { x: enemy.x, y: enemy.y }
+            result.enemyDestroyedEvent = true
+            result.ambushEnemiesDestroyed.push(enemy)
+          }
+        }
+      }
+      if (state.enemy && state.enemy.alive) {
+        const r = checkBeamEnemyCollision(
+          state.ship.x,
+          state.ship.y,
+          beamEndX,
+          beamEndY,
+          beamEnemyDamage,
+          state.enemy,
+        )
+        if (r.hit) {
+          if (r.t < nearestT) nearestT = r.t
+          if (!state.enemy.alive) {
+            const box = createScrapBox(state.enemy.x, state.enemy.y)
+            state.scrapBoxes.push(box)
+            result.enemyDestroyed = { x: state.enemy.x, y: state.enemy.y }
+            result.enemyDestroyedEvent = true
+            state.enemy = null
+          }
+        }
+      }
+
       result.beamActive = true
       result.beamStartX = state.ship.x
       result.beamStartY = state.ship.y
-      result.beamEndX = beamResult.beamEndX
-      result.beamEndY = beamResult.beamEndY
+      result.beamEndX = state.ship.x + fullBeamDx * nearestT
+      result.beamEndY = state.ship.y + fullBeamDy * nearestT
       result.beamHits = beamResult.hits
 
       // Process beam hits for events and metal spawning

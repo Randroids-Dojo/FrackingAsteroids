@@ -56,19 +56,29 @@ function GoldIcon({ size = 16 }: { size?: number }) {
 function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; hasLazer: boolean }) {
   const toolLabel = activeTool === 'lazer' ? 'LAZER' : 'BLASTER'
   const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
+  const otherLabel = activeTool === 'lazer' ? 'BLASTER' : 'LAZER'
   const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window
 
   return (
-    <div
-      className="font-mono font-bold text-[clamp(0.5rem,1.5vw,0.75rem)]"
-      style={{ color: toolColor }}
-      data-testid="mining-tool-label"
-    >
-      {toolLabel}
-      {!isMobile && hasLazer && (
-        <span className="ml-1 text-white/40 font-normal text-[clamp(0.4rem,1.2vw,0.625rem)]">
-          [Q]
-        </span>
+    <div className="flex flex-col gap-0.5" data-testid="mining-tool-label">
+      <div
+        className="font-mono font-bold text-[clamp(0.5rem,1.5vw,0.75rem)]"
+        style={{ color: toolColor }}
+      >
+        {toolLabel}
+      </div>
+      {hasLazer && (
+        <div className="font-mono text-white/70 text-[clamp(0.45rem,1.3vw,0.6875rem)]">
+          {isMobile ? (
+            <>
+              <span className="text-hud-green font-bold">TAP</span> tool icon → {otherLabel}
+            </>
+          ) : (
+            <>
+              Press <span className="text-hud-green font-bold">[Q]</span> → {otherLabel}
+            </>
+          )}
+        </div>
       )}
     </div>
   )
