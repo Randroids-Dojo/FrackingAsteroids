@@ -182,9 +182,8 @@ export default function Home() {
   }, [])
 
   const handleSkipTutorial = useCallback(() => {
-    // Capture current step before dispatching skip — only the prologue needs the
-    // world reset (to swap the prologue ship and spawn the real asteroid field).
-    // Skipping mid-tutorial keeps the player's progress and current world state.
+    // Only reset the world when skipping during the prologue (to swap the prologue
+    // ship for the normal one). Skipping mid-tutorial preserves progress.
     const wasInPrologue = tutorial.step.startsWith('prologue-')
     tutorial.skip()
     setTradeMenuOpen(false)

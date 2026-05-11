@@ -928,9 +928,8 @@ export function tick(state: TickState, input: TickInput): TickResult {
     result.nearStation = true
   }
 
-  // Reset repair flag once when the tutorial transitions into drive-through, so the
-  // player can heal again from any approach direction even if a heal already fired
-  // earlier this visit (e.g. during approach-station before opening the trade menu).
+  // Reset repair flag on entering drive-through so a heal that already fired
+  // this visit (e.g. during approach-station) doesn't block step completion.
   if (tutStep === 'drive-through' && state.prevTutorialStep !== 'drive-through') {
     state.repairedThisVisit = false
   }
