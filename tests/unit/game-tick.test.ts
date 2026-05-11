@@ -580,10 +580,7 @@ describe('game-tick', () => {
       state.prevTutorialStep = 'trade-buy'
       state.playerHp = 50 // simulate damage taken between heal and drive-through
 
-      const result = tick(
-        state,
-        makeInput(createInputState, { tutorialStep: 'drive-through' as TutorialStep }),
-      )
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'drive-through' }))
 
       assert.equal(state.prevTutorialStep, 'drive-through', 'prev step is updated')
       assert.equal(state.playerHp, PLAYER_MAX_HP, 'heal fires after the flag reset')
@@ -604,10 +601,7 @@ describe('game-tick', () => {
       state.repairedThisVisit = true
       state.wasInStationRange = true
 
-      const result = tick(
-        state,
-        makeInput(createInputState, { tutorialStep: 'drive-through' as TutorialStep }),
-      )
+      const result = tick(state, makeInput(createInputState, { tutorialStep: 'drive-through' }))
 
       assert.equal(state.repairedThisVisit, true, 'flag stays set, no re-reset')
       assert.equal(result.stationRepaired, false, 'no duplicate heal event')
