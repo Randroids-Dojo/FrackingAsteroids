@@ -29,7 +29,12 @@ import {
   fireBlaster,
   updateProjectiles,
 } from './blaster'
-import { DAMAGE_PER_TIER, LAZER_BEAM_RANGE, clampTier } from './blaster-constants'
+import {
+  DAMAGE_PER_TIER,
+  LAZER_BEAM_RANGE,
+  LAZER_DAMAGE_MULTIPLIER,
+  clampTier,
+} from './blaster-constants'
 import {
   resolveShipAsteroidCollision,
   checkProjectileAsteroidCollisions,
@@ -691,7 +696,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
       const renderedDy = beamResult.beamEndY - state.ship.y
       const renderedLen = Math.sqrt(renderedDx * renderedDx + renderedDy * renderedDy)
       let nearestT = fullLen > 0.0001 ? renderedLen / fullLen : 1
-      const beamEnemyDamage = Math.ceil(frameDamage * 1.5)
+      const beamEnemyDamage = Math.ceil(frameDamage * LAZER_DAMAGE_MULTIPLIER)
       for (const enemy of state.ambushEnemies) {
         if (!enemy.alive) continue
         const r = checkBeamEnemyCollision(

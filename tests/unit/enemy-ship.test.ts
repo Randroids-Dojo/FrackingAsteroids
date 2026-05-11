@@ -383,6 +383,57 @@ describe('enemy-ship', () => {
   })
 
   // ---------------------------------------------------------------------------
+  // checkBeamEnemyCollision
+  // ---------------------------------------------------------------------------
+  describe('checkBeamEnemyCollision', () => {
+    it('returns no hit when enemy is not alive', async () => {
+      const { createEnemyShip, checkBeamEnemyCollision } = await import('../../src/game/enemy-ship')
+      const enemy = createEnemyShip(10, 0)
+      enemy.alive = false
+      const r = checkBeamEnemyCollision(0, 0, 100, 0, 5, enemy)
+      assert.equal(r.hit, false)
+      assert.equal(r.t, 1)
+    })
+
+    it('damages an enemy on the beam path and reports parametric position', async () => {
+      const { createEnemyShip, checkBeamEnemyCollision } = await import('../../src/game/enemy-ship')
+      const enemy = createEnemyShip(50, 0)
+      const hpBefore = enemy.hp
+      const r = checkBeamEnemyCollision(0, 0, 100, 0, 2, enemy)
+      assert.equal(r.hit, true)
+      assert.equal(enemy.hp, hpBefore - 2)
+      assert.ok(r.t > 0 && r.t < 1, 't should land mid-beam')
+    })
+
+    it('kills enemy when beam damage reduces hp to 0', async () => {
+      const { createEnemyShip, checkBeamEnemyCollision } = await import('../../src/game/enemy-ship')
+      const enemy = createEnemyShip(50, 0)
+      const r = checkBeamEnemyCollision(0, 0, 100, 0, 999, enemy)
+      assert.equal(r.hit, true)
+      assert.equal(enemy.hp, 0)
+      assert.equal(enemy.alive, false)
+    })
+
+    it('misses when enemy is too far from the beam segment', async () => {
+      const { createEnemyShip, checkBeamEnemyCollision } = await import('../../src/game/enemy-ship')
+      const enemy = createEnemyShip(50, 50)
+      const hpBefore = enemy.hp
+      const r = checkBeamEnemyCollision(0, 0, 100, 0, 2, enemy)
+      assert.equal(r.hit, false)
+      assert.equal(enemy.hp, hpBefore)
+    })
+
+    it('returns no hit for a zero-length beam', async () => {
+      const { createEnemyShip, checkBeamEnemyCollision } = await import('../../src/game/enemy-ship')
+      const enemy = createEnemyShip(10, 0)
+      const hpBefore = enemy.hp
+      const r = checkBeamEnemyCollision(5, 5, 5, 5, 1, enemy)
+      assert.equal(r.hit, false)
+      assert.equal(enemy.hp, hpBefore)
+    })
+  })
+
+  // ---------------------------------------------------------------------------
   // checkEnemyProjectilePlayerCollisions
   // ---------------------------------------------------------------------------
   describe('checkEnemyProjectilePlayerCollisions', () => {
