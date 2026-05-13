@@ -527,8 +527,9 @@ export function checkProjectileEnemyCollisions(
 
 /**
  * Check the lazer beam (line segment) against the enemy ship.
- * Mutates enemy HP and returns whether the beam hit and the entry parameter
- * along the beam (0..1) for endpoint shortening.
+ * Mutates enemy HP. Returns the closest-point projection of the enemy onto
+ * the beam as `t` (0..1) so the caller can shorten the rendered beam to the
+ * nearest target — mirrors how `checkBeamAsteroidCollisions` reports hits.
  */
 export function checkBeamEnemyCollision(
   startX: number,
