@@ -696,7 +696,9 @@ export function tick(state: TickState, input: TickInput): TickResult {
       const renderedDy = beamResult.beamEndY - state.ship.y
       const renderedLen = Math.sqrt(renderedDx * renderedDx + renderedDy * renderedDy)
       let nearestT = fullLen > 0.0001 ? renderedLen / fullLen : 1
-      const beamEnemyDamage = Math.ceil(frameDamage * LAZER_DAMAGE_MULTIPLIER)
+      // frameDamage is already dps * dt, so don't round per frame — rounding
+      // would scale enemy damage with frame rate.
+      const beamEnemyDamage = frameDamage * LAZER_DAMAGE_MULTIPLIER
       for (const enemy of state.ambushEnemies) {
         if (!enemy.alive) continue
         const r = checkBeamEnemyCollision(

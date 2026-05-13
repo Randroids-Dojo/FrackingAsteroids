@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import type { Cargo, Upgrades } from '@/lib/schemas'
 import type { MiningTool } from '@/game/types'
 
@@ -57,7 +58,13 @@ function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; has
   const toolLabel = activeTool === 'lazer' ? 'LAZER' : 'BLASTER'
   const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
   const otherLabel = activeTool === 'lazer' ? 'BLASTER' : 'LAZER'
-  const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window
+  // Detect touch in an effect so SSR renders the desktop hint and the client
+  // upgrades to the mobile copy after mount — branching on `window` during
+  // render would cause a hydration mismatch on touch devices.
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    setIsMobile('ontouchstart' in window)
+  }, [])
 
   return (
     <div className="flex flex-col gap-0.5" data-testid="mining-tool-label">
