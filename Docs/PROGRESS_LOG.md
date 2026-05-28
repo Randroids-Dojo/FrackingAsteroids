@@ -16,6 +16,16 @@ Format for each slice:
 - Followups: any new `F-NNN` entries created. Link to them.
 ```
 
+## 2026-05-28, Mobile Firing Joystick
+
+- Branch: `claude/second-joystick-firing-wTacG`
+- PR: TBD
+- Changed: replaced the mobile shoot button with a floating right-side firing joystick. `src/game/virtual-joystick.ts` gained `createFiringJoystick` (mirrors the movement joystick, orange tint, returns world-space `getFireAngle()`); `src/game/scene.ts` wires it into `tickState.fireTarget` each frame (cooldown / lazer heat gate actual shots), removes `createFireButton` plumbing, and fixes a stale `fireButton.isPressed()` reference inside the right-click collect release path (now checks `collectButton`). `src/game/fire-button.ts` dropped `createFireButton` and `getFireBottom`. Tests updated in `tests/unit/virtual-joystick.test.ts` (+13 firing-joystick cases) and `tests/unit/fire-button.test.ts` (removed `createFireButton` block).
+- Verification: `npm run format`, `npm run lint`, `npm run type-check`, `npm run test:unit` (532 pass), `npm run test:integration` (26 pass), `npm run build`. Mobile UX not playtested in browser this slice.
+- Assumptions: "if there is ammo" interpreted as the existing cooldown gating — the game has no ammo count, so the firing joystick sets `fireTarget` every frame it's active and the blaster cooldown / lazer heat naturally throttle output. Firing joystick uses the orange fire color to visually distinguish it from the white movement stick. Collect button stays at its existing height; layout reflow deferred.
+- GDD coverage: REQ-023 row updated to reference `createFiringJoystick` and its tests; `Docs/GDD.md` Controls section updated to describe the right-side firing joystick.
+- Followups: none.
+
 ## 2026-05-09, Spiral Scaffold Completed
 
 - Branch: `chore/spiral-scaffold`

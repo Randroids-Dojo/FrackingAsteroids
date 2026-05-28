@@ -12,8 +12,8 @@ import {
 import { createProjectileModel } from './projectile-model'
 import { createLazerBeam, updateLazerBeam, disposeLazerBeam } from './lazer-beam'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
-import { createVirtualJoystick } from './virtual-joystick'
-import { createFireButton, createCollectButton, createToolToggleButton } from './fire-button'
+import { createVirtualJoystick, createFiringJoystick } from './virtual-joystick'
+import { createCollectButton, createToolToggleButton } from './fire-button'
 import type { ToolToggleButton } from './fire-button'
 import { createRechargeMeter, updateRechargeMeter } from './recharge-meter'
 import { createExplosion, updateExplosion, disposeExplosion } from './explosion'
@@ -346,6 +346,10 @@ export function createGameScene(
   const joystick = createVirtualJoystick(inputState, container)
   joystick.attach()
 
+  // --- Firing Joystick (right-side, mobile fire control) ---
+  const firingJoystick = createFiringJoystick(container)
+  firingJoystick.attach()
+
   // --- Screen-to-world coordinate conversion ---
   const raycaster = new THREE.Raycaster()
   const groundPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
@@ -395,7 +399,8 @@ export function createGameScene(
       mouseHoldingFire = false
     } else if (e.button === 2) {
       mouseCollecting = false
-      if (!collectKeyDown && (fireButton === null || !fireButton.isPressed())) collecting = false
+      if (!collectKeyDown && (collectButton === null || !collectButton.isPressed()))
+        collecting = false
     }
   }
 
@@ -407,18 +412,10 @@ export function createGameScene(
   renderer.domElement.addEventListener('mouseup', onMouseUp)
   renderer.domElement.addEventListener('contextmenu', onContextMenu)
 
-  // --- Mobile Fire & Collect Buttons (touch devices only) ---
-  let fireButton: ReturnType<typeof createFireButton> | null = null
+  // --- Mobile Collect Button (touch devices only; firing is handled by firingJoystick) ---
   let collectButton: ReturnType<typeof createCollectButton> | null = null
 
   if (hasTouch) {
-    fireButton = createFireButton(container, () => {
-      if (getPaused()) return
-      const angle = ship.rotation + Math.PI / 2
-      fireTarget = { x: ship.x + Math.cos(angle) * 100, y: ship.y + Math.sin(angle) * 100 }
-    })
-    fireButton.attach()
-
     collectButton = createCollectButton(
       container,
       () => {
@@ -544,12 +541,15 @@ export function createGameScene(
       fireTarget = null
     }
 
-    // Mobile fire button
-    if (!paused && fireButton && fireButton.isPressed()) {
-      const angle = ship.rotation + Math.PI / 2
-      tickState.fireTarget = {
-        x: ship.x + Math.cos(angle) * 100,
-        y: ship.y + Math.sin(angle) * 100,
+    // Mobile firing joystick: aim direction comes from the right-side stick,
+    // independent of ship facing. Blaster cooldown / lazer heat gate actual fire.
+    if (!paused) {
+      const fireAngle = firingJoystick.getFireAngle()
+      if (fireAngle !== null) {
+        tickState.fireTarget = {
+          x: ship.x + Math.cos(fireAngle) * 100,
+          y: ship.y + Math.sin(fireAngle) * 100,
+        }
       }
     }
 
@@ -1000,7 +1000,7 @@ export function createGameScene(
     inputHandler.detach()
     aimHandler.detach()
     joystick.detach()
-    if (fireButton) fireButton.detach()
+    firingJoystick.detach()
     if (collectButton) collectButton.detach()
     if (toolToggleButton) toolToggleButton.detach()
     renderer.domElement.removeEventListener('mousedown', onMouseDown)

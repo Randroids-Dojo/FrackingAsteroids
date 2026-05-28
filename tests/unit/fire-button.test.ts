@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { createFireButton, createCollectButton } from '../../src/game/fire-button'
+import { createCollectButton } from '../../src/game/fire-button'
 
 type Listener = (...args: unknown[]) => void
 
@@ -122,160 +122,6 @@ function teardownDocument(): void {
   delete g.window
 }
 
-describe('createFireButton', () => {
-  let container: MockElement
-
-  beforeEach(() => {
-    container = createMockElement()
-    setupDocument()
-  })
-
-  afterEach(() => {
-    teardownDocument()
-  })
-
-  it('appends button overlay to container on creation', () => {
-    createFireButton(container as unknown as HTMLElement, () => {})
-    assert.equal(container.children.length, 1, 'should append button element')
-    assert.equal(container.children[0].children.length, 1, 'button should contain inner indicator')
-  })
-
-  it('sets aria-label and role on the button', () => {
-    createFireButton(container as unknown as HTMLElement, () => {})
-    const button = container.children[0]
-    assert.equal(button.attributes['aria-label'], 'Fire')
-    assert.equal(button.attributes['role'], 'button')
-  })
-
-  it('registers touch listeners on attach', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    fb.attach()
-    const button = container.children[0]
-    assert.ok(button.listeners['touchstart']?.length === 1)
-    assert.ok(button.listeners['touchend']?.length === 1)
-    assert.ok(button.listeners['touchcancel']?.length === 1)
-    fb.detach()
-  })
-
-  it('removes listeners on detach', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    fb.attach()
-    fb.detach()
-    assert.equal(container.children.length, 0)
-  })
-
-  it('calls onFire callback on touchstart', () => {
-    let fired = false
-    const fb = createFireButton(container as unknown as HTMLElement, () => {
-      fired = true
-    })
-    fb.attach()
-    const button = container.children[0]
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    assert.equal(fired, true)
-    fb.detach()
-  })
-
-  it('calls preventDefault on touchstart', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    fb.attach()
-    const button = container.children[0]
-    let prevented = false
-    const event = {
-      changedTouches: {
-        length: 1,
-        0: { identifier: 1, clientX: 500, clientY: 400 },
-        [Symbol.iterator]: function* () {
-          yield { identifier: 1, clientX: 500, clientY: 400 }
-        },
-      },
-      preventDefault() {
-        prevented = true
-      },
-    }
-    for (const fn of button.listeners['touchstart'] ?? []) {
-      fn(event)
-    }
-    assert.equal(prevented, true)
-    fb.detach()
-  })
-
-  it('ignores second touch while first is active', () => {
-    let fireCount = 0
-    const fb = createFireButton(container as unknown as HTMLElement, () => {
-      fireCount++
-    })
-    fb.attach()
-    const button = container.children[0]
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchstart', [{ identifier: 2, clientX: 500, clientY: 400 }])
-    assert.equal(fireCount, 1, 'should only fire once while first touch is active')
-    fb.detach()
-  })
-
-  it('allows firing again after touch end', () => {
-    let fireCount = 0
-    const fb = createFireButton(container as unknown as HTMLElement, () => {
-      fireCount++
-    })
-    fb.attach()
-    const button = container.children[0]
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchend', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchstart', [{ identifier: 2, clientX: 500, clientY: 400 }])
-    assert.equal(fireCount, 2, 'should fire again after releasing')
-    fb.detach()
-  })
-
-  it('allows firing again after touch cancel', () => {
-    let fireCount = 0
-    const fb = createFireButton(container as unknown as HTMLElement, () => {
-      fireCount++
-    })
-    fb.attach()
-    const button = container.children[0]
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchcancel', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchstart', [{ identifier: 2, clientX: 500, clientY: 400 }])
-    assert.equal(fireCount, 2, 'should fire again after cancel')
-    fb.detach()
-  })
-
-  it('ignores touchend for wrong identifier', () => {
-    let fireCount = 0
-    const fb = createFireButton(container as unknown as HTMLElement, () => {
-      fireCount++
-    })
-    fb.attach()
-    const button = container.children[0]
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchend', [{ identifier: 99, clientX: 500, clientY: 400 }])
-    button.fireTouch('touchstart', [{ identifier: 2, clientX: 500, clientY: 400 }])
-    assert.equal(fireCount, 1, 'should still be locked to first touch')
-    fb.detach()
-  })
-
-  it('removes button element from container on detach', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    assert.equal(container.children.length, 1)
-    fb.attach()
-    fb.detach()
-    assert.equal(container.children.length, 0, 'button should be removed')
-  })
-
-  it('reports isPressed state', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    fb.attach()
-    const button = container.children[0]
-    assert.equal(fb.isPressed(), false)
-    button.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    assert.equal(fb.isPressed(), true)
-    button.fireTouch('touchend', [{ identifier: 1, clientX: 500, clientY: 400 }])
-    assert.equal(fb.isPressed(), false)
-    fb.detach()
-  })
-})
-
 describe('createCollectButton', () => {
   let container: MockElement
 
@@ -361,20 +207,5 @@ describe('createCollectButton', () => {
     button.fireTouch('touchend', [{ identifier: 1, clientX: 500, clientY: 400 }])
     assert.equal(cb.isPressed(), false)
     cb.detach()
-  })
-
-  it('both buttons can coexist on the same container', () => {
-    const fb = createFireButton(container as unknown as HTMLElement, () => {})
-    const cb = createCollectButton(
-      container as unknown as HTMLElement,
-      () => {},
-      () => {},
-    )
-    assert.equal(container.children.length, 2, 'should have two buttons')
-    fb.attach()
-    cb.attach()
-    fb.detach()
-    cb.detach()
-    assert.equal(container.children.length, 0, 'both should be removed')
   })
 })

@@ -130,10 +130,6 @@ function createActionButton(
   }
 }
 
-function getFireBottom(): string {
-  return window.innerHeight < 600 ? '22%' : '28%'
-}
-
 function getCollectBottom(): string {
   const size = getButtonSize()
   const base = window.innerHeight < 600 ? '22%' : '28%'
@@ -155,15 +151,7 @@ export interface ToolToggleButton {
 }
 
 /**
- * Creates a visible fire button on the bottom-right of the screen for mobile.
- * Calls `onFire` on each touchstart.
- */
-export function createFireButton(container: HTMLElement, onFire: () => void): ActionButton {
-  return createActionButton(container, STYLE_FIRE, getFireBottom(), 'Fire', onFire)
-}
-
-/**
- * Creates a collect button above the fire button on the bottom-right.
+ * Creates a collect button on the bottom-right.
  * The collector is active while the button is held down.
  */
 export function createCollectButton(
@@ -182,7 +170,7 @@ export function createCollectButton(
 }
 
 /**
- * Creates a tool toggle button above the collect button on mobile.
+ * Creates a tool toggle button on mobile.
  * Tapping switches between blaster and lazer.
  */
 export function createToolToggleButton(
