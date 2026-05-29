@@ -28,6 +28,7 @@ import {
 import type { DebrisChunk } from './asteroid-debris'
 import { disposeMetalChunk } from './metal-chunk'
 import type { MiningTool } from './types'
+import { nextMiningTool } from './types'
 import { tick, createTickState, PLAYER_MAX_HP } from './game-tick'
 import type { TickState, TickInput } from './game-tick'
 import { createCollectorVfx, updateCollectorVfx, disposeCollectorVfx } from './collector-vfx'
@@ -136,6 +137,7 @@ export interface GameScene {
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
   setMiningTool: (tool: MiningTool) => void
+  setLazerOwned: (owned: boolean) => void
 }
 
 /**
@@ -430,9 +432,14 @@ export function createGameScene(
 
   // --- Tool Toggle (keyboard Q + mobile button) ---
   let toolToggleButton: ToolToggleButton | null = null
+  // The Lazer is only toggleable once purchased. The intro grants it temporarily
+  // (forced via prologueTick), but the player cannot switch back to it afterwards
+  // until they buy it from the shop.
+  let lazerOwned = false
 
   function toggleMiningTool(): void {
-    const newTool = tickState.activeMiningTool === 'lazer' ? 'blaster' : 'lazer'
+    const newTool = nextMiningTool(tickState.activeMiningTool, lazerOwned)
+    if (newTool === tickState.activeMiningTool) return
     tickState.activeMiningTool = newTool
     toolToggleButton?.setTool(newTool)
     onToolChange?.(newTool)
@@ -1093,6 +1100,12 @@ export function createGameScene(
     toolToggleButton?.setTool(tool)
   }
 
+  /** Reflect Lazer ownership: enable the toggle and show the mobile toggle button. */
+  function setLazerOwned(owned: boolean) {
+    lazerOwned = owned
+    toolToggleButton?.setVisible(owned)
+  }
+
   /** Reset ship to just north of station with full HP, swap to normal ship, clear prologue. */
   function resetShipToStation() {
     // Move ship to just north of the station (outside station range)
@@ -1218,5 +1231,5 @@ export function createGameScene(
     return hash
   }
 
-  return { dispose, setFireRateBonus, resetShipToStation, setMiningTool }
+  return { dispose, setFireRateBonus, resetShipToStation, setMiningTool, setLazerOwned }
 }
