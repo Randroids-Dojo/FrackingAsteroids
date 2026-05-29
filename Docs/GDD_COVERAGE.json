@@ -203,7 +203,7 @@
     },
     {
       "id": "REQ-023",
-      "requirement": "Mobile controls: left virtual joystick (fixed, 10px deadzone), bottom-right fire button, blue collect button above fire, HUD pause button",
+      "requirement": "Mobile controls: left virtual joystick (movement, 10px deadzone), right firing joystick (aim direction; cooldown gates shots), bottom-right collect button, HUD pause button",
       "gddRef": "Docs/GDD.md#controls",
       "status": "done",
       "implementationRefs": ["src/game/virtual-joystick.ts", "src/game/fire-button.ts"],

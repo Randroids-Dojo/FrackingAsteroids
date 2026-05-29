@@ -140,9 +140,9 @@ anywhere on screen. The popup appears every time the player deflects off crystal
 - Space — pause (reveals Feedback FAB)
 
 **Mobile:**
-- Left thumb virtual joystick — move (fixed position, left half of screen)
-- Fire button — visible circular amber button on bottom-right, fires in the direction the ship is facing
-- Collect button — visible circular blue button above fire button, hold to activate metal attractor
+- Left thumb virtual joystick — move (floating anchor, left half of screen)
+- Right thumb firing joystick — fire (floating anchor, right half of screen); projectile direction tracks the stick angle, blaster cooldown / lazer heat gate actual shots
+- Collect button — visible circular blue button on bottom-right, hold to activate metal attractor
 - Pause button in HUD
 
 **Design Notes:**

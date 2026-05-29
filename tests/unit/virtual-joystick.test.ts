@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { createInputState } from '../../src/game/input'
-import { createVirtualJoystick } from '../../src/game/virtual-joystick'
+import { createFiringJoystick, createVirtualJoystick } from '../../src/game/virtual-joystick'
 
 type Listener = (...args: unknown[]) => void
 type ListenerOptions = { passive?: boolean }
@@ -381,5 +381,171 @@ describe('createVirtualJoystick', () => {
     container.fireTouch('touchend', [{ identifier: 1, clientX: 160, clientY: 240 }])
     assert.equal(state.joystickAngle, null, 'joystickAngle should be null after touch end')
     joystick.detach()
+  })
+})
+
+describe('createFiringJoystick', () => {
+  let container: MockContainer
+
+  beforeEach(() => {
+    container = createMockContainer()
+    const g = globalThis as Record<string, unknown>
+    g.document = {
+      createElement() {
+        return createMockElement()
+      },
+    }
+    // Provide an Element constructor so `target instanceof Element` checks work.
+    g.Element = class {}
+  })
+
+  afterEach(() => {
+    const g = globalThis as Record<string, unknown>
+    delete g.document
+    delete g.Element
+  })
+
+  it('registers and removes touch listeners', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    assert.equal(container.listeners['touchstart']?.length, 1)
+    assert.equal(container.listeners['touchmove']?.length, 1)
+    assert.equal(container.listeners['touchend']?.length, 1)
+    assert.equal(container.listeners['touchcancel']?.length, 1)
+    stick.detach()
+    assert.equal(container.listeners['touchstart']?.length ?? 0, 0)
+    assert.equal(container.listeners['touchmove']?.length ?? 0, 0)
+  })
+
+  it('appends and removes overlay', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    assert.equal(container.children.length, 1)
+    stick.attach()
+    stick.detach()
+    assert.equal(container.children.length, 0)
+  })
+
+  it('returns null fireAngle when inactive', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    assert.equal(stick.getFireAngle(), null)
+    stick.detach()
+  })
+
+  it('ignores left-half touches', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 100, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 160, clientY: 300 }])
+    assert.equal(stick.getFireAngle(), null, 'left-half touch must not activate firing joystick')
+    stick.detach()
+  })
+
+  it('activates on right-half touch and shows overlay', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    const base = container.children[0]
+    assert.equal(base.style.display, 'none')
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    assert.equal(base.style.display, 'block')
+    stick.detach()
+  })
+
+  it('reports angle 0 for rightward drag (+X world)', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 560, clientY: 300 }])
+    const a = stick.getFireAngle()
+    assert.ok(a !== null && Math.abs(a) < 0.001, `expected ~0, got ${a}`)
+    stick.detach()
+  })
+
+  it('reports angle π/2 for upward drag (+Y world)', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 500, clientY: 240 }])
+    const a = stick.getFireAngle()
+    assert.ok(a !== null && Math.abs(a - Math.PI / 2) < 0.001, `expected ~π/2, got ${a}`)
+    stick.detach()
+  })
+
+  it('reports angle -π/2 for downward drag (-Y world)', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 500, clientY: 360 }])
+    const a = stick.getFireAngle()
+    assert.ok(a !== null && Math.abs(a - -Math.PI / 2) < 0.001, `expected ~-π/2, got ${a}`)
+    stick.detach()
+  })
+
+  it('reports angle π for leftward drag (-X world)', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 440, clientY: 300 }])
+    const a = stick.getFireAngle()
+    assert.ok(a !== null && Math.abs(Math.abs(a) - Math.PI) < 0.001, `expected ±π, got ${a}`)
+    stick.detach()
+  })
+
+  it('returns null in dead zone', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 505, clientY: 302 }])
+    assert.equal(stick.getFireAngle(), null)
+    stick.detach()
+  })
+
+  it('clears angle on touch end', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 560, clientY: 240 }])
+    assert.ok(stick.getFireAngle() !== null)
+    container.fireTouch('touchend', [{ identifier: 1, clientX: 560, clientY: 240 }])
+    assert.equal(stick.getFireAngle(), null)
+    stick.detach()
+  })
+
+  it('clears angle on detach', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+    container.fireTouch('touchstart', [{ identifier: 1, clientX: 500, clientY: 300 }])
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 560, clientY: 240 }])
+    stick.detach()
+    assert.equal(stick.getFireAngle(), null)
+  })
+
+  it('skips touches whose target sits inside a [role="button"] element', () => {
+    const stick = createFiringJoystick(container as unknown as HTMLElement)
+    stick.attach()
+
+    const g = globalThis as Record<string, unknown>
+    const ElementCtor = g.Element as new () => object
+    const buttonTarget = Object.assign(new ElementCtor(), {
+      closest(selector: string) {
+        return selector === '[role="button"]' ? buttonTarget : null
+      },
+    })
+
+    const event = {
+      changedTouches: {
+        length: 1,
+        0: { identifier: 1, clientX: 700, clientY: 500, target: buttonTarget },
+        [Symbol.iterator]: function* () {
+          yield { identifier: 1, clientX: 700, clientY: 500, target: buttonTarget }
+        },
+      },
+      preventDefault() {},
+    }
+    for (const fn of container.listeners['touchstart'] ?? []) fn(event)
+
+    container.fireTouch('touchmove', [{ identifier: 1, clientX: 700, clientY: 440 }])
+    assert.equal(stick.getFireAngle(), null, 'button touches must not activate the firing joystick')
+    stick.detach()
   })
 })
