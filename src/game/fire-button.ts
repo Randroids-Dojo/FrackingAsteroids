@@ -148,6 +148,7 @@ export interface ToolToggleButton {
   attach: () => void
   detach: () => void
   setTool: (tool: MiningTool) => void
+  setVisible: (visible: boolean) => void
 }
 
 /**
@@ -182,12 +183,13 @@ export function createToolToggleButton(
   const button = document.createElement('div')
   button.setAttribute('aria-label', 'Switch mining tool')
   button.setAttribute('role', 'button')
+  // Start hidden — the toggle only appears once the player owns the Lazer.
   button.style.cssText =
     `position:absolute;bottom:${getToolToggleBottom()};right:${rightMargin}px;` +
     `width:${size}px;height:${size}px;border-radius:50%;` +
     `border:${BORDER_WIDTH}px solid ${rgba(STYLE_FIRE, 0.6)};` +
     `background:${rgba(STYLE_FIRE, 0.15)};z-index:10;touch-action:none;` +
-    `display:flex;align-items:center;justify-content:center;`
+    `display:none;align-items:center;justify-content:center;`
 
   const label = document.createElement('div')
   label.style.cssText =
@@ -221,6 +223,9 @@ export function createToolToggleButton(
     },
     setTool(tool: MiningTool) {
       updateStyle(tool)
+    },
+    setVisible(visible: boolean) {
+      button.style.display = visible ? 'flex' : 'none'
     },
   }
 }

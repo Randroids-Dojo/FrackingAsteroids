@@ -171,6 +171,13 @@ export default function Home() {
     setActiveTool(tool)
   }, [])
 
+  // Gate the Lazer tool toggle on ownership. The intro grants the Lazer
+  // temporarily, but once it ends the player must buy it before they can switch
+  // back to it (this also shows/hides the mobile tool-toggle button).
+  useEffect(() => {
+    gameCanvasRef.current?.setLazerOwned(hasLazer)
+  }, [hasLazer])
+
   const handleCrystallineDeflect = useCallback(() => {
     // Don't show lazer tutorial popup during prologue — ship already has lazer
     if (tutorialStep.startsWith('prologue-')) return

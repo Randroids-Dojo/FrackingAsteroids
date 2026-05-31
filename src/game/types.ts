@@ -16,6 +16,18 @@ export type AsteroidType = 'common' | 'dense' | 'precious' | 'comet' | 'crystall
 
 export type MiningTool = 'blaster' | 'lazer'
 
+/**
+ * Decide which tool the mining-tool toggle should switch to. The Lazer is only
+ * selectable once the player owns it (purchased from the shop). When the Lazer
+ * is not owned the toggle is a no-op and the current tool is kept — this is what
+ * keeps the Lazer unavailable after the intro until it is bought.
+ */
+export function nextMiningTool(current: MiningTool, lazerOwned: boolean): MiningTool {
+  const target: MiningTool = current === 'lazer' ? 'blaster' : 'lazer'
+  if (target === 'lazer' && !lazerOwned) return current
+  return target
+}
+
 export interface Fragment {
   id: string
   x: number
