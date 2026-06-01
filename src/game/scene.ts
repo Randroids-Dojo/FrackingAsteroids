@@ -11,6 +11,14 @@ import {
 } from './gas-station-model'
 import { createProjectileModel } from './projectile-model'
 import { createLazerBeam, updateLazerBeam, disposeLazerBeam } from './lazer-beam'
+import {
+  createAimReticle,
+  updateAimReticle,
+  disposeAimReticle,
+  computeAimLine,
+} from './aim-reticle'
+import { ASTEROID_SIZE_RADIUS } from './asteroid-model'
+import { ASTEROID_COLLISION_RADIUS } from './collision-constants'
 import { createInputState, createInputHandler, createAimState, createAimHandler } from './input'
 import { createVirtualJoystick, createFiringJoystick } from './virtual-joystick'
 import { createCollectButton, createToolToggleButton } from './fire-button'
@@ -78,6 +86,7 @@ import {
   disposeEnemyShip,
   createShipwreckDebris,
   updateShipwreckDebris,
+  ENEMY_COLLISION_RADIUS,
   disposeShipwreckDebris,
 } from './enemy-ship'
 import type { ShipwreckDebris } from './enemy-ship'
@@ -220,6 +229,15 @@ export function createGameScene(
   // --- Lazer Beam (persistent mesh, hidden when not firing) ---
   const lazerBeam = createLazerBeam()
   scene.add(lazerBeam)
+
+  // --- Aim Reticle (projected aim line + target circle, hidden when not aiming) ---
+  const aimReticle = createAimReticle()
+  scene.add(aimReticle.group)
+
+  // Half-extents of the visible play field at z=0, derived from the camera
+  // frustum (top-down, looking down -Z from CAMERA_HEIGHT).
+  const viewHalfHeight = Math.tan((camera.fov * Math.PI) / 360) * CAMERA_HEIGHT
+  let viewHalfWidth = viewHalfHeight * camera.aspect
 
   // --- Asteroids ---
   // Map of asteroid id → { model, healthMeter } for all asteroids in the world
@@ -508,6 +526,7 @@ export function createGameScene(
     camera.aspect = w / h
     camera.updateProjectionMatrix()
     renderer.setSize(w, h)
+    viewHalfWidth = viewHalfHeight * camera.aspect
   }
   window.addEventListener('resize', onResize)
 
@@ -986,6 +1005,57 @@ export function createGameScene(
       stars.position.x = camera.position.x * 0.5
       stars.position.y = camera.position.y * 0.5
 
+      // --- Aim Reticle: projected aim line + target circle ---
+      // Aim direction comes from the right-side firing joystick on mobile, or
+      // the mouse cursor on desktop. Hidden during the scripted prologue.
+      let aimDirX = 0
+      let aimDirY = 0
+      let aimActive = false
+      const reticleFireAngle = firingJoystick.getFireAngle()
+      if (reticleFireAngle !== null) {
+        aimDirX = Math.cos(reticleFireAngle)
+        aimDirY = Math.sin(reticleFireAngle)
+        aimActive = true
+      } else if (aimState.active && aimWorldPosition) {
+        const adx = aimWorldPosition.x - ship.x
+        const ady = aimWorldPosition.y - ship.y
+        if (Math.hypot(adx, ady) > 0.5) {
+          aimDirX = adx
+          aimDirY = ady
+          aimActive = true
+        }
+      }
+      const showReticle = aimActive && !getTutorialStep().startsWith('prologue-')
+      if (showReticle) {
+        const bounds = {
+          minX: camera.position.x - viewHalfWidth,
+          maxX: camera.position.x + viewHalfWidth,
+          minY: camera.position.y - viewHalfHeight,
+          maxY: camera.position.y + viewHalfHeight,
+        }
+        const obstacles = asteroids
+          .filter((a) => a.hp > 0)
+          .map((a) => ({
+            x: a.x,
+            y: a.y,
+            radius: ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS,
+          }))
+        // Enemy ships are also valid lock-on targets for the reticle.
+        for (const enemy of [tickState.enemy, ...tickState.ambushEnemies]) {
+          if (enemy && enemy.alive) {
+            obstacles.push({ x: enemy.x, y: enemy.y, radius: ENEMY_COLLISION_RADIUS })
+          }
+        }
+        const aimLine = computeAimLine(ship.x, ship.y, aimDirX, aimDirY, bounds, obstacles)
+        updateAimReticle(aimReticle, true, ship.x, ship.y, aimLine)
+      } else {
+        updateAimReticle(aimReticle, false, ship.x, ship.y, {
+          endX: ship.x,
+          endY: ship.y,
+          target: null,
+        })
+      }
+
       wasPaused = false
     } else {
       // --- Paused: mute all looping audio ---
@@ -1026,6 +1096,9 @@ export function createGameScene(
 
     // Clean up lazer beam
     disposeLazerBeam(lazerBeam)
+
+    // Clean up aim reticle
+    disposeAimReticle(aimReticle)
 
     // Clean up explosions
     for (const e of explosions) {

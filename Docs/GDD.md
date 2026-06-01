@@ -243,6 +243,7 @@ GameState { ship, upgrades, cargo, hp, timestamp }
 - **Cargo bar** — top-left below scrap, shows fragments/capacity
 - **Upgrade indicators** — top-right, shows current tier for each system
 - **Recharge meter** — small horizontal bar below ship, shows blaster cooldown progress
+- **Aim reticle** — a red, dashed, semi-transparent line projected from the center of the ship in the aim direction (mouse on desktop, right firing joystick on mobile). The line extends to the edge of the visible screen, or stops early when it intersects an asteroid or enemy ship. A red target circle (reticle) marks where shots will land: centered on the screen-edge endpoint when nothing is in the way, or snapped onto and sized to the intersected object (asteroid or enemy). Hidden during the scripted prologue.
 - **Health bar** — shown when HP is below max
 - **Pause button** — top-right corner (mobile: larger touch target)
 
