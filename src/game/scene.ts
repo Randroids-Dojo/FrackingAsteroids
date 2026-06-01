@@ -139,6 +139,12 @@ export interface GameSceneOptions {
   onFieldCleared?: () => void
   onArbiterArrived?: () => void
   onStripComplete?: () => void
+  /**
+   * Skip the scripted prologue and start at the station with the normal ship.
+   * Used for loaded games, where the tutorial never runs to swap out the
+   * maxed-out intro ship.
+   */
+  skipPrologue?: boolean
 }
 
 export interface GameScene {
@@ -178,6 +184,7 @@ export function createGameScene(
   const onFieldCleared = options?.onFieldCleared
   const onArbiterArrived = options?.onArbiterArrived
   const onStripComplete = options?.onStripComplete
+  const skipPrologue = options?.skipPrologue ?? false
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -1303,6 +1310,11 @@ export function createGameScene(
     }
     return hash
   }
+
+  // Loaded games never play the prologue, so the scripted intro state (maxed
+  // "intro" ship, prologue field, ship at the origin) would otherwise persist.
+  // Reset straight to the station with the normal ship.
+  if (skipPrologue) resetShipToStation()
 
   return { dispose, setFireRateBonus, resetShipToStation, setMiningTool, setLazerOwned }
 }

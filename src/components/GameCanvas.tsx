@@ -15,6 +15,8 @@ export interface GameCanvasHandle {
 interface GameCanvasProps {
   paused: boolean
   frozen: boolean
+  /** Skip the scripted prologue (loaded games start at the station, normal ship). */
+  skipPrologue: boolean
   tutorialStep: TutorialStep
   onCollect?: (variant: MetalVariant) => void
   onShipMoved?: () => void
@@ -42,6 +44,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
   {
     paused,
     frozen,
+    skipPrologue,
     tutorialStep,
     onCollect,
     onShipMoved,
@@ -67,6 +70,9 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
+  // Captured once at mount — the scene is created a single time and the value is
+  // fixed for the canvas's lifetime (it unmounts when leaving the game screen).
+  const skipPrologueRef = useRef(skipPrologue)
   const pausedRef = useRef(paused)
   const frozenRef = useRef(frozen)
   const tutorialStepRef = useRef(tutorialStep)
@@ -206,6 +212,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
       .then(({ createGameScene }) => {
         if (disposed) return
         sceneRef.current = createGameScene(el, getPaused, () => tutorialStepRef.current, {
+          skipPrologue: skipPrologueRef.current,
           onCollect: (variant) => onCollectRef.current?.(variant),
           onShipMoved: () => onShipMovedRef.current?.(),
           onAsteroidHit: () => onAsteroidHitRef.current?.(),
