@@ -86,6 +86,7 @@ import {
   disposeEnemyShip,
   createShipwreckDebris,
   updateShipwreckDebris,
+  ENEMY_COLLISION_RADIUS,
   disposeShipwreckDebris,
 } from './enemy-ship'
 import type { ShipwreckDebris } from './enemy-ship'
@@ -1039,6 +1040,12 @@ export function createGameScene(
             y: a.y,
             radius: ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS,
           }))
+        // Enemy ships are also valid lock-on targets for the reticle.
+        for (const enemy of [tickState.enemy, ...tickState.ambushEnemies]) {
+          if (enemy && enemy.alive) {
+            obstacles.push({ x: enemy.x, y: enemy.y, radius: ENEMY_COLLISION_RADIUS })
+          }
+        }
         const aimLine = computeAimLine(ship.x, ship.y, aimDirX, aimDirY, bounds, obstacles)
         updateAimReticle(aimReticle, true, ship.x, ship.y, aimLine)
       } else {
