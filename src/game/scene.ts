@@ -1267,6 +1267,26 @@ export function createGameScene(
     }
     shipwreckDebrisList.length = 0
 
+    // Clear leftover collectibles and rubble from the prologue (metal chunks,
+    // enemy scrap, and visual asteroid debris) so they don't carry into the world.
+    for (let i = tickState.metalChunks.length - 1; i >= 0; i--) {
+      scene.remove(tickState.metalChunks[i].mesh)
+      disposeMetalChunk(tickState.metalChunks[i])
+    }
+    tickState.metalChunks.length = 0
+
+    for (let i = tickState.scrapBoxes.length - 1; i >= 0; i--) {
+      scene.remove(tickState.scrapBoxes[i].mesh)
+      disposeScrapBox(tickState.scrapBoxes[i])
+    }
+    tickState.scrapBoxes.length = 0
+
+    for (let i = debrisChunks.length - 1; i >= 0; i--) {
+      scene.remove(debrisChunks[i].mesh)
+      disposeDebrisChunk(debrisChunks[i])
+    }
+    debrisChunks.length = 0
+
     // --- Spawn asteroid field around the station ---
     // Remove old asteroid models from scene
     for (const [, entry] of asteroidModels) {
