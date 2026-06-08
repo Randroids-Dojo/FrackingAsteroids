@@ -139,6 +139,12 @@ export interface GameSceneOptions {
   onFieldCleared?: () => void
   onArbiterArrived?: () => void
   onStripComplete?: () => void
+  /**
+   * Skip the scripted prologue and start at the station with the normal ship.
+   * Used for loaded games, where the tutorial never runs to swap out the
+   * maxed-out intro ship.
+   */
+  skipPrologue?: boolean
 }
 
 export interface GameScene {
@@ -178,6 +184,7 @@ export function createGameScene(
   const onFieldCleared = options?.onFieldCleared
   const onArbiterArrived = options?.onArbiterArrived
   const onStripComplete = options?.onStripComplete
+  const skipPrologue = options?.skipPrologue ?? false
 
   // --- Renderer ---
   const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -1260,6 +1267,26 @@ export function createGameScene(
     }
     shipwreckDebrisList.length = 0
 
+    // Clear leftover collectibles and rubble from the prologue (metal chunks,
+    // enemy scrap, and visual asteroid debris) so they don't carry into the world.
+    for (let i = tickState.metalChunks.length - 1; i >= 0; i--) {
+      scene.remove(tickState.metalChunks[i].mesh)
+      disposeMetalChunk(tickState.metalChunks[i])
+    }
+    tickState.metalChunks.length = 0
+
+    for (let i = tickState.scrapBoxes.length - 1; i >= 0; i--) {
+      scene.remove(tickState.scrapBoxes[i].mesh)
+      disposeScrapBox(tickState.scrapBoxes[i])
+    }
+    tickState.scrapBoxes.length = 0
+
+    for (let i = debrisChunks.length - 1; i >= 0; i--) {
+      scene.remove(debrisChunks[i].mesh)
+      disposeDebrisChunk(debrisChunks[i])
+    }
+    debrisChunks.length = 0
+
     // --- Spawn asteroid field around the station ---
     // Remove old asteroid models from scene
     for (const [, entry] of asteroidModels) {
@@ -1303,6 +1330,11 @@ export function createGameScene(
     }
     return hash
   }
+
+  // Loaded games never play the prologue, so the scripted intro state (maxed
+  // "intro" ship, prologue field, ship at the origin) would otherwise persist.
+  // Reset straight to the station with the normal ship.
+  if (skipPrologue) resetShipToStation()
 
   return { dispose, setFireRateBonus, resetShipToStation, setMiningTool, setLazerOwned }
 }

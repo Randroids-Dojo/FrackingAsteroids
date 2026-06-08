@@ -293,6 +293,7 @@ export default function Home() {
         ref={gameCanvasRef}
         paused={paused || tradeMenuOpen || lazerPopupVisible}
         frozen={tutorial.frozen || shopTutorialFreeze}
+        skipPrologue={!isNewGame}
         tutorialStep={tutorial.step}
         onCollect={handleCollect}
         onShipMoved={tutorial.onShipMoved}

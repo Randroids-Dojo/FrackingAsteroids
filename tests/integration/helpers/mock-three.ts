@@ -68,6 +68,21 @@ class MockObject3D {
 
 class MockGeometry {
   dispose() {}
+  clone() {
+    return new MockGeometry()
+  }
+  translate() {
+    return this
+  }
+  rotateX() {
+    return this
+  }
+  rotateY() {
+    return this
+  }
+  rotateZ() {
+    return this
+  }
 }
 
 class MockMaterial {
@@ -95,11 +110,17 @@ class MockMesh extends MockObject3D {
 class MockGroup extends MockObject3D {}
 
 class MockPoints extends MockObject3D {
-  geometry = new MockGeometry()
-  material = new MockMaterial()
+  geometry: MockGeometry
+  material: MockMaterial
+  constructor(geometry?: MockGeometry, material?: MockMaterial) {
+    super()
+    this.geometry = geometry ?? new MockGeometry()
+    this.material = material ?? new MockMaterial()
+  }
 }
 
 class MockBufferAttribute {
+  needsUpdate = false
   constructor(
     public array: Float32Array,
     public itemSize: number,
@@ -107,8 +128,44 @@ class MockBufferAttribute {
 }
 
 class MockBufferGeometry extends MockGeometry {
-  setAttribute(_name: string, _attr: MockBufferAttribute) {
+  attributes: Record<string, MockBufferAttribute> = {}
+  setAttribute(name: string, attr: MockBufferAttribute) {
+    this.attributes[name] = attr
     return this
+  }
+  getAttribute(name: string) {
+    return this.attributes[name]
+  }
+  computeBoundingSphere() {}
+}
+
+class MockLine extends MockObject3D {
+  geometry: MockGeometry
+  material: MockMaterial
+  constructor(geometry?: MockGeometry, material?: MockMaterial) {
+    super()
+    this.geometry = geometry ?? new MockGeometry()
+    this.material = material ?? new MockMaterial()
+  }
+  computeLineDistances() {
+    return this
+  }
+}
+
+class MockLineLoop extends MockLine {}
+
+class MockColor {
+  r = 1
+  g = 1
+  b = 1
+  set() {
+    return this
+  }
+  setHSL() {
+    return this
+  }
+  getHex() {
+    return 0xffffff
   }
 }
 
@@ -182,15 +239,23 @@ class MockDirectionalLight extends MockObject3D {
 
 const MockTHREE = {
   Group: MockGroup,
+  Object3D: MockObject3D,
   Mesh: MockMesh,
+  Line: MockLine,
+  LineLoop: MockLineLoop,
   BoxGeometry: MockGeometry,
   PlaneGeometry: MockGeometry,
+  CircleGeometry: MockGeometry,
+  RingGeometry: MockGeometry,
   MeshStandardMaterial: MockMaterial,
   MeshBasicMaterial: MockMaterial,
+  LineBasicMaterial: MockMaterial,
+  LineDashedMaterial: MockMaterial,
   PointsMaterial: MockPointsMaterial,
   BufferGeometry: MockBufferGeometry,
   BufferAttribute: MockBufferAttribute,
   Points: MockPoints,
+  Color: MockColor,
   Vector3: MockVector3,
   Vector2: MockVector2,
   Raycaster: MockRaycaster,
@@ -199,8 +264,19 @@ const MockTHREE = {
   AmbientLight: MockAmbientLight,
   DirectionalLight: MockDirectionalLight,
   Material: MockMaterial,
+  AdditiveBlending: 2,
+  DoubleSide: 2,
   WebGLRenderer: class {
-    domElement = { clientWidth: 800, clientHeight: 600 }
+    domElement = {
+      clientWidth: 800,
+      clientHeight: 600,
+      style: {} as Record<string, string>,
+      addEventListener() {},
+      removeEventListener() {},
+      getBoundingClientRect() {
+        return { left: 0, top: 0, width: 800, height: 600, right: 800, bottom: 600 }
+      },
+    }
     setPixelRatio() {}
     setSize() {}
     setClearColor() {}
