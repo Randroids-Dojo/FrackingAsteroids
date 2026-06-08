@@ -1,7 +1,7 @@
 ---
 description: Every shipped feature appends a Build log entry to the relevant GDD section.
 paths:
-  - "docs/gdd/**.html"
+  - "Docs/gdd/**.html"
 ---
 
 <h1>GDD build log discipline</h1>
@@ -53,7 +53,7 @@ paths:
   <li>Updating the spec text to match what shipped (the spec is the <em>intent</em>; the build log is <em>what landed</em>).</li>
   <li>Removing the <code>data-status</code> attribute.</li>
   <li>Removing or rewriting past build log entries.</li>
-  <li>Splitting one feature across multiple GDD section files (the granularity of <code>docs/GDD_COVERAGE.json</code> rows is the right unit).</li>
+  <li>Splitting one feature across multiple GDD section files (the granularity of <code>Docs/GDD_COVERAGE.json</code> rows is the right unit).</li>
 </ul>
 
 <h2>Why this matters</h2>

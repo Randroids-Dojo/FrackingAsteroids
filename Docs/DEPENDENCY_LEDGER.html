@@ -8,7 +8,7 @@
 
 <header>
   <h1>Dependency Ledger</h1>
-  <p>Watched dependencies for <strong>FrackingAsteroids</strong>. Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship blaster, collector, and storage. A tight arcade loop with strategic depth. The agent runs the <strong>Dependency Upgrade Gate</strong> (see <a href="IMPLEMENTATION_PLAN.html#dependency-upgrade-gate"><code>docs/IMPLEMENTATION_PLAN.html</code></a>) at two trigger points:</p>
+  <p>Watched dependencies for <strong>FrackingAsteroids</strong>. Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship blaster, collector, and storage. A tight arcade loop with strategic depth. The agent runs the <strong>Dependency Upgrade Gate</strong> (see <a href="IMPLEMENTATION_PLAN.html#dependency-upgrade-gate"><code>Docs/IMPLEMENTATION_PLAN.html</code></a>) at two trigger points:</p>
   <ol>
     <li><strong>After every push to <code>main</code></strong> (after pulling main and verifying production), before picking the next slice.</li>
     <li><strong>Before opening a new PR</strong>, so the new branch starts from a fresh-deps baseline.</li>

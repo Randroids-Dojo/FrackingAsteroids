@@ -74,9 +74,9 @@
   <ul>
     <li>All of the above for code changes.</li>
     <li>Read the upstream CHANGELOG between the pinned and target version BEFORE editing project code; document the breaking changes and migrations applied in the PR body.</li>
-    <li>Update <code>docs/DEPENDENCY_LEDGER.html</code> <strong>Currently pinned</strong> in the same PR.</li>
+    <li>Update <code>Docs/DEPENDENCY_LEDGER.html</code> <strong>Currently pinned</strong> in the same PR.</li>
     <li>Smoke test any feature that imports from the upgraded dep.</li>
-    <li>See <code>docs/DEPENDENCY_LEDGER.html</code> §<a href="DEPENDENCY_LEDGER.html#upgrade-procedure">Upgrade procedure</a> for the full step list.</li>
+    <li>See <code>Docs/DEPENDENCY_LEDGER.html</code> §<a href="DEPENDENCY_LEDGER.html#upgrade-procedure">Upgrade procedure</a> for the full step list.</li>
   </ul>
   <p>Never mark work complete with failing required verification.</p>
 </section>
@@ -88,7 +88,7 @@
     <li>After landing on fresh <code>main</code> (post-merge or fresh pull), before picking the next slice.</li>
     <li>Before opening a new PR, in case a watched release landed while the slice was in flight.</li>
   </ul>
-  <p>Mechanism lives in <code>docs/IMPLEMENTATION_PLAN.html</code> §<a href="IMPLEMENTATION_PLAN.html#dependency-upgrade-gate">Dependency Upgrade Gate</a>; the watched dep list and per-dep procedure live in <code>docs/DEPENDENCY_LEDGER.html</code>. Treat a new release as a non-optional signal: the upgrade is the next slice unless red CI takes over.</p>
+  <p>Mechanism lives in <code>Docs/IMPLEMENTATION_PLAN.html</code> §<a href="IMPLEMENTATION_PLAN.html#dependency-upgrade-gate">Dependency Upgrade Gate</a>; the watched dep list and per-dep procedure live in <code>Docs/DEPENDENCY_LEDGER.html</code>. Treat a new release as a non-optional signal: the upgrade is the next slice unless red CI takes over.</p>
 </section>
 
 <section id="merge-and-deploy">
@@ -105,7 +105,7 @@
 
 <section id="clarifications">
   <h2>Clarifications</h2>
-  <p>Ask only when ambiguity is expensive or risky. When a simple consistent default is available, choose it, record the assumption in <code>docs/OPEN_QUESTIONS.html</code> with a <code>Recommended default:</code> line, and continue.</p>
+  <p>Ask only when ambiguity is expensive or risky. When a simple consistent default is available, choose it, record the assumption in <code>Docs/OPEN_QUESTIONS.html</code> with a <code>Recommended default:</code> line, and continue.</p>
 </section>
 
 <section id="risk-gates">

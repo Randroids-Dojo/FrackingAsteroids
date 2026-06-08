@@ -12,7 +12,7 @@ paths:
 
 <h1>Slice discipline</h1>
 
-<p>This rule loads when editing source code under typical project layouts. It enforces the slice contract from <code>docs/IMPLEMENTATION_PLAN.html</code>.</p>
+<p>This rule loads when editing source code under typical project layouts. It enforces the slice contract from <code>Docs/IMPLEMENTATION_PLAN.html</code>.</p>
 
 <h2>What to do</h2>
 

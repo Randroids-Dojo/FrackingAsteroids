@@ -2,7 +2,7 @@
 
 Shared rules for every agentic coding tool working in FrackingAsteroids. Claude Code, Codex, Cursor, and any future agent: this file is mandatory reading before you write anything.
 
-This repo uses the HTML-first variant of the spiral scaffold. The ledgers and contracts under `docs/` are `.html` files. This file (`AGENTS.md`) and `CLAUDE.md` stay as Markdown so Codex's root-down walk and Claude Code's project-memory import keep working.
+This repo uses the HTML-first variant of the spiral scaffold. The ledgers and contracts under `Docs/` are `.html` files. This file (`AGENTS.md`) and `CLAUDE.md` stay as Markdown so Codex's root-down walk and Claude Code's project-memory import keep working.
 
 Project pitch: Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship blaster, collector, and storage. A tight arcade loop with strategic depth.
 
@@ -22,21 +22,21 @@ If porting or quoting text from another source, strip all em-dashes from the por
 
 ## RULE 2: Read the GDD before making design decisions
 
-The Game Design Document at `docs/gdd/` is the source of truth for what FrackingAsteroids is. Before proposing architecture, adding features, or changing data schemas, read it. If the GDD and your idea disagree, the GDD wins unless explicitly approved.
+The Game Design Document at `Docs/gdd/` is the source of truth for what FrackingAsteroids is. Before proposing architecture, adding features, or changing data schemas, read it. If the GDD and your idea disagree, the GDD wins unless explicitly approved.
 
 Before each implementation slice, read:
 
 - `AGENTS.md`
 - `README.md`
-- `docs/IMPLEMENTATION_PLAN.html`
-- `docs/WORKING_AGREEMENT.html`
-- `docs/gdd/` (the relevant requirement files)
-- `docs/PROGRESS_LOG.html`
-- `docs/OPEN_QUESTIONS.html`
-- `docs/FOLLOWUPS.html`
-- `docs/GDD_COVERAGE.json`
-- `docs/DEPENDENCY_LEDGER.html` (and run the Dependency Upgrade Gate from `docs/IMPLEMENTATION_PLAN.html`)
-- `docs/PLAYTEST.html` and `docs/FUN_FACTOR_AUDIT.html` when coverage is >=80% done
+- `Docs/IMPLEMENTATION_PLAN.html`
+- `Docs/WORKING_AGREEMENT.html`
+- `Docs/gdd/` (the relevant requirement files)
+- `Docs/PROGRESS_LOG.html`
+- `Docs/OPEN_QUESTIONS.html`
+- `Docs/FOLLOWUPS.html`
+- `Docs/GDD_COVERAGE.json`
+- `Docs/DEPENDENCY_LEDGER.html` (and run the Dependency Upgrade Gate from `Docs/IMPLEMENTATION_PLAN.html`)
+- `Docs/PLAYTEST.html` and `Docs/FUN_FACTOR_AUDIT.html` when coverage is >=80% done
 - the current task backlog (Dots or equivalent)
 
 ### Path-scoped Rules
@@ -44,7 +44,7 @@ Before each implementation slice, read:
 Three additional rule files live under `.claude/rules/`. They are loaded automatically:
 
 - **Claude Code** loads them based on the `paths:` glob in their frontmatter.
-- **Codex** loads them via per-directory `AGENTS.md` symlinks (`docs/AGENTS.md`, `docs/gdd/AGENTS.md`) on its root-down walk.
+- **Codex** loads them via per-directory `AGENTS.md` symlinks (`Docs/AGENTS.md`, `Docs/gdd/AGENTS.md`) on its root-down walk.
 
 The three rules:
 
@@ -80,17 +80,17 @@ Do not introduce new dependencies in core categories without explicit user appro
 
 ## RULE 5: Autonomous PR loop
 
-Operate continuously until the planned scope is complete. The loop definition lives in `docs/IMPLEMENTATION_PLAN.html`. The process contract lives in `docs/WORKING_AGREEMENT.html`. Follow both on every slice.
+Operate continuously until the planned scope is complete. The loop definition lives in `Docs/IMPLEMENTATION_PLAN.html`. The process contract lives in `Docs/WORKING_AGREEMENT.html`. Follow both on every slice.
 
 For every slice:
 
 1. Read the rule, plan, product, progress, question, followup, coverage, dependency-ledger, and backlog documents listed in Rule 2.
-2. Run the Dependency Upgrade Gate (see `docs/IMPLEMENTATION_PLAN.html`). If a watched dep is out of date, the upgrade IS the next slice unless red CI takes over.
+2. Run the Dependency Upgrade Gate (see `Docs/IMPLEMENTATION_PLAN.html`). If a watched dep is out of date, the upgrade IS the next slice unless red CI takes over.
 3. Pick the highest-priority unblocked task from the implementation plan, dep ledger, GDD coverage gaps, followups, and active backlog.
 4. Create one branch for one PR-sized slice. Never push directly to `main`.
 5. Implement the slice fully using existing project patterns.
 6. Add or update tests appropriate to the risk and surface area.
-7. Update `docs/PROGRESS_LOG.html`, `docs/GDD_COVERAGE.json`, `docs/OPEN_QUESTIONS.html`, `docs/FOLLOWUPS.html`, `docs/DEPENDENCY_LEDGER.html`, and the GDD section when the work changes them.
+7. Update `Docs/PROGRESS_LOG.html`, `Docs/GDD_COVERAGE.json`, `Docs/OPEN_QUESTIONS.html`, `Docs/FOLLOWUPS.html`, `Docs/DEPENDENCY_LEDGER.html`, and the GDD section when the work changes them.
 8. Run the local verification suite. At minimum: dash checks, `git diff --check`, type-check, relevant unit tests, broader checks when warranted.
 9. Re-run the Dependency Upgrade Gate before opening the PR. If a watched release landed while the slice was in flight, defer the bump to its own PR (do not bundle).
 10. Open a PR.
@@ -126,7 +126,7 @@ Prior approval for one destructive action is not approval for all of them. Ask e
 
 - When a UX decision could go branchy (different behavior per route, per state, per user), default to one consistent rule across all cases.
 - Always explain why you are prompting the user for input.
-- If requirements are ambiguous and a reasonable default would be risky, ask. Otherwise choose the simplest consistent path, document the assumption in `docs/OPEN_QUESTIONS.html` with a `Recommended default:`, ship under that default, and keep moving.
+- If requirements are ambiguous and a reasonable default would be risky, ask. Otherwise choose the simplest consistent path, document the assumption in `Docs/OPEN_QUESTIONS.html` with a `Recommended default:`, ship under that default, and keep moving.
 
 ---
 
@@ -382,7 +382,7 @@ npm run build
 - **Separate mouse and touch concerns**: desktop uses mouse events for aiming; mobile uses touch events for the virtual joystick and tap-to-fire. Don't mix them in a single handler. They have different semantics and will conflict on multi-touch.
 - **Always `preventDefault()` on handled touch events**: the browser synthesizes mouse events (`mousemove`, `mousedown`) from unhandled touches. If a touch handler processes an event but doesn't call `e.preventDefault()`, the synthetic mouse event will leak into mouse-only systems (e.g. aim handler), causing unintended side effects like the ship rotating toward a tap. Every `touchstart`/`touchmove` handler that consumes the event must call `e.preventDefault()`.
 - **Swallow all touches in every screen region**: every area of the screen must have a touch handler that calls `e.preventDefault()`, even if the touch does nothing gameplay-wise. If you replace a broad touch handler (e.g. "right-half tap to fire") with a smaller element (e.g. a fire button), the uncovered area still receives touches that the browser will convert into synthetic mouse events. Always add a catch-all `touchstart` handler with `preventDefault()` for any region not covered by a specific touch control.
-- **Ship rotation is joystick-only on mobile**: the left-side virtual joystick is the sole control for ship facing direction on mobile. Right-side taps fire in the ship's current facing direction. No touch event on the right side should influence `aimState` or ship rotation. If adding new touch interactions, verify they don't feed into the aim/rotation pipeline.
+- **Ship rotation is joystick-only on mobile**: the left-side virtual joystick is the sole control for the ship's facing direction on mobile. Right-side taps fire in the ship's current facing direction. No touch event on the right side should influence `aimState` or ship rotation. If adding new touch interactions, verify they don't feed into the aim/rotation pipeline.
 - **No speed gates on input-driven rotation**: when the player is actively providing directional input (joystick or keyboard), the ship must rotate to face that direction immediately, regardless of current velocity. Never require a minimum speed before allowing rotation. It makes controls feel broken.
 - **Handle nullable returns from Three.js**: methods like `raycaster.ray.intersectPlane()` can return `null`. Always handle the null case even when it seems unlikely with the current camera setup.
 
@@ -413,4 +413,4 @@ The agent runs the gate at every loop boundary that touches `main`:
 - After landing on fresh `main` (post-merge or fresh pull), before picking the next slice.
 - Before opening a new PR, in case a watched release landed while the slice was in flight.
 
-Read `docs/DEPENDENCY_LEDGER.html`. For every watched dep (currently: `@randroids-dojo/vibekit`), run its **Detect-new** command and compare against the ledger's **Currently pinned** value. If newer, the upgrade IS the next slice unless red CI or a P0 incident takes over. Follow the per-dep procedure in `docs/DEPENDENCY_LEDGER.html` (branch, read upstream CHANGELOG, bump pin, type-check, test, build, smoke, PR with title `chore(deps): bump <dep> from <from> to <to>`). If the upgrade requires a migration that cannot land in one PR, abort the bump, file a followup, and continue with the prior pin. The bump PR updates the ledger's **Currently pinned** line in the same diff.
+Read `Docs/DEPENDENCY_LEDGER.html`. For every watched dep (currently: `@randroids-dojo/vibekit`), run its **Detect-new** command and compare against the ledger's **Currently pinned** value. If newer, the upgrade IS the next slice unless red CI or a P0 incident takes over. Follow the per-dep procedure in `Docs/DEPENDENCY_LEDGER.html` (branch, read upstream CHANGELOG, bump pin, type-check, test, build, smoke, PR with title `chore(deps): bump <dep> from <from> to <to>`). If the upgrade requires a migration that cannot land in one PR, abort the bump, file a followup, and continue with the prior pin. The bump PR updates the ledger's **Currently pinned** line in the same diff.

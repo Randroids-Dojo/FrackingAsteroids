@@ -10,7 +10,7 @@
   <h1>FrackingAsteroids Release Playtest Checklist</h1>
   <p data-role="pitch">Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship blaster, collector, and storage. A tight arcade loop with strategic depth.</p>
   <aside data-role="gate">
-    <strong>The second gate.</strong> When all coverage rows in <code>docs/GDD_COVERAGE.json</code> are <code>done</code>, this checklist becomes the active backlog. The loop is not finished until every item here is checked or explicitly deferred to a future release.
+    <strong>The second gate.</strong> When coverage in <code>Docs/GDD_COVERAGE.json</code> reaches &ge;80% <code>done</code>, this checklist enters the active backlog; once every coverage row is <code>done</code> it is the sole remaining work. The loop is not finished until every item here is checked or explicitly deferred to a future release.
     <p>This exists because shipping a complete-on-paper system is not the same as shipping a good system. Coverage rows track <em>systems</em>; this checklist tracks <em>experience</em>. Both gates must close.</p>
   </aside>
 </header>
@@ -20,7 +20,7 @@
   <ul>
     <li>Each section captures one experience-level question the systems-level coverage will not catch.</li>
     <li>Items use <code>&lt;input type="checkbox"&gt;</code> elements. Check when the experience is verified (live playtest, recorded session, or qualitative review).</li>
-    <li>An item that fails review becomes a new <code>F-NNN</code> entry in <code>docs/FOLLOWUPS.html</code> with <code>data-priority="blocks-release"</code>.</li>
+    <li>An item that fails review becomes a new <code>F-NNN</code> entry in <code>Docs/FOLLOWUPS.html</code> with <code>data-priority="blocks-release"</code>.</li>
     <li>Re-run the relevant section after any large system lands.</li>
   </ul>
 </section>
