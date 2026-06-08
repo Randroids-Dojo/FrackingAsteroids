@@ -1,0 +1,162 @@
+{
+  "canvases" : [
+
+  ],
+  "capturedAt" : "2026-06-08T03:14:20.915Z",
+  "consoleMessages" : [
+    {
+      "level" : "warn",
+      "message" : "{\"name\":\"MaxListenersExceededWarning\",\"emitter\":{\"_events\":{\"PlayerVolumeChanged\":[null,null,null],\"PlayerMutedChanged\":[null,null,null],\"PlayerSeekCompleted\":[null,null,null,null],\"PlayerError\":[null,null,null,null],\"PlayerSessionData\":[null,null],\"MetaID3\":[null,null,null],\"PlayerInitialized\":[null,null,null],\"PlayerTimeUpdate\":[null,null,null,null],\"PlayerDurationChanged\":[null,null,null,null,null,null,null],\"PlayerQualityChanged\":[null,null,null,null],\"Playing\":[null,null,null,null,null,null,null,null,null,null,null],\"Idle\":[null,null,null,null],\"Ended\":[null,null,null,null,null,null],\"Buffering\":[null,null,null],\"PlayerPlaybackBlocked\":[null,null],\"PlayerAnalyticsEvent\":[null,null],\"PlayerSegmentMetadata\":[null,null],\"PlayerMetadata\":[null,null,null,null,null],\"Ready\":[null,null,null,null]},\"_eventsCount\":40},\"type\":\"Playing\",\"count\":11}",
+      "timestamp" : "2026-06-08T01:15:17.727Z"
+    },
+    {
+      "level" : "info",
+      "message" : "20:15:18 - (playback-monitor) Config changed {}",
+      "timestamp" : "2026-06-08T01:15:18.369Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "20:15:18 - (playback-monitor) Play - moving to buffered region 0.078 0",
+      "timestamp" : "2026-06-08T01:15:18.387Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "{\"name\":\"MaxListenersExceededWarning\",\"emitter\":{\"_events\":{\"PlayerVolumeChanged\":[null,null,null],\"PlayerMutedChanged\":[null,null,null],\"PlayerSeekCompleted\":[null,null,null,null,null],\"PlayerError\":[null,null,null,null],\"MetaID3\":[null,null,null],\"PlayerInitialized\":[null,null,null,null],\"PlayerTimeUpdate\":[null,null,null,null,null,null,null,null],\"PlayerBufferUpdate\":[null,null],\"PlayerDurationChanged\":[null,null,null,null,null,null,null,null,null],\"PlayerQualityChanged\":[null,null,null,null,null],\"Playing\":[null,null,null,null,null,null,null,null,null,null,null],\"Idle\":[null,null,null,null,null],\"Ended\":[null,null,null,null,null,null,null],\"Buffering\":[null,null,null],\"PlayerPlaybackBlocked\":[null,null],\"PlayerAnalyticsEvent\":[null,null],\"PlayerSegmentMetadata\":[null,null,null],\"PlayerMetadata\":[null,null,null,null,null],\"Ready\":[null,null,null,null]},\"_eventsCount\":40},\"type\":\"Playing\",\"count\":11}",
+      "timestamp" : "2026-06-08T01:15:23.441Z"
+    },
+    {
+      "level" : "info",
+      "message" : "20:15:24 - (playback-monitor) Config changed {}",
+      "timestamp" : "2026-06-08T01:15:24.024Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "20:15:24 - (playback-monitor) Play - moving to buffered region 0.041333 0",
+      "timestamp" : "2026-06-08T01:15:24.143Z"
+    },
+    {
+      "level" : "info",
+      "message" : "UserLeap - Disabled: failed to fetch configuration",
+      "timestamp" : "2026-06-08T01:15:48.546Z"
+    },
+    {
+      "level" : "info",
+      "message" : "UserLeap - Disabled: failed to fetch configuration",
+      "timestamp" : "2026-06-08T01:19:33.516Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "An error occurred! For more details, see the full error text at https:\/\/go.apollo.dev\/c\/err#%7B%22version%22%3A%223.8.7%22%2C%22message%22%3A14%2C%22args%22%3A%5B%22allActiveHypeTrainStatuses%22%2C%22Query%22%2C%22%22%2C%22Query.allActiveHypeTrainStatuses%22%2C%22%5B%5Cn%20%20%7B%5Cn%20%20%20%20%5C%22__ref%5C%22%3A%20%5C%22ActiveHypeTrainStatus%3A411377640-d919c85b-1975-4653-a4a2-d93891f75ac5%5C%22%5Cn%20%20%7D%5Cn%5D%22%2C%22%5B%5D%22%5D%7D",
+      "timestamp" : "2026-06-08T01:19:38.814Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "20:40:01 - (playback-monitor) Play - moving to buffered region 0.042666 0",
+      "timestamp" : "2026-06-08T01:40:01.453Z"
+    },
+    {
+      "level" : "warn",
+      "message" : "getClip() is deprecated. Use getPlaylist().getClip() instead.",
+      "timestamp" : "2026-06-08T01:40:01.461Z"
+    },
+    {
+      "level" : "info",
+      "message" : "20:45:05 - (playback-monitor) Config changed {}",
+      "timestamp" : "2026-06-08T01:45:05.990Z"
+    },
+    {
+      "level" : "info",
+      "message" : "20:45:09 - (playback-monitor) Config changed {}",
+      "timestamp" : "2026-06-08T01:45:09.788Z"
+    }
+  ],
+  "domSummary" : {
+    "bodyTextSample" : "Skip to... ⌥ P Following Browse For You Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. Use the Right Arrow Key to show more information. LIVE Randroid88 Game Development Vibing (Claude Opus 4.8!) Software and Game Development vibegaming dev live English GameDevelopment gamedev vibecoding LLM opus Claude 1 1 viewer 2:29:59 2:29:59 since live stream started About Randroid88 35 followers Coding and gaming streams. YouTube Randroid88's Goals 5 followers to go! 35\/40 Followers Edit Panels LIVE Volume Clip Stream Chat Welcome to randroid88's chat room! Send a message Chat",
+    "buttons" : [
+      "Skip to...\n⌥\nP",
+      "Clip",
+      "Clip",
+      "Chat"
+    ],
+    "headings" : [
+      "For You",
+      "Randroid88",
+      "About Randroid88",
+      "Randroid88's Goals"
+    ],
+    "interactiveElementCount" : 75
+  },
+  "focusedElement" : "div Chat messages",
+  "scroll" : {
+    "x" : 0,
+    "y" : 0
+  },
+  "selectedText" : "",
+  "storage" : {
+    "localStorage" : {
+      "CV7o9fRC\/gx24wn2" : "{t\\AM\u0011;7L\u000f\u001bVZY\u0000W\u0015U\r*t\u0010+'X\u0000\u0016Y\u0000:^\nW\u0012\u0006,D\u0002\u0016\u0010\u000eU^`2<\u0003\u0003\u001f-#tA\"$\u000e\u0017\u0013G\u000ew$\u0014'K=LqdN:|)\u0016v?2$\u000b=E1;|\u0019\u0006\u0000_l0\u0015sU\/3gq$(k\u00166N\u0000\u001a\u00066\fD\/'Ss&f_\u000eRa\tz7\bHs\u0006\u0006k\u0015D_h`8r\u0007G(\u0002g4\u0001S\b\u000e\u001f*u^\u0001HHu\u0006\u0014F0EU'\u0017\u0006rt\u0005\u000f\u0003[\u000f$Y\rM\u0012<sEQ\u0016eD\u0002+\u0000;\u0012F\u00030\u0013u\u000bg\u0011\u0003.\u001dB)\r**v\u001f\u000e.VE$)j\n\u0014\u0015}t\u0007 -Y\u0010\u0016O19P\u000eM\u000f=-{\u000e\u0015W[\u0002\u001av\u0014\u0005V%?\u001a+f\rFB\u0010\u0001da\u0004_7\u0003a\u0003E\u001b@M\u0007\u001a]\"\u001fV=:\u0010+#R!\u001d\\!:R\u000b\u001b\\&1Z\u0002T\u0010A\u0004\u000b@ \u0010R?\"Wfz\u000b\tT\/:V@\fHbc\u0007*\u0019Q]\u0019\u001a]\u0012\u001f\fq\u001f\u001b1![D>\\ vx<\u0019>rr\u001f8I\u0007k@G\u0012 \u0007G=3\" &|\r\u0007\u0012ve\u0000A\nPrkd\/,x[N^\b\u001cRq\u0011\u0010&\/XMS~+$X\u0002\\Icw\u0017IH\u001c\u0004Y^\u00122\u0016Q0$\u001cjq\u0004S]\u000eut\u001bMO\u0007>*K2\u0016F]\u001bL\bP@\u000fao@s|\u0003\\F\btz\u0015\u001c\\\u0014$&]3\u0011_QUT\u0003VO\u0007iaLu|\u000fQF\u000fotT\u0003P\u0003<7{\u000e\u0015W\u0016M_\u0005YG\u000ffoE}|\u0002QD@otP\u001eUH&4F\u0013\u001bZ\u001a\u0003\u0018\u0010[\f\u001548\u0016* R\u00000Q*3Y\u001bm\t9&AEB\u0010\u0004\u0013>[ 5|%58,sFQDx9\u0002F]I\u001f>6\u001b\b(eB  y-EX#\f=\u0003\nR\u0010\u0018D)8N\u0004|\u0000\u001f{k\u0011,vs0!}W\u000eB\u000b\u0003\u0013\u0017\u0010N.\u0016v;\u001eF#V\/ )D\u000b\/K\r9\u0002b\u0018E\u0006+n:\u000ew\u0001\u00079\f6'n\u0016|\u0015\u000b:{\u00170dd\u001d:{*5\u0004\u001f=L5\r\u0004-&O0\u0005g\u001cp+\u001b0]>\nZz\u0014Vx\u001b\u0003B:,'\u00123X\u0006!\u000eu\u0003P\r-:\u0000uR\u001fG_&'\u0001Q\u0013QszW7!^\n\u0007X1$X\bX\u0012;,A3\u0011_Q\u0018\u001bF%\u0002E0\"\u001c**\u0015^Q\fn\u0014\u0006!W>a\u0006\rKZQF\u000e\u001eF\u000e4_0:\u0019 *P\u00016S\"4[\n]Dh7]\u0012\u001d\u001e\u0016\u0001\u000f^\b\u0013b?\"\u001c)f\rUD\u0005so\u0002V\tQdz\u001cR\u0005O",
+      "CV7o9fRC\/gx24wn2-rc" : "[g\u0000W\t_dv\u001b_N\u000b\fNB\u0010QFqea1=\u0010g\u0005\u0018G\u000e;\u0005\u001bH\u0002\u0011pe4+Qp\u001d%K0J\u0015}-\bi?\u0015\u0002\u0001R-\"R\u0001]Dh8\r\u000b\u0017Ux\u0012\u0018W\rU\rdf\b8\u0019",
+      "CV7o9fRC\/gx24wn2aw7QVuED7ds=" : "{tG\u000eJ\u0015\",]\u0013VFC\u001e\u001aQ+xC\u0019\u001b\\)aJ\t\u001b]P\u0012\nq\/?R\u0001M2=(J\tZ\b\u0016G\u000fdu1z<\b\u000e`\u0013i\u0002\u000bWD1\\h\u001b$@?O\u0002\u00106\u001f63T}\/\u0017g2\u0019c\u001aS\u0014gtz \u0013hY\u0018\u001aS-\u0003O,N\u00029\u0010Z-7fC=+J'\u0017R\u0005\u0001\r\u0003\u0001B$\u001ewu !\u0005(1nV\u000e\u0012;'\u001b\u0011-WB=\u0018\u0004toT7k3#zYQNzR\u0005\u001f~9db]J\n\u0018\u00013)\u0001}\u001fYB.5q\u0001\f>\u0006\u0016M\u00161RO#[(\u0013G\u000bN\u0001a\"E\u0000;xz\u0015\u001cStnG\u0016o.!\u000f\rKZ@Q\u001e\u0000F&$E\u0000^\u0007&*@\t,[Y\u0012\u0001G7\u0012B\u001dX\u0012;,AEB\u0010\u0005Z,\u0003\u0019>v)ZD~aY\u0006\u0014[P\"\u0000F*:\u0015U\bQep\u001b^O\u0006\u0005@\\\u000b{z\u0015\fK\u001f\"7@$\u0010SX\u001b\u000b\\$3r\u0001X\u0004>&KEBFF\u0002\u000b\u001ea#D\nK'5&A\u0013Z\b\u0016:\u0001H*:[\u000e\u0016S|s\u000fO5SW\u001e\u0000F,%_T\u0019\/<7J\u000bXU\u0014N}\u0010voO\bV\rr\u001a8O\u001b\u00146\u001eB\/3`\n[-;7\u0000RK\u0005\u001aDX\u0012k\u001d;t*~cC\u000e\u0013W\u00140\u000bQ(9\u001eOz\u000e ,B\u0002W\u0003\u0000B@\u0002mf\u0019_\u001953%N\u0015\u0011\u001d\u0001DY\u001cp`\u0015C\u001b\u001571Y\u0002\nf]\u001a\u000b\u0010yg\u0000X\nRcz\u0019RO\u0000\u0001AB\u0010 :^\nW\u0012\u0006*B\u0002Z\b\u0005@Y\u0001wg\u000eY\fQ`z\u0018\u001aT\u0010S\u0006\u0002\u001c7!^\u001bZ\u000e|7YEBI\u0016\u0012\u0000Q,2R\u000bz\n;&A\u0013,]_\u0012\u0000\u0010yt\u0007\\|0g\u0005U\u0014\u001b|V58^\u0000\u001dB\\j<\u0014\u001bJ^\u0015\u0001@\u0000;u\u0004\u0010N\ru<\u000b:Z\n1c\u0002\u0006#\u00065;a\u0016a(\u0011w]$\u0001HdE\u0018T'\u0007_\\PWa\u000e}=\u0012F\u0006\u001dV\u0001\u0007\u001dq\u0016K#1-\\\n\n@~9#]4<`,\u0000_!6l\u0010I\u0004wG\rE!?pZA\u0000\u0000{FT>`W\u0007=K\u0013\u0013e\u0017\\\u0017 +ATOg6\r}\u001a3\u0000\u0000|Q$\u0019J\u0011\u0017^^\u0004<V6e]7U\u0000a{EQ\u0000Ku\u001d\u0014@az\u0015\u001d\\\u000f<7J\u0015\n]S\u0016\u001a[,8c\u0006T\u0003=6[#\r@U\u0003\u0007]-t\rM\bK\u00104}\u001e!saUB\u001057[\u0006]3<7F\u000bZ\b\u0005@Y\u0001wo\u0000[\bQd{\u001aKZQF\u000e\u001eF,\u0015_\u000eU\n7-H\u0002=\\U\u0015\u0002W't\r\u001bK\u00137o\r\u0012\u000bWF6\tW-\"\u0015U\u001b+=9F\u000b\u0014S\u001bB@\u0002c~z\u000eZ\u000f<7@\u0014\u0010\t\u0014>\u0000F&:\u0017\"X\u0005r\f|G \u0012\u0005G1\u0003v\t\u0000F\u0019'\"3C\u0002\/WV<\u0007Flc\u0004X\u0017Udc\u0007,0fy;B\u0012\/?\\\n\u0019!7 D\bQ\u0012w\u001f\u001c].3\u0018^\rS|s\u0001WV\u0002\u0014$\u000fT\"$^@\fUem\u001cQZ\u001e\u0016\u0004\u000b@53E;P\u000b7a\u0015VO\u0005\u0007C_\u000buc\u0000\\\u0001W~aL\u000b\u0011WZ\u0003:[.3\u0015U\bQep\u001bVA\u0004\u0001@Z\u0003w+J",
+      "CV7o9fRC\/gx24wn2aw7QVuED7ds=-rc" : "[g\u0000X\nSbu\u001fRM\u0007\rGB\u0010sgp\u001aL\/:\tj!=aB\u001c\u0002\u0019\u0000&|'m\t*\/G1\bS}JL\u001e8+\u001b\u0014\u001b\u0000 ,A\u0013\u001d\\PUTIa5E\u0016I\u0012=\u0000G\u0006\u0014^Q\u0019\tWalLMZ\u0013 1J\t\fbU\u0005\u000f_&\"R\u001dJDh8\r\u0003\u0011TR\u001e\rG\/\"NM\u0003Wbo\r\u0014\rPW\u001f\u000f^\/3Y\b\\%=6A\u0013Z\b\u0006[LA&3S<L\u00004*WEB\u0010\u0016\n\u0013\u001ea:X\bu\u0003$&CEB\u0007\u0004\n\u0013o",
+      "TwitchCache:Layout" : "{\"resource\":{\"isSocialColumnClosedByUserAction\":false,\"isRightColumnClosedByUserAction\":false},\"time\":1780772909368}",
+      "__last-unload" : "1780881311131",
+      "_amazon_ivs_dc_player-web-v1_b8e4f7c1" : "{\"version\":1,\"features\":{\"experiment_foobar\":{\"rolloutState\":{\"rolloutId\":4,\"assignedVariant\":\"treatment\",\"rolloutConfig\":{\"variants\":[{\"control\":0.33},{\"treatment\":0.33},{\"holdback\":0.34}],\"feature-id\":\"experiment_foobar\",\"rollout-id\":4,\"version\":1},\"trackingId\":\"90223820-a6b1-463c-b008-6d18cee99e9d\"}}}}",
+      "ads_bitrate_bps" : "{\"value\":4684036,\"__expireTimeEpoch\":1782092421464}",
+      "amazon_ivs_device_config_v1_player-web-v1_data" : "{\"fetchServer\":\"prod.ivs-device-config.live-video.net\",\"json\":{\"version\":\"1.0\",\"properties\":[{\"name\":\"network\",\"type\":\"json\",\"value_json\":\"W10=\",\"value_analytics\":\"player-web-v1_network_4f53cda18c\",\"encoding\":\"base64\"},{\"name\":\"media\",\"type\":\"json\",\"value_json\":\"W3siY3JpdGVyaWEiOnsicnVsZXMiOnsic2RrVmVyc2lvbiI6WyIxLjQ1LjAtbmlnaHRseS41OGRmMjY4eC4yMDI1MDkxOSJdfSwidmVyc2lvbiI6MX0sInBheWxvYWQiOnsibWVkaWEiOnsiYWJyIjp7InVzZVByb2JlRW5kcG9pbnQiOmZhbHNlfX19fV0=\",\"value_analytics\":\"player-web-v1_media_2b3d165875\",\"encoding\":\"base64\"},{\"name\":\"experiment_foobar\",\"type\":\"json\",\"value_json\":\"W3siY3JpdGVyaWEiOnsicnVsZXMiOnt9LCJ2ZXJzaW9uIjoxfSwicGF5bG9hZCI6eyJmZWF0dXJlLWlkIjoiZXhwZXJpbWVudF9mb29iYXIiLCJmb3JjZS1yZWRpc3RyaWJ1dGUiOmZhbHNlLCJyb2xsb3V0LWlkIjo0LCJ2YXJpYW50cyI6W3siY29udHJvbCI6MC4zM30seyJ0cmVhdG1lbnQiOjAuMzN9LHsiaG9sZGJhY2siOjAuMzR9XSwidmVyc2lvbiI6MX19XQ==\",\"value_analytics\":\"player-web-v1_experiment_foobar_0f5d5298ed\",\"encoding\":\"base64\"},{\"name\":\"adaptiveBitrate\",\"type\":\"json\",\"value_json\":\"W10=\",\"value_analytics\":\"player-web-v1_adaptiveBitrate_4f53cda18c\",\"encoding\":\"base64\"}]}}",
+      "amazon_ivs_device_config_v1_player-web-v1_state" : "{\"fetchServer\":\"prod.ivs-device-config.live-video.net\",\"lastFetchWhenMs\":1780888092633,\"lastFetchEtagHeader\":\"W\/\\\"690a6522a4bafa9dee9c88eb4ee1ebdf\\\"\",\"lastFetchWhenFullMs\":1780879091538}",
+      "celebrationsEnabled" : "true",
+      "chatSettings" : "{\"fadeSharedChats\":false,\"fontSizePreference\":\"default\",\"lastUsedFollowerDurations\":{},\"lastUsedSlowModeDurations\":{},\"repliesAppearancePreference\":\"expanded\",\"screenReaderAutoAnnounceEnabled\":true,\"showAutoModActions\":true,\"showAutoModBaselineActions\":true,\"showAutoModBlockedTermsActions\":true,\"showMessageFlags\":true,\"showModerationActions\":true,\"enableMessageEffects\":true,\"showModIcons\":false,\"showTimestamps\":false,\"viewerChatFilterSettings\":{\"A\":true,\"I\":true,\"P\":false,\"S\":true},\"zachModeStatus\":\"control\",\"viewerChatFilterEnabled\":false}",
+      "dashboardMultiActivityFeedV2Filters" : "{\"7\":{}}",
+      "dismissedOffers" : "[]",
+      "emoteAnimationsEnabled" : "true",
+      "ftue-creator-wallet-callout-banner-promotion" : "{\"seen\":false}",
+      "ftue-weekly-rewards-callout" : "{\"currentStep\":1,\"seen\":false}",
+      "livestreamResumeTimes" : "{\"318592950363\":0,\"318493052506\":0,\"318493102298\":0,\"317979118430\":23765,\"319085172698\":20171,\"317709410263\":13334,\"319578960859\":6346,\"319534617818\":5937}",
+      "local_copy_unique_id" : "\"f7c3d80a24c941f2b6a55107ce0e0294\"",
+      "local_storage_app_session_id" : "\"818adc5276d04602\"",
+      "local_storage_device_id" : "\"5b07239f2d44c2ef\"",
+      "lowLatencyMaxSeenCount" : "2",
+      "lowLatencySeenThisWeekTimestamp" : "1773024425109",
+      "mod_actions_filters" : "{\"SUSPICIOUS_USERS\":true,\"GUEST_STAR\":true,\"BANS_AND_UNBANS\":true,\"TIMEOUTS_AND_UNTIMEOUTS\":true,\"CHAT_MODE_CHANGES\":true,\"WARNINGS\":true,\"MESSAGE_DELETIONS\":true,\"SHOUTOUTS\":true,\"UNBAN_REQUESTS\":true,\"ROLE_CHANGES\":true,\"AUTOMOD_LEVEL_CHANGES\":true,\"BLOCKED_AND_PERMITTED_TERMS\":true,\"RAIDS\":true,\"MODS_AND_VIPS\":true}",
+      "money-banners-extended-dismissal" : "{}",
+      "money-banners-status" : "{\"value\":{},\"__expireTimeEpoch\":1780969540098}",
+      "mv-ui-settings" : "{\"automodQueueFilters\":{\"AutoModCaughtMessageReason\":true,\"BlockedTermCaughtMessageReason\":true,\"BaselineCaughtMessageReason\":true}}",
+      "ocp.CUSTOMIZE_CHANNEL_UPSELL" : "\"dismissed\"",
+      "searchSuggestionHistory" : "{\"id\":\"83207654\",\"suggestions\":[]}",
+      "seenOffers" : "[\"amzn1.pg.offer.bd17e893-c31e-4623-96a5-9d1e99a0bbc6\",\"amzn1.pg.offer.ab39eae8-f228-4654-baa1-86b33537bbe7\",\"amzn1.pg.offer.b68ff3f1-64cb-4263-a653-70056c667ae4\",\"amzn1.pg.offer.16268380-1bf2-4e68-95fd-f421ec6bae4a\",\"amzn1.pg.offer.0ab0751e-f367-439d-b513-b58babbf8c28\",\"amzn1.pg.offer.d31d2933-869d-47e0-a1a4-45bd5ddaeddf\",\"amzn1.pg.offer.0e46edb5-35fd-47e5-9106-5f29070ffe43\",\"amzn1.pg.offer.aa06ae17-039b-4198-bcff-38b1e10d0083\",\"amzn1.pg.offer.9d0b22a3-d9f8-4af7-a033-619a58a091ba\",\"amzn1.pg.offer.7e25d2d5-a002-454f-90e2-ceea391ab0db\",\"amzn1.pg.offer.4ac6a73f-cba3-43eb-8bcf-3578d5940207\",\"amzn1.pg.offer.2b0a097d-68de-4d61-9d5e-660cac9d94a7\",\"amzn1.pg.offer.69297c26-5776-4ed0-8b1f-2ca5c75fad2a\",\"amzn1.pg.offer.21fc9233-36b2-4a82-be1a-d047073d5178\",\"amzn1.pg.offer.4df4e03f-1b84-417c-8076-09a4e7cdbb7c\",\"amzn1.pg.offer.dbbad69e-1319-4758-9313-40e991ad9c0c\",\"amzn1.pg.offer.0ef62886-46b7-44cf-a58d-c8d9ee7555a2\",\"amzn1.pg.offer.ed0d0f64-ba3c-4bdc-8c9a-0146f7ba2deb\",\"amzn1.pg.offer.fedbc696-32d7-46e8-8602-2f67ee3be318\",\"amzn1.pg.offer.08cdae3a-f2db-456d-bf25-d95ada3170aa\",\"amzn1.pg.offer.84133f4d-40d0-46b8-8774-3364d5f6a896\",\"amzn1.pg.offer.8f040d04-6a96-4708-8220-70f5de1b9fad\",\"amzn1.pg.offer.8bca4f83-7fae-42c4-8e50-c6554fe639a4\",\"amzn1.pg.offer.d4e7bc1a-20d3-4696-9a1b-c11dc2811b78\",\"amzn1.pg.offer.a1d3acf4-13fa-47f8-b62a-f484485bb6b7\",\"amzn1.pg.offer.1a03e203-14ce-476e-a340-9d8c941f5d18\",\"amzn1.pg.offer.0f253aec-dbd1-4038-82d0-d0006b37cb93\",\"amzn1.pg.offer.7b1a4ef9-5bf3-47ba-a61a-16fc3ce5cacd\",\"amzn1.pg.offer.9dc1da4f-2af8-41e1-ab5d-dd9b6d741631\",\"amzn1.pg.offer.0cce914b-b476-489e-b7a1-49f982cb4e0c\",\"amzn1.pg.offer.46668610-7359-4e32-9d53-7af86503fcac\",\"amzn1.pg.offer.f163d964-1ea3-4d18-8798-771f2ba8b8ff\",\"amzn1.pg.offer.d43cd2b5-cc54-4f65-9e7f-e8dd8c5e0f4c\",\"amzn1.pg.offer.ffb27d49-56e4-42c1-be75-ff51fe367790\",\"amzn1.pg.offer.2b1311a0-75f2-4e46-8b37-b51d2e69a40e\",\"amzn1.pg.offer.4eecc50a-315a-45b0-b176-2b73e93030d0\",\"amzn1.pg.offer.3f2cae6d-de25-42e7-840a-e0bd14494a3f\",\"amzn1.pg.offer.4adf155f-b7c6-4586-aad2-8eb85142e020\"]",
+      "sentry_device_id" : "\"152700a39806cf27\"",
+      "shareResubNotificationIDs" : "{}",
+      "sprig.anon.env.vid.map" : "{\"zIy65lh0OA\":\"282bdc45-1a85-4b73-adde-78ca72df1775\"}",
+      "su_type_filter_storage" : "{\"MANUALLY_ADDED\":true,\"DETECTED_BAN_EVADER\":true,\"DETECTED_POTENTIAL_HARASSER\":true,\"BANNED_IN_SHARED_CHANNEL\":true}",
+      "tacos-properties" : "{\"lastCalledTime\":1780879087830,\"itemsToShow\":[],\"isNewUser\":false}",
+      "tag-size-cache-uv.2" : "{\"value\":{\"420\":39.46875,\"Deutsch\":68.453125,\"coaching\":73.359375,\"DropsEnabled\":101.4375,\"educational\":88.125,\"chess\":54.578125,\"MMORPG\":75.640625,\"funny\":53.140625,\"russian\":62.578125,\"English\":62.3125,\"Português\":80.40625,\"Esports\":64.84375,\"RPG\":44.59375,\"Adventure Game\":117.453125,\"MMO\":51.0625,\"Action\":57.71875,\"Open World\":88.359375,\"Strategy\":69.921875,\"IRL\":37.90625,\"MOBA\":56.765625,\"FPS\":42.546875,\"Shooter\":66.109375,\"Driving\/Racing Game\":142.390625,\"Card & Board Game\":132.734375,\"gameplay\":76.484375,\"brasileiro\":73.96875,\"roleplay\":66.234375,\"humor\":57.484375,\"react\":50,\"brasil\":51.9375,\"18plus\":58.046875,\"Tattoos\":64.171875,\"ClosedCaptions\":112.828125,\"monsterhunter\":106.671875,\"capcom\":66.328125,\"booba\":56.625,\"cozystream\":88.3125,\"MonsterHunterRiseSunBreak\":188.59375,\"gaymergirl\":81.96875,\"patreon\":65.171875,\"ASMRvisual\":88.984375,\"girlstreaming\":96.890625,\"reacts\":56.484375,\"Unboxing\":75.421875,\"ASMRauditivo\":101.59375,\"ASMR\":55.03125,\"MentalHealth\":98.015625,\"Ginger\":59.296875,\"Canadian\":74.953125,\"ADHD\":55.015625,\"Woman\":63.703125,\"chill\":43.671875,\"redhead\":68.09375,\"Girl\":40.484375,\"Canada\":64.5,\"conversa\":73.359375,\"batepapo\":75.265625,\"pobre\":53.96875,\"discord\":63.5625,\"irl\":31.015625,\"memes\":62.359375,\"rbiana\":56.5625,\"pubg\":49.875,\"pubgmobile\":88.875,\"sparkingg\":78.03125,\"pubgesports\":94.53125,\"AfricanAmerican\":117.765625,\"durag\":53.90625,\"stolen\":55.9375,\"fps\":38.625,\"cod\":41.796875,\"battleroyale\":89.390625,\"callofduty\":78.015625,\"blackops7\":79.5,\"warzone\":69.984375,\"MIBR\":49.875,\"Imperial\":66.59375,\"g3x\":42.078125,\"Tribo\":49.984375,\"FURIA\":55.625,\"legacy\":58.5,\"counterstrike\":97.90625,\"counterstrike2\":105.375,\"paiN\":46.421875,\"Carecas\":67.84375,\"DJ\":35.4375,\"House\":57.234375,\"Music\":54.828125,\"pride\":50.0625,\"Techno\":62.984375,\"dance\":55.828125,\"EDM\":46.875,\"LGBTQIAPlus\":96.96875,\"piano\":52.140625,\"requests\":71.140625,\"Instrumental\":93.609375,\"playlist\":61.609375,\"lofi\":38.078125,\"relax\":48.375,\"music\":54.71875,\"sleep\":51.4375,\"study\":52.9375,\"beats\":52.625,\"lofigirl\":56.59375,\"radio\":49.53125,\"VideoGameMusic\":122.453125,\"EasyListening\":101.078125,\"classical\":70.21875,\"Anime\":57.015625,\"pianomusic\":86.859375,\"Requests\":74.375,\"Latin\":48.703125,\"Jazz\":47.109375,\"NoBackseating\":107.84375,\"Aussie\":59.40625,\"BlindPlaythrough\":119.453125,\"sillyguy\":64.390625,\"LGBTQ\":60.25,\"PopCulture\":85.234375,\"dragqueen\":82.9375,\"Pop\":42.421875,\"Vtuber\":59.984375,\"ruziemaken\":87.703125,\"rickbroers\":79.453125,\"Nederlands\":86.9375,\"serpentgameplay\":121.359375,\"art\":36.578125,\"DigitalArt\":75.40625,\"Aseprite\":69.28125,\"PixelArt\":65.953125,\"Illustration\":81.84375,\"gamedev\":73.6875,\"PortuguêsBR\":96.09375,\"indie\":48.25,\"LGBT\":51.3125,\"Variety\":61.375,\"NoPixel\":63.78125,\"english\":62.140625,\"Cringefail\":76.203125,\"한국어\":51.140625,\"Mulher\":60.53125,\"ptbr\":44.53125,\"commissions\":96.40625,\"EN\":36.1875,\"VtuberBR\":75.6875,\"artist\":50.859375,\"VTuberArtist\":94.609375,\"CommissionOPEN\":125.015625,\"Japanese日本語\":112.90625,\"MultilingualWelcome\":141.140625,\"Nintendo\":73.125,\"Dublagem\":78.96875,\"retro\":47.953125,\"game\":52.296875,\"chat\":45.75,\"DropsAtivados\":105.59375,\"giveaway\":74.953125,\"Interactive\":82.171875,\"LurkerFriendly\":104.140625,\"AMA\":48.25,\"ARPG\":53.28125,\"Québec\":65.328125,\"drops\":53.4375,\"WOWDROPS\":94.09375,\"wow\":47.046875,\"teamliquid\":81.015625,\"girl\":38.515625,\"femalegamer\":96.34375,\"WorldfofWarcraft\":120.609375,\"eiya\":43.875,\"Crack\":54.21875,\"grumpy\":64.53125,\"ancient\":63.265625,\"Elderly\":59.90625,\"Intellectual\":84.40625,\"TheSack\":70.84375,\"fossil\":51.015625,\"Fortnite\":65.578125,\"LGBTQIAFriendly\":119.09375,\"RazerCreator\":97.09375,\"deadbydaylight\":110,\"dbdcreator\":84.671875,\"TwitchBlackGuild\":120.96875,\"blackgirlgamer\":106.640625,\"BirthdayMonth\":106.875,\"RaidsWelcome\":105.328125,\"newTwitchPartner\":126.328125,\"Casual\":59.734375,\"funnyandchill\":98.390625,\"AuDHD\":62.3125,\"TwitchWomensGuild\":139.171875,\"BlackBrilliance\":105.078125,\"Black\":51.671875,\"SuperSweetBot\":110.78125,\"Cozy\":49.890625,\"AuditoryASMR\":104.5625,\"Relax\":51.609375,\"R",
+      "turbo_free_trial_opened" : "{\"value\":true,\"__expireTimeEpoch\":1777772208129}",
+      "turn-off-animated-emotes-callout-seen" : "true",
+      "twilight.checkup-needed" : "{\"accountSecurityState\":\"GOOD_STANDING\",\"required\":false}",
+      "twilight.emote_picker_history" : "{\"9\":{\"emote\":{\"id\":\"9\",\"token\":\"<3\",\"type\":\"SMILIES\"},\"lastUpdatedAt\":4,\"uses\":0},\"25\":{\"emote\":{\"id\":\"25\",\"token\":\"Kappa\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":9,\"uses\":0},\"41\":{\"emote\":{\"id\":\"41\",\"token\":\"Kreygasm\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":1,\"uses\":0},\"245\":{\"emote\":{\"id\":\"245\",\"token\":\"ResidentSleeper\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":2,\"uses\":0},\"28087\":{\"emote\":{\"id\":\"28087\",\"token\":\"WutFace\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":3,\"uses\":0},\"30259\":{\"emote\":{\"id\":\"30259\",\"token\":\"HeyGuys\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":10,\"uses\":0},\"58765\":{\"emote\":{\"id\":\"58765\",\"token\":\"NotLikeThis\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":5,\"uses\":0},\"64138\":{\"emote\":{\"id\":\"64138\",\"token\":\"SeemsGood\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":0,\"uses\":0},\"81274\":{\"emote\":{\"id\":\"81274\",\"token\":\"VoHiYo\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":6,\"uses\":0},\"425618\":{\"emote\":{\"id\":\"425618\",\"token\":\"LUL\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":8,\"uses\":0},\"305954156\":{\"emote\":{\"id\":\"305954156\",\"token\":\"PogChamp\",\"type\":\"GLOBALS\"},\"lastUpdatedAt\":7,\"uses\":0}}",
+      "twilight.sessionID" : "\"122d9638a0b44acc\"",
+      "useHighContrastColors" : "true",
+      "userleap.ids" : "{\"zIy65lh0OA\":{\"vid\":\"282bdc45-1a85-4b73-adde-78ca72df1775\"}}",
+      "video-muted" : "{\"carousel\":false,\"default\":true}",
+      "video_ads.stream_loudness" : "{\"loudness\":-24.2332897,\"timestamp\":1780881772857}",
+      "vodResumeTimes" : "{\"v2723433847\":247,\"v2783430798\":60}",
+      "volume" : "1"
+    },
+    "sessionStorage" : {
+      "directory_cache_first" : "{\"frontpage\":false}",
+      "page_scroll_position" : "{\"frontpage\":0}",
+      "session_storage_last_visited_twitch_url" : "\"https:\/\/www.twitch.tv\/randroid88\"",
+      "session_storage_unique_id" : "\"a2acd01820ac4012\"",
+      "session_storage_vx_disco_mm" : "true",
+      "twilight.update_manager.known_builds" : "[\"a54467d0-815e-46db-b05d-1b4c6ac650b2\"]",
+      "watch-streak-last-seen-streak-83207654" : "\"0\""
+    }
+  },
+  "title" : "Randroid88 - Twitch",
+  "url" : "https:\/\/www.twitch.tv\/randroid88",
+  "viewport" : {
+    "devicePixelRatio" : 1,
+    "height" : 996,
+    "width" : 1092
+  }
+}
