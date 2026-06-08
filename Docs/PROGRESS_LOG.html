@@ -31,6 +31,19 @@
 
 <main id="entries">
 
+  <article data-slice="audio-vibekit-audit" data-date="2026-06-08">
+    <h3>Audit audio.ts for VibeKit contribution</h3>
+    <dl>
+      <dt>Branch</dt><dd><code>docs/audio-vibekit-audit</code></dd>
+      <dt>PR</dt><dd>TBD</dd>
+      <dt>Changed</dt><dd>Audit-only slice, no runtime change. Verified vibekit <code>v0.2.0</code> exports no audio module (checked the kit's <code>index.ts</code> and <code>server/index.ts</code>), so there is nothing for FrackingAsteroids to consume. FA keeps its self-contained procedural Web Audio system. The upstream contribution of FA's audio shape is a cross-repo task that cannot be done from this repo, so it is recorded as followup <code>F-002</code> rather than left implicit. Build log appended to <code>Docs/gdd/22-audio.html</code>.</dd>
+      <dt>Verification</dt><dd><code>npm run test:unit</code> (558/558, audio/music/sfx suites unchanged) and <code>git diff --check</code> passed. Dash scan returned no matches. No source changed.</dd>
+      <dt>Assumptions</dt><dd>"VibeKit contribution" here means a portable audio primitive in the kit; none exists at <code>v0.2.0</code>, and authoring one requires a <code>../VibeKit</code> checkout plus sibling decouple work, both out of scope for this repo.</dd>
+      <dt>GDD coverage</dt><dd>unchanged. Build log appended to <code>Docs/gdd/22-audio.html</code>.</dd>
+      <dt>Followups</dt><dd><code>F-002</code>: contribute FA's audio shape upstream to VibeKit.</dd>
+    </dl>
+  </article>
+
   <article data-slice="persistence-vibekit-kv" data-date="2026-06-08">
     <h3>Back persistence with vibekit server KV</h3>
     <dl>
