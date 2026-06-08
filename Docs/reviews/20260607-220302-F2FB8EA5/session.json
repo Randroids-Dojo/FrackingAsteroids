@@ -3,8 +3,8 @@
   "captures" : [
     {
       "browserSnapshotRelativePath" : "captures\/D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A.browser.json",
-      "browserTitle" : "Randroid88 - Twitch",
-      "browserURL" : "https:\/\/www.twitch.tv\/randroid88",
+      "browserTitle" : "FrackingAsteroids",
+      "browserURL" : "http:\/\/localhost:3000\/",
       "createdAt" : "2026-06-08T03:14:21.103Z",
       "id" : "D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A",
       "note" : "First-90-seconds flow is clean: title -> save slot -> skippable intro attract-mode -> guided tutorial with step dots. The tagline (Blast. Collect. Scrap. Upgrade.) plus tutorial cards communicate the goal quickly. No auth walls or dead ends. Skip actions use a YES\/NO confirm so they are not hit by accident.",

@@ -87,7 +87,7 @@ For every slice:
 1. Read the rule, plan, product, progress, question, followup, coverage, dependency-ledger, and backlog documents listed in Rule 2.
 2. Run the Dependency Upgrade Gate (see `Docs/IMPLEMENTATION_PLAN.html`). If a watched dep is out of date, the upgrade IS the next slice unless red CI takes over.
 3. Pick the highest-priority unblocked task from the implementation plan, dep ledger, GDD coverage gaps, followups, and active backlog.
-4. Create one branch for one PR-sized slice. Never push directly to `main`.
+4. Before starting work, confirm your starting point. Run `git branch --show-current` and `git status` and verify you are on an up-to-date `main` with the tree you expect. Multiple agents (a parallel Codex or Claude session, the dots tooling, an IDE) can share this one working copy and may have left it checked out on someone else's branch or with their uncommitted changes. Branching from the wrong base silently folds their commits into your PR. If `HEAD` is not the branch you intend to base on, switch to a verified-clean `main` first (`git checkout main && git pull --ff-only`), and never assume `checkout -b` started from `main`. Then create one branch for one PR-sized slice. Never push directly to `main`. Stage explicit paths (`git add <path>`), never `git add -A`, so a co-tenant's stray changes cannot ride along in your commit.
 5. Implement the slice fully using existing project patterns.
 6. Add or update tests appropriate to the risk and surface area.
 7. Update `Docs/PROGRESS_LOG.html`, `Docs/GDD_COVERAGE.json`, `Docs/OPEN_QUESTIONS.html`, `Docs/FOLLOWUPS.html`, `Docs/DEPENDENCY_LEDGER.html`, and the GDD section when the work changes them.
