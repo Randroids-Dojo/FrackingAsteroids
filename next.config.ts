@@ -12,6 +12,7 @@ function getGitSha(): string {
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  transpilePackages: ['@randroids-dojo/vibekit'],
   env: {
     NEXT_PUBLIC_APP_VERSION: getGitSha(),
   },
