@@ -58,6 +58,7 @@
   <section data-role="build-log">
     <h2>Build log</h2>
     <ul>
+      <li data-date="2026-06-08">Migrated the game save/load facade to <code>@randroids-dojo/vibekit/server</code> <code>readKv</code> and <code>writeKv</code> while keeping the FrackingAsteroids <code>game:</code> key prefix, <code>GameStateSchema</code> validation, and legacy JSON-string save compatibility. Files: <code>src/lib/persistence.ts</code>. PR TBD.</li>
       <li data-date="2026-06-07">State management and persistence shipped pre-migration. The 60fps render loop and shared tick orchestration live in <code>src/game/scene.ts</code> and <code>src/game/game-tick.ts</code>. React UI/HUD state lives in <code>src/hooks/useGameState.ts</code>. Persistence lives in <code>src/hooks/useGamePersistence.ts</code>, <code>src/lib/persistence.ts</code>, and <code>src/lib/kv.ts</code> (Upstash Redis). Auto-save on collect, sell, buy, and station repair is wired in <code>src/app/page.tsx</code> via requestSave. The headless mirror lives in <code>tests/integration/game-simulation.ts</code> and <code>tests/integration/game-test-harness.ts</code>. This corresponds to GDD milestone M8 (Persistence), now complete.</li>
     </ul>
   </section>
