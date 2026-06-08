@@ -7,7 +7,7 @@
 <meta name="dot-status" content="closed">
 <meta name="dot-priority" content="4">
 <meta name="dot-issue-type" content="task">
-<meta name="dot-created-at" content="&quot;2026-05-08T23:28:35.466516-05:00&quot;">
+<meta name="dot-created-at" content="2026-05-08T23:28:35.466516-05:00">
 <meta name="dot-closed-at" content="2026-06-08T15:27:26.966481-05:00">
 <meta name="dot-close-reason" content="Audited audio.ts: vibekit v0.2.0 has no audio module (nothing to consume); FA keeps its self-contained Web Audio system. Upstream contribution is cross-repo and filed as followup F-002. Build log added to gdd/22.">
 </head>
