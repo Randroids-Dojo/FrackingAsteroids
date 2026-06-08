@@ -1,9 +1,11 @@
 ---
 title: "Ambush event: ship gets destroyed"
-status: open
+status: closed
 priority: 1
 issue-type: task
-created-at: 2026-03-29T00:00:00Z
+created-at: "2026-03-29T00:00:00Z"
+closed-at: "2026-06-08T03:00:19.878Z"
+close-reason: "Archived from FluxPanel"
 blocks:
   - c2d3e4f5
   - d3e4f5a6

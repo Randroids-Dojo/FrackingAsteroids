@@ -1,9 +1,11 @@
 ---
-title: "Respawn with basic starter ship, begin tutorial"
-status: open
+title: Respawn with basic starter ship, begin tutorial
+status: closed
 priority: 1
 issue-type: task
-created-at: 2026-03-29T00:00:00Z
+created-at: "2026-03-29T00:00:00Z"
+closed-at: "2026-06-08T03:00:20.574Z"
+close-reason: "Archived from FluxPanel"
 blocks:
   - a6b7c8d9
 ---

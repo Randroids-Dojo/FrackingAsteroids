@@ -1,11 +1,11 @@
 ---
 title: "Fix: loaded games show the intro (prologue) ship"
-status: done
+status: closed
 priority: 1
 issue-type: bug
-created-at: 2026-06-01T00:00:00Z
-closed-at: 2026-06-01T00:00:00Z
-resolution: "Added skipPrologue option to createGameScene (threaded from !isNewGame via GameCanvas). When set, scene init calls resetShipToStation() so loaded games start at the station with the normal ship instead of the maxed intro ship. Verified via screenshot of a loaded game + e2e tutorial specs still green."
+created-at: "2026-06-01T00:00:00Z"
+closed-at: "2026-06-07T22:00:15.414503-05:00"
+close-reason: Archived from FluxPanel
 ---
 
 createGameScene always initializes in the scripted-prologue state: the maxed-out

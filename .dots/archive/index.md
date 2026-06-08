@@ -1,9 +1,11 @@
 ---
-title: "Ship Loss Intro Sequence"
-status: open
+title: Ship Loss Intro Sequence
+status: closed
 priority: 1
 issue-type: epic
-created-at: 2026-03-29T00:00:00Z
+created-at: "2026-03-29T00:00:00Z"
+closed-at: "2026-06-08T03:00:21.999Z"
+close-reason: "Archived from FluxPanel"
 ---
 
 The game opens with the player piloting a fully upgraded, late-game ship — Lazer,

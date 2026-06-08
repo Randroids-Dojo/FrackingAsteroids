@@ -1,9 +1,11 @@
 ---
-title: "Intro sequence state machine"
-status: open
+title: Intro sequence state machine
+status: closed
 priority: 1
 issue-type: task
-created-at: 2026-03-29T00:00:00Z
+created-at: "2026-03-29T00:00:00Z"
+closed-at: "2026-06-08T03:00:21.285Z"
+close-reason: "Archived from FluxPanel"
 ---
 
 Build a state machine to orchestrate the full intro sequence:
