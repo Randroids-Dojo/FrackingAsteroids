@@ -53,6 +53,16 @@
     </dl>
   </section>
 
+  <section data-f="F-002" data-priority="nice-to-have">
+    <h3>F-002: Contribute FrackingAsteroids audio shape upstream to VibeKit</h3>
+    <dl>
+      <dt>Context</dt><dd>The 2026-06-08 audit of <code>src/game/audio.ts</code> (dot <code>audit-src-game-6bdbd52e</code>) confirmed vibekit <code>v0.2.0</code> has no audio module, so there is nothing to consume. FA's procedural Web Audio system (lazy shared <code>AudioContext</code>, first-gesture resume, per-sound synthesis) is a candidate shared primitive, but extracting it is a cross-repo contribution, not an FA-local change.</dd>
+      <dt>Blocker</dt><dd>cannot be done from FrackingAsteroids alone: needs a <code>../VibeKit</code> checkout with write access, a cross-reference against sibling audio modules (VibeRacer, VibeCity, Flatline), and depends on VibeRacer's decouple-audioEngine task landing first.</dd>
+      <dt>Unblock condition</dt><dd>a vibekit audio primitive is scheduled and the sibling decouple work has landed; then design a shared AudioContext + buses + first-gesture-resume shape in the kit and have FA consume it.</dd>
+      <dt>PR / Dot reference</dt><dd>(not started)</dd>
+    </dl>
+  </section>
+
 </section>
 
 <section id="polish">
