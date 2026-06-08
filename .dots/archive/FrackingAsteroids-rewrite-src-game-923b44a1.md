@@ -7,7 +7,7 @@
 <meta name="dot-status" content="closed">
 <meta name="dot-priority" content="4">
 <meta name="dot-issue-type" content="task">
-<meta name="dot-created-at" content="&quot;2026-05-08T23:28:24.988066-05:00&quot;">
+<meta name="dot-created-at" content="2026-05-08T23:28:24.988066-05:00">
 <meta name="dot-closed-at" content="2026-06-08T15:07:17.223186-05:00">
 <meta name="dot-close-reason" content="Refactored virtual-joystick.ts to delegate headless state to vibekit createJoystick/begin/move/end/readJoystick; FA keeps DOM overlay, touch regions, dead zone, and InputState/fire-angle outputs. 558 unit + 28 integration green.">
 </head>
