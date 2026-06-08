@@ -102,7 +102,7 @@ function rayCircleEntry(
  * Compute the projected aim line from the ship along a direction.
  *
  * The line extends to the edge of the visible screen, unless it first
- * intersects an obstacle — in which case it stops at the obstacle's surface and
+ * intersects an obstacle - in which case it stops at the obstacle's surface and
  * reports that obstacle as the locked target.
  *
  * @param startX - Ship center X (world)

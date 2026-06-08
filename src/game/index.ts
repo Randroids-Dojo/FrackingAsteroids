@@ -1,5 +1,5 @@
 /**
- * FrackingAsteroids — Game Engine Entry Point
+ * FrackingAsteroids - Game Engine Entry Point
  */
 
 export { BLASTER_COSTS, COLLECTOR_COSTS, STORAGE_COSTS } from './types'

@@ -1,6 +1,6 @@
 /**
  * Mining laser (blaster) constants.
- * Short-range mining tool — projectile speed matches ship speed
+ * Short-range mining tool - projectile speed matches ship speed
  * to feel like a tool, not a weapon.
  */
 
@@ -55,7 +55,7 @@ export const LAZER_COOLDOWN_TIME = 1.5
 /** Interval between lazer projectile spawns (seconds) for sustained beam feel. */
 export const LAZER_FIRE_INTERVAL = 0.1
 
-/** Clamp a tier value to the valid 1–5 range. */
+/** Clamp a tier value to the valid 1-5 range. */
 export function clampTier(tier: number): number {
   return Math.max(1, Math.min(5, Math.round(tier)))
 }

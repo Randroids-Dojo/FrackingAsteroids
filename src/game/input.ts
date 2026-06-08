@@ -83,7 +83,7 @@ export function createInputHandler(state: InputState): {
 
 /**
  * Creates a mouse aim handler that tracks cursor position over the canvas.
- * Mouse-only — mobile aiming is handled separately via tap-to-fire to
+ * Mouse-only - mobile aiming is handled separately via tap-to-fire to
  * avoid conflicts with the virtual joystick touch events.
  */
 export function createAimHandler(

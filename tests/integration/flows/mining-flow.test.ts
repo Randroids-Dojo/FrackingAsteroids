@@ -117,7 +117,7 @@ describe('mining flow', () => {
     h.sim.stepN(30)
     h.sim.clearInput()
 
-    // Ship should not overlap asteroid — it should have been pushed
+    // Ship should not overlap asteroid - it should have been pushed
     const dx = h.sim.ship.x - h.sim.asteroids[0].x
     const dy = h.sim.ship.y - h.sim.asteroids[0].y
     const dist = Math.sqrt(dx * dx + dy * dy)

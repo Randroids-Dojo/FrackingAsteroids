@@ -103,7 +103,7 @@ describe('game-tick', () => {
   })
 
   // -------------------------------------------------------------------------
-  // 4. Ship movement — shipMoved=true when ship far from origin
+  // 4. Ship movement - shipMoved=true when ship far from origin
   // -------------------------------------------------------------------------
   describe('ship movement', () => {
     it('shipMoved=true when ship is far from origin', async () => {
@@ -390,7 +390,7 @@ describe('game-tick', () => {
       const { createInputState } = await import('../../src/game/input')
 
       const state = createTickState()
-      // Place enemy 4 units above player — projectile spawns at offset of 4 toward player,
+      // Place enemy 4 units above player - projectile spawns at offset of 4 toward player,
       // which lands exactly on the player at (0,0).
       const enemy = createEnemyShip(0, 4)
       enemy.shootTimer = 0 // force immediate fire
@@ -489,7 +489,7 @@ describe('game-tick', () => {
       metal.y = 0
       state.metalChunks.push(metal)
 
-      // Run a tick without collecting — metal should bounce, not be collected
+      // Run a tick without collecting - metal should bounce, not be collected
       const result = tick(state, makeInput(createInputState, { collecting: false }))
 
       assert.equal(result.metalCollectedEvent, false, 'should not collect when not collecting')
@@ -528,14 +528,14 @@ describe('game-tick', () => {
         playerHp: 50,
       })
 
-      // First tick — repairs
+      // First tick - repairs
       tick(state, makeInput(createInputState))
       assert.equal(state.playerHp, PLAYER_MAX_HP)
 
       // Damage the player again
       state.playerHp = 30
 
-      // Second tick — should NOT repair
+      // Second tick - should NOT repair
       const result2 = tick(state, makeInput(createInputState))
       assert.equal(state.playerHp, 30, 'should not repair again same visit')
       assert.equal(result2.stationRepaired, false)
@@ -569,7 +569,7 @@ describe('game-tick', () => {
       const { createInputState } = await import('../../src/game/input')
 
       // Stage state as if the player healed during approach-station and then
-      // bought an upgrade — they're still in heal range with repairedThisVisit set.
+      // bought an upgrade - they're still in heal range with repairedThisVisit set.
       const state = createTickState({
         shipPosition: { x: 30, y: 200 },
         stationPosition: { x: 30, y: 200 },
@@ -654,7 +654,7 @@ describe('game-tick', () => {
         y: 1000,
         vx: 0,
         vy: 0,
-        elapsed: 100, // very high elapsed — should expire
+        elapsed: 100, // very high elapsed - should expire
       })
 
       const result = tick(state, makeInput(createInputState))
@@ -961,7 +961,7 @@ describe('game-tick', () => {
       }))
       const state = createTickState({ asteroids, stationPosition: { x: 500, y: 500 } })
 
-      // First tick spawns enemies — don't kill them
+      // First tick spawns enemies - don't kill them
       tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))
 
       const result = tick(state, makeInput(createInputState, { tutorialStep: 'prologue-mining' }))

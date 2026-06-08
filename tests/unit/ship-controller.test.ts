@@ -85,7 +85,7 @@ describe('updateShip', () => {
     const ship = makeShip()
     const input = createInputState()
     input.right = true
-    // Single frame — ship has zero speed but should still rotate
+    // Single frame - ship has zero speed but should still rotate
     updateShip(ship, input, 1 / 60)
     assert.ok(
       Math.abs(ship.rotation - Math.atan2(-1, 0)) < 0.001,
@@ -141,7 +141,7 @@ describe('updateShip', () => {
     for (let i = 0; i < 10; i++) {
       updateShip(ship, input, 1 / 60, null)
     }
-    // atan2(0, 1) = 0 — facing up
+    // atan2(0, 1) = 0 - facing up
     assert.ok(Math.abs(ship.rotation) < 0.001, 'should face up (rotation ~0)')
   })
 

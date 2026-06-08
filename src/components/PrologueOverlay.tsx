@@ -166,7 +166,7 @@ export function PrologueOverlay({ step, onSkip, onDialogueComplete }: PrologueOv
         </div>
       )}
 
-      {/* Skip button — always visible during prologue */}
+      {/* Skip button - always visible during prologue */}
       <div className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2">
         {!confirming && (
           <button

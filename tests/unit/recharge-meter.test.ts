@@ -270,15 +270,15 @@ describe('updateRechargeMeter', () => {
       },
     }
 
-    // First call — should set color
+    // First call - should set color
     updateRechargeMeter(meter, makeBlaster(cooldownTotal * 0.5), 1)
     assert.equal(setHexCallCount, 1, 'should call setHex on first update')
 
-    // Second call with same progress — same color, should not call setHex again
+    // Second call with same progress - same color, should not call setHex again
     updateRechargeMeter(meter, makeBlaster(cooldownTotal * 0.5), 1)
     assert.equal(setHexCallCount, 1, 'should not call setHex when color unchanged')
 
-    // Third call crossing threshold — should call setHex again
+    // Third call crossing threshold - should call setHex again
     updateRechargeMeter(meter, makeBlaster(cooldownTotal * 0.05), 1)
     assert.equal(setHexCallCount, 2, 'should call setHex when color changes')
   })

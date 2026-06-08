@@ -1,12 +1,12 @@
 /**
- * Background visual effects — nebula swirls, distant black holes,
+ * Background visual effects - nebula swirls, distant black holes,
  * and twinkling deep-space stars.
  */
 
 import * as THREE from 'three'
 
 // ---------------------------------------------------------------------------
-// Twinkling Stars — enhanced star layer with brightness variation
+// Twinkling Stars - enhanced star layer with brightness variation
 // ---------------------------------------------------------------------------
 
 const TWINKLE_STAR_COUNT = 200
@@ -14,7 +14,7 @@ const TWINKLE_STAR_COUNT = 200
 export interface TwinkleStars {
   points: THREE.Points
   geometry: THREE.BufferGeometry
-  /** Per-star base brightness (0.3–1.0). */
+  /** Per-star base brightness (0.3-1.0). */
   baseBrightness: Float32Array
   /** Per-star twinkle phase offset. */
   phases: Float32Array
@@ -30,7 +30,7 @@ export function createTwinkleStars(): TwinkleStars {
   const phases = new Float32Array(TWINKLE_STAR_COUNT)
   const speeds = new Float32Array(TWINKLE_STAR_COUNT)
 
-  // Star color palette — warm whites, pale blues, subtle golds
+  // Star color palette - warm whites, pale blues, subtle golds
   const starColors = [
     [1.0, 1.0, 1.0],
     [0.8, 0.9, 1.0],
@@ -111,7 +111,7 @@ export function disposeTwinkleStars(stars: TwinkleStars): void {
 }
 
 // ---------------------------------------------------------------------------
-// Nebula Swirls — large semi-transparent glowing clouds
+// Nebula Swirls - large semi-transparent glowing clouds
 // ---------------------------------------------------------------------------
 
 const NEBULA_COUNT = 5
@@ -207,7 +207,7 @@ export function disposeNebulaSystem(system: NebulaSystem): void {
 }
 
 // ---------------------------------------------------------------------------
-// Black Hole — gravitational distortion visual
+// Black Hole - gravitational distortion visual
 // ---------------------------------------------------------------------------
 
 export interface BlackHole {

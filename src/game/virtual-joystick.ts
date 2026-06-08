@@ -77,7 +77,7 @@ function createOverlay(
 
 /**
  * Creates a virtual joystick that writes to an InputState and renders
- * a visible base + knob overlay. Active only on touch devices — the
+ * a visible base + knob overlay. Active only on touch devices - the
  * left half of the container acts as the joystick area. A touch-start
  * anchors the joystick center, then dragging sets the direction.
  */

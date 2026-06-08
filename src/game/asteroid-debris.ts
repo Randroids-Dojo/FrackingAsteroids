@@ -24,7 +24,7 @@ export interface DebrisChunk {
  * Pick and remove outer voxel meshes from an asteroid model near the hit point.
  * Returns the removed meshes repositioned to world space for use as flying debris.
  *
- * @param asteroidModel - The THREE.Group containing voxel meshes (mutated — children removed)
+ * @param asteroidModel - The THREE.Group containing voxel meshes (mutated - children removed)
  * @param hitX - World-space X of the projectile hit
  * @param hitY - World-space Y of the projectile hit
  * @param count - Number of chunks to break off

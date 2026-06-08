@@ -12,7 +12,7 @@ const PARTICLE_SPEED = 40
 /** Size of each particle cube. */
 const PARTICLE_SIZE = 0.6
 
-/** Explosion colors — amber/orange energy burst. */
+/** Explosion colors - amber/orange energy burst. */
 const EXPLOSION_COLORS = [0xffaa00, 0xffdd44, 0xff6600, 0xffcc22] as const
 
 export interface Explosion {

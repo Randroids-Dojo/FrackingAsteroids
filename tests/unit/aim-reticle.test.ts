@@ -10,7 +10,7 @@ import {
 
 const BOUNDS = { minX: -100, maxX: 100, minY: -100, maxY: 100 }
 
-describe('computeAimLine — geometry', () => {
+describe('computeAimLine - geometry', () => {
   it('extends to the right screen edge when nothing is in the way', () => {
     const r = computeAimLine(0, 0, 1, 0, BOUNDS, [])
     assert.equal(r.target, null)
@@ -100,7 +100,7 @@ describe('computeAimLine — geometry', () => {
   })
 })
 
-describe('aim reticle — rendering', () => {
+describe('aim reticle - rendering', () => {
   it('creates a hidden reticle group with line and ring', () => {
     const reticle = createAimReticle()
     assert.equal(reticle.group.visible, false)

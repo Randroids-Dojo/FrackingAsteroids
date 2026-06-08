@@ -4,7 +4,7 @@ status: closed
 priority: 1
 issue-type: bug
 created-at: "2026-06-01T00:00:00Z"
-closed-at: "2026-06-07T21:52:09.467175-05:00"
+closed-at: "2026-06-07T22:00:13.263373-05:00"
 close-reason: Archived from FluxPanel
 ---
 

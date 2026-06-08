@@ -1,5 +1,5 @@
 /**
- * Sound effects using Web Audio API — all procedurally synthesized.
+ * Sound effects using Web Audio API - all procedurally synthesized.
  */
 
 import { getSfxVolume } from './volume-control'
@@ -22,7 +22,7 @@ export function setSfxContext(ctx: AudioContext): void {
 }
 
 // ---------------------------------------------------------------------------
-// Laser Fire — short chirpy zap
+// Laser Fire - short chirpy zap
 // ---------------------------------------------------------------------------
 
 export function playLaserFire(): void {
@@ -54,7 +54,7 @@ export function playLaserFire(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Explosion — low boom with noise burst
+// Explosion - low boom with noise burst
 // ---------------------------------------------------------------------------
 
 export function playExplosion(): void {
@@ -105,7 +105,7 @@ export function playExplosion(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Player Hit — sharp impact with distortion
+// Player Hit - sharp impact with distortion
 // ---------------------------------------------------------------------------
 
 export function playPlayerHit(): void {
@@ -151,7 +151,7 @@ export function playPlayerHit(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Engine Thrust — filtered noise loop, controlled externally
+// Engine Thrust - filtered noise loop, controlled externally
 // ---------------------------------------------------------------------------
 
 interface EngineSound {
@@ -234,6 +234,6 @@ export function stopEngineSound(): void {
 
 export function disposeSfx(): void {
   stopEngineSound()
-  // Don't close ctx — shared with main audio module
+  // Don't close ctx - shared with main audio module
   audioCtx = null
 }

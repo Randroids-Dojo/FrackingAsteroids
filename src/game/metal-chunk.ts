@@ -19,13 +19,13 @@ const METAL_TUMBLE_SPEED = 3
 /** Friction applied each frame (higher = less friction). */
 const METAL_FRICTION = 0.995
 
-/** Bounce restitution — fraction of velocity preserved on bounce. */
+/** Bounce restitution - fraction of velocity preserved on bounce. */
 const METAL_RESTITUTION = 0.7
 
-/** Chance (0–1) that a debris break-off spawns a metal chunk. */
+/** Chance (0-1) that a debris break-off spawns a metal chunk. */
 export const METAL_SPAWN_CHANCE = 0.7
 
-/** Metal colors — silver and gold. */
+/** Metal colors - silver and gold. */
 const METAL_COLORS = {
   silver: 0xc0c0c0,
   silverLight: 0xe8e8e8,
@@ -204,13 +204,13 @@ export function bounceMetalOffAsteroid(chunk: MetalChunk, asteroid: Asteroid): b
 /** Collector pull acceleration (units/sec²). */
 export const COLLECTOR_PULL_ACCEL = 400
 
-/** Collector range in world units (tier 1 — small radius). */
+/** Collector range in world units (tier 1 - small radius). */
 export const COLLECTOR_RANGE = 12
 
 /** Max speed chunks can reach while being attracted (units/sec). */
 const COLLECTOR_MAX_PULL_SPEED = 100
 
-/** How quickly existing drift is damped toward the ship direction (0–1 per frame). */
+/** How quickly existing drift is damped toward the ship direction (0-1 per frame). */
 const COLLECTOR_STEER_FACTOR = 0.15
 
 /**
@@ -245,7 +245,7 @@ export function attractMetalToShip(
   chunk.vx += (nx * Math.abs(chunk.vx) - chunk.vx) * COLLECTOR_STEER_FACTOR
   chunk.vy += (ny * Math.abs(chunk.vy) - chunk.vy) * COLLECTOR_STEER_FACTOR
 
-  // Accelerate toward ship — stronger when closer
+  // Accelerate toward ship - stronger when closer
   const proximity = 1 - dist / range
   const accel = COLLECTOR_PULL_ACCEL * (0.3 + 0.7 * proximity)
   chunk.vx += nx * accel * dt

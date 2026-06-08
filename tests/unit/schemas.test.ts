@@ -30,7 +30,7 @@ describe('ShipSchema', () => {
 })
 
 describe('UpgradesSchema', () => {
-  it('accepts valid tier values (1–5)', () => {
+  it('accepts valid tier values (1-5)', () => {
     const result = UpgradesSchema.safeParse({
       blaster: 1,
       collector: 5,

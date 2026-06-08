@@ -13,13 +13,15 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  try {
-    const kv = getKv()
-    const key = `feedback:${Date.now()}`
-    await kv.set(key, JSON.stringify(result.data))
-  } catch {
-    // Log but don't fail the request
-    console.error('Failed to persist feedback to KV')
+  const kv = getKv()
+  if (kv) {
+    try {
+      const key = `feedback:${Date.now()}`
+      await kv.set(key, JSON.stringify(result.data))
+    } catch {
+      // Log but don't fail the request
+      console.error('Failed to persist feedback to KV')
+    }
   }
 
   return NextResponse.json({ ok: true })

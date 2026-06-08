@@ -6,7 +6,7 @@ async function loadSfx() {
   return await import('../../src/game/sfx')
 }
 
-describe('sfx — with mock AudioContext', () => {
+describe('sfx - with mock AudioContext', () => {
   before(() => {
     installMockAudioContext()
   })

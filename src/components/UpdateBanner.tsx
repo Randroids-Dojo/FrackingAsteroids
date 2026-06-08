@@ -36,7 +36,7 @@ export function UpdateBanner() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-hud-blue/90 text-space-900 text-center py-2 px-4 text-sm font-mono">
-      New version available ({buildId?.slice(0, 7)}) —{' '}
+      New version available ({buildId?.slice(0, 7)}) -{' '}
       <button
         onClick={() => window.location.reload()}
         className="underline font-bold hover:no-underline"

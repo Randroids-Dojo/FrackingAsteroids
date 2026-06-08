@@ -2,7 +2,7 @@ import * as THREE from 'three'
 
 /**
  * Rick-and-Morty-style space gas station color palette.
- * Inspired by Moon's Drive-In — teal/turquoise dominant, neon pink signage.
+ * Inspired by Moon's Drive-In - teal/turquoise dominant, neon pink signage.
  * Model is tilted so the front facade is visible from the top-down camera.
  */
 export const GAS_STATION_COLORS = {
@@ -36,7 +36,7 @@ export const GAS_STATION_COLORS = {
   signPole: 0x666688,
 } as const
 
-/** Voxel size — same as asteroids for proper scale at camera height. */
+/** Voxel size - same as asteroids for proper scale at camera height. */
 const V = 2.0
 
 function addVoxel(
@@ -65,7 +65,7 @@ function addVoxel(
  * Much larger and more recognizable as a building.
  *
  * The model is tilted ~30° around X so the top-down camera sees
- * both the roof and the front facade — fake isometric.
+ * both the roof and the front facade - fake isometric.
  *
  * Key features for readability:
  * - Tall sign tower with "GAS" (like a real gas station pylon)
@@ -114,7 +114,7 @@ export function createGasStationModel(): {
   }
 
   // =========================================================
-  // FLOATING PLATFORM — big chunky base (x: -10 to 14, y: -6 to 6)
+  // FLOATING PLATFORM - big chunky base (x: -10 to 14, y: -6 to 6)
   // =========================================================
   for (let x = -10; x <= 14; x++) {
     for (let y = -6; y <= 6; y++) {
@@ -138,11 +138,11 @@ export function createGasStationModel(): {
   }
 
   // =========================================================
-  // MAIN BUILDING — wide retro diner
+  // MAIN BUILDING - wide retro diner
   // x: -8 to 5, y: -3 to 4, z: 0 to 5
   // =========================================================
 
-  // Solid walls — back (y=4), left (x=-8), right (x=5)
+  // Solid walls - back (y=4), left (x=-8), right (x=5)
   for (let z = 0; z <= 4; z++) {
     for (let x = -8; x <= 5; x++) {
       v(x, 4, z, z <= 1 ? C.tealDark : C.teal)
@@ -160,7 +160,7 @@ export function createGasStationModel(): {
     }
   }
 
-  // ---- FRONT FACADE (y = -3) — the money shot ----
+  // ---- FRONT FACADE (y = -3) - the money shot ----
   // Bottom row: dark base trim
   for (let x = -8; x <= 5; x++) {
     v(x, -3, 0, C.darkTrim)
@@ -174,7 +174,7 @@ export function createGasStationModel(): {
       if (isPillar) {
         v(x, -3, z, C.teal)
       } else {
-        // Windows — warm interior glow
+        // Windows - warm interior glow
         const glow = z === 2 ? 0.7 : 0.4
         vGlow(x, -3, z, C.windowDark, C.windowGlow, glow)
       }
@@ -203,7 +203,7 @@ export function createGasStationModel(): {
       v(x, y, 5, color)
     }
   }
-  // Roof overhang front lip — visible teal edge
+  // Roof overhang front lip - visible teal edge
   for (let x = -9; x <= 6; x++) {
     v(x, -4, 5, C.tealLight)
   }
@@ -214,7 +214,7 @@ export function createGasStationModel(): {
   }
 
   // =========================================================
-  // TALL SIGN TOWER — the iconic gas station pylon
+  // TALL SIGN TOWER - the iconic gas station pylon
   // Left side of building, x=-10, tall vertical with "GAS" at top
   // This is the most recognizable feature of a gas station
   // =========================================================
@@ -243,7 +243,7 @@ export function createGasStationModel(): {
     neon(x, -1, 6, C.neonPink, 1.0)
   }
 
-  // "G" on sign (z: 10-12, x: -11 to -9) — front face y=-2
+  // "G" on sign (z: 10-12, x: -11 to -9) - front face y=-2
   neon(-11, -2, 12, C.neonGreen, 1.3)
   neon(-10, -2, 12, C.neonGreen, 1.3)
   neon(-9, -2, 12, C.neonGreen, 1.3)
@@ -263,11 +263,11 @@ export function createGasStationModel(): {
   neon(-11, -2, 7, C.neonYellow, 1.2)
   neon(-9, -2, 7, C.neonYellow, 1.2)
 
-  // "S" would overlap — instead put a big neon star/circle at top
+  // "S" would overlap - instead put a big neon star/circle at top
   neon(-10, -2, 14, C.neonRed, 1.5) // beacon on top
 
   // =========================================================
-  // CANOPY — separate fuel pump area (x: 7 to 13, y: -4 to 4)
+  // CANOPY - separate fuel pump area (x: 7 to 13, y: -4 to 4)
   // Big flat roof with visible pillars and pump islands
   // =========================================================
 
@@ -302,7 +302,7 @@ export function createGasStationModel(): {
   }
 
   // ---- FUEL PUMP ISLANDS ----
-  // Island 1 (x=9, y: -2 to 2) — row of 3 pumps
+  // Island 1 (x=9, y: -2 to 2) - row of 3 pumps
   for (let y = -2; y <= 2; y += 2) {
     v(9, y, 0, C.pumpBody)
     v(9, y, 1, C.pumpRed)
@@ -324,7 +324,7 @@ export function createGasStationModel(): {
     v(12, y, 0, C.platformEdge)
   }
 
-  // "GASOLINE" text on canopy front edge — just neon dots spelling it out
+  // "GASOLINE" text on canopy front edge - just neon dots spelling it out
   // Simplified: alternating colored neon across the canopy front
   neon(8, -5, 4, C.neonRed, 1.0)
   neon(9, -5, 4, C.neonYellow, 1.0)
@@ -333,7 +333,7 @@ export function createGasStationModel(): {
   neon(12, -5, 4, C.neonYellow, 1.0)
 
   // =========================================================
-  // ROOFTOP DETAILS — antenna, vents, portal dish
+  // ROOFTOP DETAILS - antenna, vents, portal dish
   // =========================================================
 
   // Big antenna/dish (center of main building roof)
@@ -353,7 +353,7 @@ export function createGasStationModel(): {
   v(4, 0, 6, C.grime)
 
   // =========================================================
-  // PARKED SHIPS — colorful blobs for scale & life
+  // PARKED SHIPS - colorful blobs for scale & life
   // =========================================================
   // Left side parking lot
   v(-7, -5, 0, 0xff6600) // orange
@@ -363,7 +363,7 @@ export function createGasStationModel(): {
   v(-3, -5, 0, 0x4488ff) // blue
   v(-3, -5, 1, 0x4488ff)
 
-  // Right side — a ship at the pump
+  // Right side - a ship at the pump
   v(10, -1, 0, 0xffaa00) // yellow ship at pump
   v(11, -1, 0, 0xffaa00)
   v(10, -1, 1, 0xffaa00)
@@ -396,7 +396,7 @@ export function createGasStationModel(): {
 }
 
 /**
- * Animate the gas station neon lights — flickering / pulsing effect.
+ * Animate the gas station neon lights - flickering / pulsing effect.
  * Call once per frame with elapsed time.
  */
 export function updateGasStationNeon(neonMeshes: THREE.Mesh[], elapsed: number): void {

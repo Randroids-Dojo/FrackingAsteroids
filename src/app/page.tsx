@@ -157,7 +157,7 @@ export default function Home() {
   }, [hasLazer, spendScrap, requestSave])
 
   const handleCloseTradeMenu = useCallback(() => {
-    // Prevent closing during tutorial trade steps — player must complete sell/buy
+    // Prevent closing during tutorial trade steps - player must complete sell/buy
     if (tutorialActive && (tutorialStep === 'trade-sell' || tutorialStep === 'trade-buy')) return
     setTradeMenuOpen(false)
   }, [tutorialActive, tutorialStep])
@@ -179,7 +179,7 @@ export default function Home() {
   }, [hasLazer])
 
   const handleCrystallineDeflect = useCallback(() => {
-    // Don't show lazer tutorial popup during prologue — ship already has lazer
+    // Don't show lazer tutorial popup during prologue - ship already has lazer
     if (tutorialStep.startsWith('prologue-')) return
     setLazerPopupVisible(true)
   }, [tutorialStep])

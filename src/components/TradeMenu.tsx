@@ -240,7 +240,7 @@ function BuyPanel({
                 {item.label}
               </div>
               <div className="text-xs text-white/40">
-                {maxed ? 'MAX LEVEL' : item.description} — Mk{currentLevel}
+                {maxed ? 'MAX LEVEL' : item.description} - Mk{currentLevel}
               </div>
             </div>
             <button

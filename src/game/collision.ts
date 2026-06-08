@@ -102,7 +102,7 @@ export function checkProjectileAsteroidCollisions(
       const aRadius = ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS
       if (circlesOverlap(p.x, p.y, PROJECTILE_RADIUS, a.x, a.y, aRadius)) {
         if (a.type === 'crystalline' && p.tool !== 'lazer') {
-          // Blaster can't damage crystalline — deflect
+          // Blaster can't damage crystalline - deflect
           hits.push({
             projectileId: p.id,
             asteroidId: a.id,
@@ -194,7 +194,7 @@ export function checkBeamAsteroidCollisions(
     const aRadius = ASTEROID_SIZE_RADIUS[a.size] ?? ASTEROID_COLLISION_RADIUS
     const distSq = pointToSegmentDistSq(a.x, a.y, startX, startY, endX, endY)
     if (distSq < aRadius * aRadius) {
-      // Beam is always lazer — damages all asteroid types including crystalline
+      // Beam is always lazer - damages all asteroid types including crystalline
       const effectiveDamage = Math.ceil(damage * LAZER_DAMAGE_MULTIPLIER)
       a.hp = Math.max(0, a.hp - effectiveDamage)
       hits.push({ asteroidId: a.id, damage: effectiveDamage, x: a.x, y: a.y })

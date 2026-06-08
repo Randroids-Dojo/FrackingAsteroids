@@ -5,8 +5,9 @@ import type { GameState } from './schemas'
 const KEY_PREFIX = 'game:'
 
 export async function saveGame(id: string, state: GameState): Promise<boolean> {
+  const kv = getKv()
+  if (!kv) return false
   try {
-    const kv = getKv()
     await kv.set(`${KEY_PREFIX}${id}`, JSON.stringify(state))
     return true
   } catch {
@@ -15,8 +16,9 @@ export async function saveGame(id: string, state: GameState): Promise<boolean> {
 }
 
 export async function loadGame(id: string): Promise<GameState | null> {
+  const kv = getKv()
+  if (!kv) return null
   try {
-    const kv = getKv()
     const raw = await kv.get(`${KEY_PREFIX}${id}`)
     if (!raw) return null
     const data = typeof raw === 'string' ? JSON.parse(raw) : raw

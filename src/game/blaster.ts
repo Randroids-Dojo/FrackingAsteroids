@@ -79,7 +79,7 @@ export function updateLazerState(lazer: LazerState, dt: number, firing: boolean)
     return false
   }
 
-  // Not firing, not overheated — passively cool down
+  // Not firing, not overheated - passively cool down
   lazer.heat = Math.max(0, lazer.heat - LAZER_COOL_RATE * dt)
   lazer.fireTimer = 0
   return false
@@ -126,7 +126,7 @@ export function updateBlasterCooldown(blaster: BlasterState, dt: number): void {
  * @param ship - Current ship state
  * @param targetX - World-space X of the aim target
  * @param targetY - World-space Y of the aim target
- * @param tier - Current blaster upgrade tier (1–5)
+ * @param tier - Current blaster upgrade tier (1-5)
  */
 export function fireBlaster(
   blaster: BlasterState,

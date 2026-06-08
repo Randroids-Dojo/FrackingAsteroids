@@ -1,5 +1,5 @@
 /**
- * Shared game tick logic — the single source of truth for game state updates.
+ * Shared game tick logic - the single source of truth for game state updates.
  *
  * Both the Three.js renderer (scene.ts) and the headless integration test
  * simulation (GameSimulation) call tick() each frame. This ensures game
@@ -105,7 +105,7 @@ export interface TickState {
   activeMiningTool: MiningTool
   fireRateBonus: number
 
-  // Fire/aim state — tick() clears these on unpause
+  // Fire/aim state - tick() clears these on unpause
   fireTarget: { x: number; y: number } | null
   mouseHoldingFire: boolean
   aimActive: boolean
@@ -126,7 +126,7 @@ export interface TickState {
   enemySpawned: boolean
   enemyNearbyFired: boolean
 
-  /** Previous tick's tutorial step — used to detect step transitions. */
+  /** Previous tick's tutorial step - used to detect step transitions. */
   prevTutorialStep: TutorialStep | null
 
   // Ambush (used by prologue)
@@ -159,7 +159,7 @@ export interface TickState {
   prologueAutoPilotForward: boolean
 }
 
-/** Per-frame inputs — NOT owned by tick(), only read. */
+/** Per-frame inputs - NOT owned by tick(), only read. */
 export interface TickInput {
   dt: number
   paused: boolean
@@ -413,7 +413,7 @@ function autoFireAtTarget(state: TickState, preferEnemies: boolean): void {
 /**
  * Phase-specific prologue logic.
  *
- * Sets TickState fields for auto-fire/auto-aim/auto-collect — never mutates
+ * Sets TickState fields for auto-fire/auto-aim/auto-collect - never mutates
  * TickInput directly. The main tick() function reads these TickState fields
  * to drive ship rotation, firing, and collection.
  */
@@ -438,7 +438,7 @@ function prologueTick(state: TickState, input: TickInput, result: TickResult): v
     return
   }
 
-  // --- prologue-mining: free play — mine asteroids and fight enemies ---
+  // --- prologue-mining: free play - mine asteroids and fight enemies ---
   // Enemies spawn alongside asteroids. Auto-fires at nearest target
   // (enemies prioritized). Advances when enough asteroids destroyed AND
   // all enemies dead.
@@ -547,7 +547,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
     state.mouseHoldingFire = false
     state.fireTarget = null
     state.aimActive = false
-    state.inputCooldown = 0.5 // 500ms — covers synthesized event delay
+    state.inputCooldown = 0.5 // 500ms - covers synthesized event delay
     state.wasPaused = false
   }
 
@@ -567,7 +567,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
     // Skip rest of tick during fade
     if (input.tutorialStep === 'prologue-fade') return result
 
-    // Ship frozen by Arbiter — zero velocity, skip ship update
+    // Ship frozen by Arbiter - zero velocity, skip ship update
     if (state.prologueShipFrozen) {
       state.ship.velocityX = 0
       state.ship.velocityY = 0
@@ -696,7 +696,7 @@ export function tick(state: TickState, input: TickInput): TickResult {
       const renderedDy = beamResult.beamEndY - state.ship.y
       const renderedLen = Math.sqrt(renderedDx * renderedDx + renderedDy * renderedDy)
       let nearestT = fullLen > 0.0001 ? renderedLen / fullLen : 1
-      // frameDamage is already dps * dt, so don't round per frame — rounding
+      // frameDamage is already dps * dt, so don't round per frame - rounding
       // would scale enemy damage with frame rate.
       const beamEnemyDamage = frameDamage * LAZER_DAMAGE_MULTIPLIER
       for (const enemy of state.ambushEnemies) {

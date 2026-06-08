@@ -1,5 +1,5 @@
 /**
- * Warp speed streaks — radial light lines that convey extreme speed
+ * Warp speed streaks - radial light lines that convey extreme speed
  * or a gravitational pull effect. Used during the Arbiter approach.
  */
 
@@ -35,7 +35,7 @@ export function createWarpStreaks(): WarpStreaks {
     const baseX = Math.cos(angle) * dist
     const baseY = Math.sin(angle) * dist
 
-    // Streak geometry — thin elongated box
+    // Streak geometry - thin elongated box
     const length = STREAK_LENGTH_MIN + Math.random() * (STREAK_LENGTH_MAX - STREAK_LENGTH_MIN)
     const geo = new THREE.BoxGeometry(0.3, length, 0.3)
 

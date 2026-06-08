@@ -19,7 +19,7 @@ describe('pause/resume and fire state', () => {
     h.sim.paused = true
     h.sim.stepN(5) // paused frames
 
-    // Player clicks to dismiss popup — mouseup never reached canvas
+    // Player clicks to dismiss popup - mouseup never reached canvas
     // so holdFireAt is still "active" from before pause.
     // The game unpauses:
     h.sim.paused = false
@@ -28,7 +28,7 @@ describe('pause/resume and fire state', () => {
     h.sim.stepN(120)
     const projCountAfterSettle = h.sim.projectiles.length
 
-    // Step more frames — if mouseHoldingFire was cleared, no new projectiles appear
+    // Step more frames - if mouseHoldingFire was cleared, no new projectiles appear
     h.sim.stepN(60)
     assert.equal(
       h.sim.projectiles.length,
@@ -78,7 +78,7 @@ describe('pause/resume and fire state', () => {
     h.sim.paused = true
     h.sim.stepN(5)
 
-    // Player clicks empty space to dismiss — aimState still has stale coords
+    // Player clicks empty space to dismiss - aimState still has stale coords
     // Game unpauses:
     h.sim.paused = false
 
@@ -107,15 +107,15 @@ describe('pause/resume and fire state', () => {
 
     // Unpause
     h.sim.paused = false
-    h.sim.step() // first unpaused frame — sets cooldown
+    h.sim.step() // first unpaused frame - sets cooldown
 
     // Simulate synthesized events arriving during cooldown:
     // aim and fire at a specific position (as if mouse events leaked through)
     h.sim.aimAt(200, 0)
     h.sim.fireAt(200, 0)
-    h.sim.stepN(15) // ~250ms at 60fps — still within 500ms cooldown
+    h.sim.stepN(15) // ~250ms at 60fps - still within 500ms cooldown
 
-    // Ship should NOT be facing (200, 0) — cooldown should have blocked it
+    // Ship should NOT be facing (200, 0) - cooldown should have blocked it
     // atan2(-200, 0) = -PI/2 ≈ -1.57
     const lockedRotation = Math.atan2(-200, 0)
     assert.ok(

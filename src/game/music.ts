@@ -3,10 +3,10 @@
  * Generates a layered ambient soundtrack that intensifies during combat.
  *
  * Layers:
- *   0 — Deep bass drone (always on)
- *   1 — Pad chords (fade in at intensity > 0.2)
- *   2 — Arpeggiated melody (fade in at intensity > 0.4)
- *   3 — Percussion pulse (fade in at intensity > 0.6)
+ *   0 - Deep bass drone (always on)
+ *   1 - Pad chords (fade in at intensity > 0.2)
+ *   2 - Arpeggiated melody (fade in at intensity > 0.4)
+ *   3 - Percussion pulse (fade in at intensity > 0.6)
  */
 
 import { getMusicVolume } from './volume-control'
@@ -313,5 +313,5 @@ export function disposeMusic(): void {
   currentIntensity = 0
   targetIntensity = 0
 
-  // Don't close the context — audio.ts owns it
+  // Don't close the context - audio.ts owns it
 }

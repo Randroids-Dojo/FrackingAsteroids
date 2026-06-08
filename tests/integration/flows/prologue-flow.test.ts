@@ -189,9 +189,9 @@ describe('prologue flow', () => {
     h.sim.step()
     assert.equal(h.sim.tickState.blasterTier, 5)
 
-    // Phase 2: prologue-mining — step until asteroids cleared
+    // Phase 2: prologue-mining - step until asteroids cleared
     h.sim.setTutorialStep('prologue-mining')
-    h.sim.stepN(120) // 2 seconds — lazer should destroy nearby 1-HP asteroids
+    h.sim.stepN(120) // 2 seconds - lazer should destroy nearby 1-HP asteroids
     assert.ok(
       h.sim.tickState.prologueAsteroidsDestroyed >= 8,
       `should destroy enough asteroids, got ${h.sim.tickState.prologueAsteroidsDestroyed}`,

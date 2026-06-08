@@ -17,13 +17,13 @@
 <section id="description">
 Build a state machine to orchestrate the full intro sequence:
 
-1. INTRO_START: spawn max ship, set up dense asteroid field
-2. INTRO_MINING: player blasts asteroids, collects cargo (guided or free-roam)
-3. INTRO_COMBAT: enemy fleet spawns, player fights
-4. INTRO_SPEED: open area for high-speed flying
-5. INTRO_AMBUSH: ambush triggers, ship destroyed
-6. INTRO_RESPAWN: fade transition, respawn with basic ship
-7. TUTORIAL_START: hand off to existing tutorial state machine
+1. prologue-start: spawn max ship, set up dense asteroid field
+2. prologue-mining: player blasts asteroids, collects cargo, and destroys the enemy fleet
+3. prologue-arbiter: Arbiter warps in and approaches the ship
+4. prologue-dialogue: Arbiter dialogue freezes the ship
+5. prologue-strip: Arbiter removes modules from the ship
+6. prologue-fade: systems offline, rebooting, and respawn with basic ship
+7. move: hand off to the existing tutorial state machine
 
 This should integrate with or extend the existing tutorial state machine.
 </section>

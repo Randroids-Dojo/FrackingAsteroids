@@ -290,13 +290,13 @@ describe('updateProjectiles', () => {
     assert.ok(age1 !== undefined)
     assert.ok(Math.abs(age1 - 0.5) < 0.001)
 
-    // Frame 2 — age should accumulate
+    // Frame 2 - age should accumulate
     updateProjectiles(projectiles, 0.5, elapsed)
     const age2 = elapsed.get('p1')
     assert.ok(age2 !== undefined)
     assert.ok(Math.abs(age2 - 1.0) < 0.001)
 
-    // Frame 3 — should expire (1.0 + 0.6 = 1.6 > 1.5 lifetime)
+    // Frame 3 - should expire (1.0 + 0.6 = 1.6 > 1.5 lifetime)
     const result = updateProjectiles(projectiles, 0.6, elapsed)
     assert.equal(result.length, 0)
     assert.equal(elapsed.has('p1'), false)
@@ -316,7 +316,7 @@ describe('updateProjectiles', () => {
   })
 })
 
-describe('clearStaleFireState — pause/unpause rotation lock fix', () => {
+describe('clearStaleFireState - pause/unpause rotation lock fix', () => {
   it('fire state must be cleared on pause→unpause to prevent rotation lock', () => {
     // Simulates the scene.ts game loop logic around pause/unpause transitions.
     // The bug: player fires at crystalline asteroid, popup pauses the game,
@@ -345,7 +345,7 @@ describe('clearStaleFireState — pause/unpause rotation lock fix', () => {
     paused = false
 
     // --- First unpaused frame: scene.ts must clear stale fire state ---
-    // This is the fix — scene.ts must call clearStaleFireState here.
+    // This is the fix - scene.ts must call clearStaleFireState here.
     if (!paused && wasPaused) {
       clearStaleFireState(fireState)
       wasPaused = false
@@ -365,7 +365,7 @@ describe('clearStaleFireState — pause/unpause rotation lock fix', () => {
     assert.equal(
       fireState.fireTarget,
       null,
-      'fireTarget must be null — hold-to-fire loop must not re-lock aim',
+      'fireTarget must be null - hold-to-fire loop must not re-lock aim',
     )
   })
 
