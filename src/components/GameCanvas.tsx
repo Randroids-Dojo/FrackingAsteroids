@@ -70,7 +70,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GameScene | null>(null)
-  // Captured once at mount — the scene is created a single time and the value is
+  // Captured once at mount - the scene is created a single time and the value is
   // fixed for the canvas's lifetime (it unmounts when leaving the game screen).
   const skipPrologueRef = useRef(skipPrologue)
   const pausedRef = useRef(paused)

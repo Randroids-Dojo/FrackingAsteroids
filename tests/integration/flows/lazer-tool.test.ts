@@ -51,7 +51,7 @@ describe('lazer tool and crystalline asteroids', () => {
       ],
     })
 
-    // Lazer beam does instant damage — hold fire for a few frames
+    // Lazer beam does instant damage - hold fire for a few frames
     h.sim.holdFireAt(h.sim.asteroids[0].x, h.sim.asteroids[0].y)
     h.sim.stepN(10)
     h.sim.releaseFire()

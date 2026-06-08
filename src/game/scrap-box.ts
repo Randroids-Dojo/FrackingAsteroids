@@ -22,7 +22,7 @@ const BOX_FRICTION = 0.99
 /** Slow tumble speed (radians/sec). */
 const BOX_TUMBLE_SPEED = 1.5
 
-/** Scrap box colors — metallic crate. */
+/** Scrap box colors - metallic crate. */
 const BOX_COLORS = {
   frame: 0x888888,
   panel: 0x556677,
@@ -46,7 +46,7 @@ export interface ScrapBox {
 }
 
 // ---------------------------------------------------------------------------
-// Scrap box model — small metallic crate
+// Scrap box model - small metallic crate
 // ---------------------------------------------------------------------------
 
 function createScrapBoxModel(): THREE.Group {
@@ -162,7 +162,7 @@ export function attractScrapBoxToShip(
   box.vx += (nx * Math.abs(box.vx) - box.vx) * 0.15
   box.vy += (ny * Math.abs(box.vy) - box.vy) * 0.15
 
-  // Accelerate toward ship — stronger when closer
+  // Accelerate toward ship - stronger when closer
   const proximity = 1 - dist / range
   const accel = COLLECTOR_PULL_ACCEL * (0.3 + 0.7 * proximity)
   box.vx += nx * accel * dt

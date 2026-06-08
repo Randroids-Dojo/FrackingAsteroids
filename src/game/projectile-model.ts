@@ -2,10 +2,10 @@ import * as THREE from 'three'
 import type { MiningTool } from './types'
 import { PROJECTILE_COLOR, PROJECTILE_CORE_COLOR } from './blaster-constants'
 
-/** Voxel size for projectile bolts — small and punchy. */
+/** Voxel size for projectile bolts - small and punchy. */
 const BOLT_VOXEL = 0.4
 
-/** Lazer bolt colors — cyan/magenta energy beam. */
+/** Lazer bolt colors - cyan/magenta energy beam. */
 const LAZER_COLOR = 0x00ccff
 const LAZER_CORE_COLOR = 0x88eeff
 

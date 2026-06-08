@@ -12,7 +12,7 @@ const HEALTH_BAR_OFFSET_Y = 12
 /** Background color (dark, semi-transparent). */
 const BG_COLOR = 0x333344
 
-/** Fill color — green when healthy, red when low. */
+/** Fill color - green when healthy, red when low. */
 const HEALTHY_COLOR = 0x00ff88
 const DAMAGED_COLOR = 0xffaa00
 const CRITICAL_COLOR = 0xff4444

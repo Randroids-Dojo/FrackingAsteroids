@@ -183,7 +183,7 @@ export function createToolToggleButton(
   const button = document.createElement('div')
   button.setAttribute('aria-label', 'Switch mining tool')
   button.setAttribute('role', 'button')
-  // Start hidden — the toggle only appears once the player owns the Lazer.
+  // Start hidden - the toggle only appears once the player owns the Lazer.
   button.style.cssText =
     `position:absolute;bottom:${getToolToggleBottom()};right:${rightMargin}px;` +
     `width:${size}px;height:${size}px;border-radius:50%;` +

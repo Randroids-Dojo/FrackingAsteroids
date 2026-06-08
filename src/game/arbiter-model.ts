@@ -1,5 +1,5 @@
 /**
- * The Arbiter — a massive AI construct that halts the player's
+ * The Arbiter - a massive AI construct that halts the player's
  * maxed-out ship during the prologue and strips its upgrades.
  *
  * ~20×20 world units at voxel size 2.0, dwarfing the player ship.
@@ -29,7 +29,7 @@ function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: nu
 export function createArbiterModel(): THREE.Group {
   const arbiter = new THREE.Group()
 
-  // Central body — dense 5×5 core
+  // Central body - dense 5×5 core
   for (let x = -2; x <= 2; x++) {
     for (let y = -2; y <= 2; y++) {
       const dist = Math.abs(x) + Math.abs(y)
@@ -40,10 +40,10 @@ export function createArbiterModel(): THREE.Group {
     }
   }
 
-  // Eye — single bright voxel at center, raised
+  // Eye - single bright voxel at center, raised
   addVoxel(arbiter, 0, 0, 1, COLORS.eye)
 
-  // Blade wings — sharp diagonals extending outward
+  // Blade wings - sharp diagonals extending outward
   for (let i = 1; i <= 5; i++) {
     addVoxel(arbiter, -2 - i, -i, 0, COLORS.blade)
     addVoxel(arbiter, 2 + i, -i, 0, COLORS.blade)
@@ -57,12 +57,12 @@ export function createArbiterModel(): THREE.Group {
     addVoxel(arbiter, 2 + i, -i, 1, COLORS.red)
   }
 
-  // Antenna arrays — tall vertical stacks above core
+  // Antenna arrays - tall vertical stacks above core
   for (let z = 1; z <= 3; z++) {
     addVoxel(arbiter, -1, 2, z, COLORS.bodyDark)
     addVoxel(arbiter, 1, 2, z, COLORS.bodyDark)
   }
-  // Antenna tips — red
+  // Antenna tips - red
   addVoxel(arbiter, -1, 2, 4, COLORS.red)
   addVoxel(arbiter, 1, 2, 4, COLORS.red)
 

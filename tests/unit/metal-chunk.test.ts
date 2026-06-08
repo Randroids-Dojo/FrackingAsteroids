@@ -94,7 +94,7 @@ describe('bounceMetalOffShip', () => {
 
   it('does not bounce when velocity is already pointing away', () => {
     const minDist = METAL_CHUNK_RADIUS + SHIP_COLLISION_RADIUS
-    // Metal is to the right of ship, moving right (away) — should still push out but not reflect
+    // Metal is to the right of ship, moving right (away) - should still push out but not reflect
     const chunk = makeMetalChunk(minDist - 0.5, 0, 10, 0)
     const ship = makeShip(0, 0)
     bounceMetalOffShip(chunk, ship)

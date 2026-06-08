@@ -59,7 +59,7 @@ function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; has
   const toolColor = activeTool === 'lazer' ? '#00ccff' : '#ffaa00'
   const otherLabel = activeTool === 'lazer' ? 'BLASTER' : 'LAZER'
   // Detect touch in an effect so SSR renders the desktop hint and the client
-  // upgrades to the mobile copy after mount — branching on `window` during
+  // upgrades to the mobile copy after mount - branching on `window` during
   // render would cause a hydration mismatch on touch devices.
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {

@@ -50,7 +50,7 @@ export interface TutorialState {
   frozen: boolean
 }
 
-/** Pure state machine — testable without React */
+/** Pure state machine - testable without React */
 export function advanceTutorial(state: TutorialState, event: TutorialEvent): TutorialState {
   if (!state.active) return state
 

@@ -6,7 +6,7 @@ async function loadAudio() {
   return await import('../../src/game/audio')
 }
 
-describe('audio — with mock AudioContext', () => {
+describe('audio - with mock AudioContext', () => {
   before(() => {
     installMockAudioContext()
   })

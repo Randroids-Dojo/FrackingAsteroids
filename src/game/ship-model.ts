@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { SHIP_COLORS, VOXEL_SIZE } from './ship-constants'
 
-/** Prologue ship voxel size — larger for imposing scale. */
+/** Prologue ship voxel size - larger for imposing scale. */
 const PROLOGUE_VOXEL = 0.8
 
 /** Prologue-specific colors. */
@@ -42,7 +42,7 @@ export function createShipModel(variant: 'normal' | 'prologue' = 'normal'): THRE
   const ship = new THREE.Group()
   const { hull, cockpit, engine, wingTip } = SHIP_COLORS
 
-  // Main body (center fuselage) — 3 wide, 6 long
+  // Main body (center fuselage) - 3 wide, 6 long
   for (let row = -2; row <= 3; row++) {
     addVoxel(ship, 0, row, 0, hull)
     if (row >= -1 && row <= 2) {
@@ -51,21 +51,21 @@ export function createShipModel(variant: 'normal' | 'prologue' = 'normal'): THRE
     }
   }
 
-  // Cockpit (front nose) — raised slightly
+  // Cockpit (front nose) - raised slightly
   addVoxel(ship, 0, 4, 0.5, cockpit)
 
-  // Wings — swept back
+  // Wings - swept back
   for (let w = 2; w <= 4; w++) {
     const row = -w + 2
     addVoxel(ship, -w, row, 0, hull)
     addVoxel(ship, w, row, 0, hull)
   }
 
-  // Wing tips — green accent
+  // Wing tips - green accent
   addVoxel(ship, -4, -2, 0, wingTip)
   addVoxel(ship, 4, -2, 0, wingTip)
 
-  // Engine glow (rear) — recessed slightly
+  // Engine glow (rear) - recessed slightly
   addVoxel(ship, -1, -3, -0.3, engine)
   addVoxel(ship, 0, -3, -0.3, engine)
   addVoxel(ship, 1, -3, -0.3, engine)
@@ -83,7 +83,7 @@ function createPrologueShipModel(): THREE.Group {
   const { hull, cockpit, engine, wingTip } = SHIP_COLORS
   const { gold, turret, scoop, cargo, lazerLens } = PROLOGUE_COLORS
 
-  // Main body — scaled up version of normal hull with gold accents
+  // Main body - scaled up version of normal hull with gold accents
   let voxelCount = 0
   for (let row = -2; row <= 3; row++) {
     const color = voxelCount++ % 3 === 0 ? gold : hull
@@ -97,7 +97,7 @@ function createPrologueShipModel(): THREE.Group {
   // Cockpit
   addVoxelSized(ship, 0, 4, 0.5, cockpit, v)
 
-  // Wings — swept back, wider
+  // Wings - swept back, wider
   for (let w = 2; w <= 5; w++) {
     const row = -w + 2
     addVoxelSized(ship, -w, row, 0, voxelCount++ % 3 === 0 ? gold : hull, v)
@@ -108,7 +108,7 @@ function createPrologueShipModel(): THREE.Group {
   addVoxelSized(ship, -5, -3, 0, wingTip, v)
   addVoxelSized(ship, 5, -3, 0, wingTip, v)
 
-  // Engine glow — wider
+  // Engine glow - wider
   for (let x = -2; x <= 2; x++) {
     addVoxelSized(ship, x, -3, -0.3, engine, v)
   }

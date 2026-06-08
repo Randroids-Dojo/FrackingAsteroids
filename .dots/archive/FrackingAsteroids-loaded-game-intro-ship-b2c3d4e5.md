@@ -11,7 +11,7 @@ close-reason: Archived from FluxPanel
 createGameScene always initializes in the scripted-prologue state: the maxed-out
 "intro" ship (createShipModel('prologue')), the prologue asteroid field, maxed
 blaster, and the lazer at the origin. The only paths that swap to the normal ship
-+ station field are the prologue-fade completion and handleSkipTutorial — both of
++ station field are the prologue-fade completion and handleSkipTutorial, both of
 which only run during a *new game's* tutorial.
 
 For a loaded game the tutorial is inactive (useTutorial(false)), so

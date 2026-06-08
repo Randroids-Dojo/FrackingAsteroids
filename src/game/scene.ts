@@ -586,7 +586,7 @@ export function createGameScene(
       }
     }
 
-    // Always sync from DOM — tick's input cooldown handles stale events
+    // Always sync from DOM - tick's input cooldown handles stale events
     tickState.mouseHoldingFire = mouseHoldingFire
     tickState.aimActive = aimState.active
 
@@ -718,7 +718,7 @@ export function createGameScene(
         scene.add(metal.mesh)
       }
 
-      // Metal collected — remove meshes from scene
+      // Metal collected - remove meshes from scene
       for (const mc of result.metalCollected) {
         const mesh = metalMeshMap.get(mc.id)
         if (mesh) {
@@ -728,7 +728,7 @@ export function createGameScene(
         playCollectPling()
       }
 
-      // Scrap collected — remove meshes from scene
+      // Scrap collected - remove meshes from scene
       for (const sc of result.scrapCollected) {
         const mesh = scrapMeshMap.get(sc.id)
         if (mesh) {
@@ -738,7 +738,7 @@ export function createGameScene(
         playCollectPling()
       }
 
-      // Enemy spawned — add mesh to scene
+      // Enemy spawned - add mesh to scene
       if (result.enemySpawned) {
         scene.add(result.enemySpawned.mesh)
         const enemyHealthMeter = createHealthMeter()
@@ -746,7 +746,7 @@ export function createGameScene(
         result.enemySpawned.mesh.userData.healthMeter = enemyHealthMeter
       }
 
-      // Enemy projectiles — add meshes
+      // Enemy projectiles - add meshes
       for (const proj of result.newEnemyProjectiles) {
         scene.add(proj.mesh)
         // Register in mesh map so same-tick hits (spawned & collided in one frame) can be cleaned up
@@ -776,7 +776,7 @@ export function createGameScene(
         playPlayerHit()
       }
 
-      // Enemy destroyed — remove mesh and spawn VFX
+      // Enemy destroyed - remove mesh and spawn VFX
       if (result.enemyDestroyed && enemyBeforeTick) {
         scene.remove(enemyBeforeTick.mesh)
         disposeEnemyShip(enemyBeforeTick)
@@ -794,12 +794,12 @@ export function createGameScene(
         if (lastBox) scene.add(lastBox.mesh)
       }
 
-      // Ambush enemies — add meshes for newly spawned
+      // Ambush enemies - add meshes for newly spawned
       for (const ae of result.ambushEnemiesSpawned) {
         scene.add(ae.mesh)
       }
 
-      // Ambush enemies destroyed — remove mesh, spawn explosion + wreckage
+      // Ambush enemies destroyed - remove mesh, spawn explosion + wreckage
       for (const ae of result.ambushEnemiesDestroyed) {
         scene.remove(ae.mesh)
         disposeEnemyShip(ae)

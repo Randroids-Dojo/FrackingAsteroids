@@ -84,7 +84,7 @@ const STEPS: {
 ]
 
 function StepDots({ step }: { step: TutorialStep }) {
-  // wait-for-metal is an intermediate state between shoot and collect —
+  // wait-for-metal is an intermediate state between shoot and collect -
   // show the collect dot as active (index 2) during that phase.
   const lookupKey = step === 'wait-for-metal' ? 'collect' : step
   const foundIndex = STEPS.findIndex((s) => s.key === lookupKey)
@@ -185,7 +185,7 @@ export function TutorialOverlay({
 
   return (
     <div className="absolute inset-0 pointer-events-none" data-testid="tutorial-overlay">
-      {/* Top-center prompt panel — sits below the HUD, clear of mobile controls at the bottom */}
+      {/* Top-center prompt panel - sits below the HUD, clear of mobile controls at the bottom */}
       <div className="absolute top-24 sm:top-28 left-1/2 -translate-x-1/2 w-auto max-w-[80vw] sm:max-w-sm px-4 sm:px-6 py-3 sm:py-4 bg-space-800/90 border border-hud-green/40 rounded-lg font-mono text-center">
         <StepDots step={step} />
         <p className="text-hud-green text-xs sm:text-sm md:text-base">{text}</p>

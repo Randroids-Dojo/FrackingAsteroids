@@ -74,11 +74,11 @@ export function useGameState(): GameStateHook {
     (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void): void => {
       setScrap((prevScrap) => {
         if (prevScrap < cost) {
-          // Can't afford — schedule callback outside setState
+          // Can't afford - schedule callback outside setState
           setTimeout(() => onPurchased?.(false), 0)
           return prevScrap
         }
-        // Can afford — also bump the upgrade level
+        // Can afford - also bump the upgrade level
         setUpgrades((prev) => ({
           ...prev,
           [type]: Math.min(prev[type] + 1, 5),

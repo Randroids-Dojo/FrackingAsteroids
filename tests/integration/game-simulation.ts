@@ -80,7 +80,7 @@ export interface SimulationConfig extends TickStateConfig {
 // ---------------------------------------------------------------------------
 
 export class GameSimulation {
-  /** The shared game state — same struct that scene.ts uses. */
+  /** The shared game state - same struct that scene.ts uses. */
   readonly tickState: TickState
 
   /** Accumulated events since last clearEvents(). */

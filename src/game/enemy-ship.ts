@@ -12,13 +12,13 @@ import type { Projectile } from './types'
 /** Collision radius for the enemy ship. */
 export const ENEMY_COLLISION_RADIUS = 3
 
-/** Enemy HP — survives a few hits with the basic blaster, falls quickly to the lazer beam. */
+/** Enemy HP - survives a few hits with the basic blaster, falls quickly to the lazer beam. */
 export const ENEMY_MAX_HP = 6
 
 /** Enemy movement speed (units/sec). */
 const ENEMY_SPEED = 18
 
-/** Maximum turn rate (radians/sec) — controls how sharply the enemy can steer. */
+/** Maximum turn rate (radians/sec) - controls how sharply the enemy can steer. */
 const ENEMY_TURN_RATE = 1.8
 
 /** How often the enemy picks a new strafe direction (seconds). */
@@ -38,7 +38,7 @@ const ENEMY_SHOOT_MIN_INTERVAL = 1.5
 /** Enemy projectile speed (units/sec). */
 const ENEMY_PROJECTILE_SPEED = 120
 
-/** Enemy projectile damage — very low for tutorial. */
+/** Enemy projectile damage - very low for tutorial. */
 export const ENEMY_PROJECTILE_DAMAGE = 5
 
 /** Enemy projectile lifetime (seconds). */
@@ -47,7 +47,7 @@ const ENEMY_PROJECTILE_LIFETIME = 2.0
 /** Enemy projectile collision radius. */
 const ENEMY_PROJECTILE_RADIUS = 0.8
 
-/** Orbit distance — enemy tries to stay roughly this far from player. */
+/** Orbit distance - enemy tries to stay roughly this far from player. */
 export const ORBIT_DISTANCE = 50
 
 /** How far from the player the enemy spawns. */
@@ -61,7 +61,7 @@ const ENEMY_COLORS = {
   wingTip: 0xff4444,
 } as const
 
-/** Colors for enemy projectiles — red energy. */
+/** Colors for enemy projectiles - red energy. */
 const ENEMY_PROJECTILE_COLORS = {
   core: 0xff3333,
   glow: 0xff6666,
@@ -80,7 +80,7 @@ const WRECK_DURATION = 1.2
 /** Speed wreck debris flies outward (units/sec). */
 const WRECK_SPEED = 50
 
-/** Wreck debris colors — mix of hull and fire. */
+/** Wreck debris colors - mix of hull and fire. */
 const WRECK_COLORS = [0xaa3333, 0xff6600, 0x884422, 0xff4444, 0x663322] as const
 
 // ---------------------------------------------------------------------------
@@ -97,11 +97,11 @@ export interface EnemyShip {
   hp: number
   maxHp: number
   alive: boolean
-  /** Current heading angle (radians) — smoothly steered toward desired. */
+  /** Current heading angle (radians) - smoothly steered toward desired. */
   heading: number
   /** Timer for switching strafe direction (CW vs CCW). */
   strafeTimer: number
-  /** +1 or -1 — current tangential strafe direction around the player. */
+  /** +1 or -1 - current tangential strafe direction around the player. */
   strafeDir: number
   /** Time until next shot. */
   shootTimer: number
@@ -144,14 +144,14 @@ function addVoxel(group: THREE.Group, x: number, y: number, z: number, color: nu
 }
 
 /**
- * Build a voxel enemy ship — similar shape to player but red-themed and
+ * Build a voxel enemy ship - similar shape to player but red-themed and
  * slightly more angular/aggressive looking.
  */
 function createEnemyShipModel(): THREE.Group {
   const group = new THREE.Group()
   const { hull, cockpit, engine, wingTip } = ENEMY_COLORS
 
-  // Main body — narrower, more aggressive
+  // Main body - narrower, more aggressive
   for (let row = -2; row <= 3; row++) {
     addVoxel(group, 0, row, 0, hull)
     if (row >= -1 && row <= 2) {
@@ -160,17 +160,17 @@ function createEnemyShipModel(): THREE.Group {
     }
   }
 
-  // Cockpit — red glow
+  // Cockpit - red glow
   addVoxel(group, 0, 4, 0.5, cockpit)
 
-  // Wings — swept back, sharper
+  // Wings - swept back, sharper
   for (let w = 2; w <= 4; w++) {
     const row = -w + 1
     addVoxel(group, -w, row, 0, hull)
     addVoxel(group, w, row, 0, hull)
   }
 
-  // Wing tips — red accent
+  // Wing tips - red accent
   addVoxel(group, -4, -3, 0, wingTip)
   addVoxel(group, 4, -3, 0, wingTip)
 
@@ -306,7 +306,7 @@ function nextCardinal(current: number, direction: number): number {
 }
 
 /**
- * Update enemy ship AI — smoothly orbits the player like a dogfight.
+ * Update enemy ship AI - smoothly orbits the player like a dogfight.
  * Returns new projectiles spawned this frame (if any).
  */
 export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): EnemyProjectile[] {
@@ -325,18 +325,18 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   // o'clock) from the player at ORBIT_DISTANCE.
   let radialWeight: number
   if (dist < ORBIT_DISTANCE * 0.7) {
-    // Too close — push away
+    // Too close - push away
     radialWeight = -0.8
   } else if (dist > ORBIT_DISTANCE * 1.3) {
-    // Too far — pull in
+    // Too far - pull in
     radialWeight = 0.8
   } else {
-    // In the sweet spot — gentle distance correction
+    // In the sweet spot - gentle distance correction
     const t = (dist - ORBIT_DISTANCE) / (ORBIT_DISTANCE * 0.3)
     radialWeight = t * 0.3
   }
 
-  // Strafe timer — move to the next cardinal position
+  // Strafe timer - move to the next cardinal position
   enemy.strafeTimer -= dt
   if (enemy.strafeTimer <= 0) {
     enemy.strafeTimer = ENEMY_STRAFE_CHANGE_INTERVAL * (0.7 + Math.random() * 0.6)
@@ -344,7 +344,7 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     enemy.targetCardinal = nextCardinal(enemy.targetCardinal, enemy.strafeDir)
   }
 
-  // Idle timer — periodically drift to a stop when near target cardinal
+  // Idle timer - periodically drift to a stop when near target cardinal
   const inSweetSpot = dist >= ORBIT_DISTANCE * 0.7 && dist <= ORBIT_DISTANCE * 1.3
   enemy.idleTimer -= dt
   if (enemy.idleTimer <= 0) {
@@ -372,7 +372,7 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
   let desiredAngle: number
   const absRadial = Math.abs(radialWeight)
   if (absRadial > 0.3) {
-    // Distance correction dominates — move radially with some cardinal pull
+    // Distance correction dominates - move radially with some cardinal pull
     const radialAngle = radialWeight >= 0 ? toPlayer : toPlayer + Math.PI
     const cardinalAngle = toTargetDist > 0.1 ? Math.atan2(toTargetDy, toTargetDx) : enemy.heading
     const cardinalWeight = 1 - absRadial
@@ -380,7 +380,7 @@ export function updateEnemyShip(enemy: EnemyShip, player: Ship, dt: number): Ene
     const desiredY = Math.sin(radialAngle) * absRadial + Math.sin(cardinalAngle) * cardinalWeight
     desiredAngle = Math.atan2(desiredY, desiredX)
   } else {
-    // In sweet spot — steer toward the target cardinal position
+    // In sweet spot - steer toward the target cardinal position
     desiredAngle = toTargetDist > 0.1 ? Math.atan2(toTargetDy, toTargetDx) : enemy.heading
   }
 
@@ -529,7 +529,7 @@ export function checkProjectileEnemyCollisions(
  * Check the lazer beam (line segment) against the enemy ship.
  * Mutates enemy HP. Returns the closest-point projection of the enemy onto
  * the beam as `t` (0..1) so the caller can shorten the rendered beam to the
- * nearest target — mirrors how `checkBeamAsteroidCollisions` reports hits.
+ * nearest target - mirrors how `checkBeamAsteroidCollisions` reports hits.
  */
 export function checkBeamEnemyCollision(
   startX: number,

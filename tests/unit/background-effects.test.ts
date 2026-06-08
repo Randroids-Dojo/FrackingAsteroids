@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-describe('background-effects — export shape and basic behavior', () => {
+describe('background-effects - export shape and basic behavior', () => {
   it('module exports all expected functions', async () => {
     const mod = await import('../../src/game/background-effects')
     assert.equal(typeof mod.createTwinkleStars, 'function')

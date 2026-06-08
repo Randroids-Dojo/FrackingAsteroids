@@ -1,5 +1,5 @@
 /**
- * Engine trail particle effect — glowing particles emitted from the ship's rear.
+ * Engine trail particle effect - glowing particles emitted from the ship's rear.
  * Particle count and brightness scale with ship speed.
  */
 
@@ -20,7 +20,7 @@ const PARTICLE_SIZE = 0.4
 /** How far behind the ship particles spawn. */
 const SPAWN_OFFSET = 3.5
 
-/** Engine trail colors — orange to red fade. */
+/** Engine trail colors - orange to red fade. */
 const TRAIL_COLORS = [0xff6600, 0xff4400, 0xff8800, 0xffaa00] as const
 
 interface TrailParticle {
@@ -63,7 +63,7 @@ export function createEngineTrail(): EngineTrail {
   return { group, particles, emitAccumulator: 0 }
 }
 
-/** Update engine trail. Speed is 0–1 normalized. */
+/** Update engine trail. Speed is 0-1 normalized. */
 export function updateEngineTrail(
   trail: EngineTrail,
   dt: number,

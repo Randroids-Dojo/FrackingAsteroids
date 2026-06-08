@@ -141,7 +141,7 @@ export class GameTestHarness {
     const dist = Math.sqrt(dx * dx + dy * dy)
     assert.ok(
       dist < tolerance,
-      `Ship at (${this.sim.ship.x}, ${this.sim.ship.y}) not near (${x}, ${y}) — dist=${dist.toFixed(1)}`,
+      `Ship at (${this.sim.ship.x}, ${this.sim.ship.y}) not near (${x}, ${y}) - dist=${dist.toFixed(1)}`,
     )
   }
 

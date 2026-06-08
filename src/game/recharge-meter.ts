@@ -22,7 +22,7 @@ const HEAT_WARNING_THRESHOLD = 0.7
 
 export interface MeterState {
   visible: boolean
-  /** 0–1 fill progress (0 = empty, 1 = full) */
+  /** 0-1 fill progress (0 = empty, 1 = full) */
   progress: number
   /** Hex color for the fill bar */
   color: number
@@ -30,7 +30,7 @@ export interface MeterState {
 
 /**
  * Compute recharge meter display state from blaster cooldown.
- * Pure function — no Three.js dependency.
+ * Pure function - no Three.js dependency.
  */
 export function computeMeterState(blaster: BlasterState, tier: number): MeterState {
   const cooldownTotal = 1 / FIRE_RATES[clampTier(tier) - 1]
@@ -47,7 +47,7 @@ export function computeMeterState(blaster: BlasterState, tier: number): MeterSta
 
 /**
  * Compute meter display state for the lazer heat/cooldown system.
- * Pure function — no Three.js dependency.
+ * Pure function - no Three.js dependency.
  */
 export function computeLazerMeterState(lazer: LazerState): MeterState {
   if (lazer.overheated) {

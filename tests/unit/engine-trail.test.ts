@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-// Engine trail requires THREE.js — these tests verify export shape and basic behavior.
+// Engine trail requires THREE.js - these tests verify export shape and basic behavior.
 // They will fail in environments without the 'three' module (same as other Three.js tests).
 
-describe('engine-trail — export shape', () => {
+describe('engine-trail - export shape', () => {
   it('module exports expected functions', async () => {
     const mod = await import('../../src/game/engine-trail')
     assert.equal(typeof mod.createEngineTrail, 'function')

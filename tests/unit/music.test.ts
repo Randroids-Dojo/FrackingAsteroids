@@ -9,7 +9,7 @@ async function loadMusic() {
   return mod
 }
 
-describe('music — with mock AudioContext', () => {
+describe('music - with mock AudioContext', () => {
   before(() => {
     installMockAudioContext()
   })
@@ -42,7 +42,7 @@ describe('music — with mock AudioContext', () => {
     assert.doesNotThrow(() => music.setMusicIntensity(0.5))
   })
 
-  it('setMusicIntensity clamps to 0–1 range', () => {
+  it('setMusicIntensity clamps to 0-1 range', () => {
     assert.doesNotThrow(() => {
       music.setMusicIntensity(-1)
       music.setMusicIntensity(2)

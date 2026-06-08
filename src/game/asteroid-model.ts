@@ -21,7 +21,7 @@ const TYPE_PALETTES: Record<
   crystalline: { primary: 0x2a0040, dark: 0x1a0030, light: 0x5a2080, accent: 0xff44ff },
 }
 
-/** Voxel size for large asteroids — bigger than ship voxels for imposing scale. */
+/** Voxel size for large asteroids - bigger than ship voxels for imposing scale. */
 const ASTEROID_VOXEL = 2.0
 
 function addVoxel(
@@ -47,7 +47,7 @@ export function createLargeAsteroidModel(): THREE.Group {
   const asteroid = new THREE.Group()
   const { rock, rockDark, rockLight, crystal } = ASTEROID_COLORS
 
-  // Core — solid 6×6 center
+  // Core - solid 6×6 center
   for (let x = -3; x <= 3; x++) {
     for (let y = -3; y <= 3; y++) {
       const dist = Math.abs(x) + Math.abs(y)
@@ -58,7 +58,7 @@ export function createLargeAsteroidModel(): THREE.Group {
     }
   }
 
-  // Top layer — slightly smaller for 3D depth
+  // Top layer - slightly smaller for 3D depth
   for (let x = -2; x <= 2; x++) {
     for (let y = -2; y <= 2; y++) {
       const dist = Math.abs(x) + Math.abs(y)
@@ -69,7 +69,7 @@ export function createLargeAsteroidModel(): THREE.Group {
     }
   }
 
-  // Bottom layer — offset slightly for asymmetry
+  // Bottom layer - offset slightly for asymmetry
   for (let x = -2; x <= 3; x++) {
     for (let y = -3; y <= 2; y++) {
       const dist = Math.abs(x) + Math.abs(y)
@@ -79,14 +79,14 @@ export function createLargeAsteroidModel(): THREE.Group {
     }
   }
 
-  // Bumpy protrusions — irregular edges
+  // Bumpy protrusions - irregular edges
   addVoxel(asteroid, -4, 0, 0, rock, ASTEROID_VOXEL)
   addVoxel(asteroid, 4, 1, 0, rockDark, ASTEROID_VOXEL)
   addVoxel(asteroid, 0, -4, 0, rock, ASTEROID_VOXEL)
   addVoxel(asteroid, 1, 4, 0, rockDark, ASTEROID_VOXEL)
   addVoxel(asteroid, -3, -3, 0, rock, ASTEROID_VOXEL)
 
-  // Crystal accents — small mineral deposits
+  // Crystal accents - small mineral deposits
   addVoxel(asteroid, 2, 1, 1, crystal, ASTEROID_VOXEL)
   addVoxel(asteroid, -1, -2, 1, crystal, ASTEROID_VOXEL)
 
@@ -134,7 +134,7 @@ export function createAsteroidModel(
   const coreRadius = size === 0 ? 6 : size === 1 ? 4 : size === 2 ? 3 : 2
   const topRadius = Math.max(1, coreRadius - 1)
 
-  // Core layer (z=0) — irregular shape using manhattan distance with random threshold
+  // Core layer (z=0) - irregular shape using manhattan distance with random threshold
   const distThreshold = coreRadius + 1
   for (let x = -coreRadius; x <= coreRadius; x++) {
     for (let y = -coreRadius; y <= coreRadius; y++) {
@@ -148,7 +148,7 @@ export function createAsteroidModel(
     }
   }
 
-  // Top layer (z=1) — slightly smaller
+  // Top layer (z=1) - slightly smaller
   for (let x = -topRadius; x <= topRadius; x++) {
     for (let y = -topRadius; y <= topRadius; y++) {
       const dist = Math.abs(x) + Math.abs(y)
@@ -159,7 +159,7 @@ export function createAsteroidModel(
     }
   }
 
-  // Bottom layer (z=-1) — offset for asymmetry
+  // Bottom layer (z=-1) - offset for asymmetry
   const botOffset = rand() < 0.5 ? 1 : 0
   for (let x = -topRadius + botOffset; x <= topRadius; x++) {
     for (let y = -topRadius; y <= topRadius - botOffset; y++) {
@@ -186,7 +186,7 @@ export function createAsteroidModel(
     }
   }
 
-  // Bumpy protrusions — random irregular edges (2-5 bumps)
+  // Bumpy protrusions - random irregular edges (2-5 bumps)
   const bumpCount = 2 + Math.floor(rand() * 4)
   for (let i = 0; i < bumpCount; i++) {
     const angle = rand() * Math.PI * 2
@@ -196,7 +196,7 @@ export function createAsteroidModel(
     addVoxel(asteroid, bx, by, 0, color, voxelSize)
   }
 
-  // Accent voxels (crystal/mineral deposits) — more accents on precious/comet types
+  // Accent voxels (crystal/mineral deposits) - more accents on precious/comet types
   const accentCount = type === 'precious' ? 3 + Math.floor(rand() * 3) : 1 + Math.floor(rand() * 2)
   for (let i = 0; i < accentCount; i++) {
     const ax = Math.floor(rand() * (topRadius * 2 + 1)) - topRadius

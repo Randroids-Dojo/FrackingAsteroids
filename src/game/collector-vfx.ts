@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { COLLECTOR_RANGE } from './metal-chunk'
 
 // ---------------------------------------------------------------------------
-// Collector visual effects — magnetic field particles + range ring
+// Collector visual effects - magnetic field particles + range ring
 // ---------------------------------------------------------------------------
 
 /** Number of stream particles spiraling inward. */
@@ -17,7 +17,7 @@ const PARTICLE_SPIRAL_SPEED = 4
 /** Size of each particle cube. */
 const PARTICLE_SIZE = 0.5
 
-/** Colors — cyan/blue tones matching the collect button. */
+/** Colors - cyan/blue tones matching the collect button. */
 const VFX_COLORS = [0x00ccff, 0x00aaff, 0x44ddff, 0x0088ff] as const
 
 /** Pulsing ring line width. */
@@ -120,7 +120,7 @@ export function updateCollectorVfx(
   // Position VFX group at ship
   vfx.group.position.set(shipX, shipY, 0)
 
-  // Update stream particles — spiral inward, respawn at edge
+  // Update stream particles - spiral inward, respawn at edge
   for (const p of vfx.particles) {
     p.radius -= p.speed * dt
     p.angle += PARTICLE_SPIRAL_SPEED * dt

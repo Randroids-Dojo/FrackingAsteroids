@@ -1,5 +1,5 @@
 /**
- * Screen shake effect — offsets the camera temporarily on impact.
+ * Screen shake effect - offsets the camera temporarily on impact.
  * Decays exponentially over time.
  */
 
@@ -9,7 +9,7 @@ export interface ScreenShake {
   trauma: number
 }
 
-/** Decay rate per second — trauma halves roughly every 0.3 seconds. */
+/** Decay rate per second - trauma halves roughly every 0.3 seconds. */
 const DECAY_RATE = 4.0
 
 /** Maximum pixel offset at trauma = 1. */
@@ -22,7 +22,7 @@ export function createScreenShake(): ScreenShake {
   return { offsetX: 0, offsetY: 0, trauma: 0 }
 }
 
-/** Add trauma (0–1). Multiple hits stack, clamped to 1. */
+/** Add trauma (0-1). Multiple hits stack, clamped to 1. */
 export function addTrauma(shake: ScreenShake, amount: number): void {
   shake.trauma = Math.min(1, shake.trauma + amount)
 }

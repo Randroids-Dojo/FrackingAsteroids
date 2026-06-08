@@ -1,6 +1,6 @@
 /**
  * Procedural audio system using Web Audio API.
- * All sounds are synthesized — no external audio files needed.
+ * All sounds are synthesized - no external audio files needed.
  */
 
 import { getSfxVolume } from './volume-control'
@@ -27,7 +27,7 @@ export function resumeAudio(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Collector hum — a low droning magnetic sound
+// Collector hum - a low droning magnetic sound
 // ---------------------------------------------------------------------------
 
 interface CollectorHum {
@@ -37,7 +37,7 @@ interface CollectorHum {
 
 let collectorHum: CollectorHum | null = null
 
-/** Start the collector hum sound. Idempotent — safe to call every frame. */
+/** Start the collector hum sound. Idempotent - safe to call every frame. */
 export function startCollectorHum(): void {
   if (collectorHum) return
   const ctx = getContext()
@@ -50,7 +50,7 @@ export function startCollectorHum(): void {
 
   const oscillators: OscillatorNode[] = []
 
-  // Base drone — low saw wave
+  // Base drone - low saw wave
   const osc1 = ctx.createOscillator()
   osc1.type = 'sawtooth'
   osc1.frequency.setValueAtTime(55, ctx.currentTime)
@@ -62,7 +62,7 @@ export function startCollectorHum(): void {
   osc1.start()
   oscillators.push(osc1)
 
-  // Harmonic hum — sine at 110 Hz
+  // Harmonic hum - sine at 110 Hz
   const osc2 = ctx.createOscillator()
   osc2.type = 'sine'
   osc2.frequency.setValueAtTime(110, ctx.currentTime)
@@ -73,7 +73,7 @@ export function startCollectorHum(): void {
   osc2.start()
   oscillators.push(osc2)
 
-  // Wobble — slow LFO modulating the drone pitch
+  // Wobble - slow LFO modulating the drone pitch
   const lfo = ctx.createOscillator()
   lfo.type = 'sine'
   lfo.frequency.setValueAtTime(3, ctx.currentTime)
@@ -106,7 +106,7 @@ export function stopCollectorHum(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Collect "pling" — short metallic ping when a chunk is absorbed
+// Collect "pling" - short metallic ping when a chunk is absorbed
 // ---------------------------------------------------------------------------
 
 /** Play a short metallic collect sound. */
@@ -116,7 +116,7 @@ export function playCollectPling(): void {
 
   const now = ctx.currentTime
 
-  // Metallic ping — high sine with fast decay
+  // Metallic ping - high sine with fast decay
   const osc = ctx.createOscillator()
   osc.type = 'sine'
   const baseFreq = 800 + Math.random() * 400
