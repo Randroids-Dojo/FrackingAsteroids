@@ -7,7 +7,7 @@
 <meta name="dot-status" content="closed">
 <meta name="dot-priority" content="4">
 <meta name="dot-issue-type" content="task">
-<meta name="dot-created-at" content="&quot;2026-05-08T23:28:35.470150-05:00&quot;">
+<meta name="dot-created-at" content="2026-05-08T23:28:35.470150-05:00">
 <meta name="dot-closed-at" content="2026-06-08T15:22:06.903350-05:00">
 <meta name="dot-close-reason" content="Migrated persistence.ts internals to vibekit server readKv/writeKv; kept saveGame/loadGame facade, game: prefix, GameStateSchema, route contract, and legacy JSON-string read compat. 558 unit + 28 integration green, coverage 95.28/90.73/96.85.">
 </head>
