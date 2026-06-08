@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Start Screen</title></head>
+<body>
+
+  <h1>Start Screen</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The Start Screen is the entry point of the game, shown when the app launches. It lets the player begin a new game or load an existing one, using three save slots.</p>
+
+    <h3 id="start-fullscreen-title">Full-screen menu, title, and tagline</h3>
+    <ul>
+      <li>Full-screen menu shown on app launch.</li>
+      <li>Title "FRACKING ASTEROIDS" with a tagline.</li>
+    </ul>
+
+    <h3 id="start-new-game">New Game</h3>
+    <ul>
+      <li><strong>New Game</strong> button opens a save slot picker (3 slots).</li>
+    </ul>
+
+    <h3 id="start-load-game">Load Game</h3>
+    <ul>
+      <li><strong>Load Game</strong> button opens a save slot picker (3 slots).</li>
+    </ul>
+
+    <h3 id="start-slot-timestamp">Save slot timestamps</h3>
+    <ul>
+      <li>Each save slot shows its last-save timestamp.</li>
+    </ul>
+
+    <h3 id="start-localstorage-summaries">localStorage summaries</h3>
+    <ul>
+      <li>Save slot summaries are stored in localStorage for instant display.</li>
+    </ul>
+
+    <h3>Save slots</h3>
+    <table>
+      <thead>
+        <tr><th>Slot</th><th>Slot ID</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Slot 1</td><td><code>save-1</code></td></tr>
+        <tr><td>Slot 2</td><td><code>save-2</code></td></tr>
+        <tr><td>Slot 3</td><td><code>save-3</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Start Screen verified for spiral-html scaffold. Full-screen menu with title "FRACKING ASTEROIDS" and tagline "Blast. Collect. Scrap. Upgrade.", New Game and Load Game buttons, 3 save slots (<code>save-1</code>, <code>save-2</code>, <code>save-3</code>), per-slot last-save timestamps, and localStorage slot summaries (<code>fracking-asteroids-slot-summaries</code>) for instant display. Files: <code>src/components/StartScreen.tsx</code>, <code>src/hooks/useGamePersistence.ts</code>, <code>src/lib/schemas.ts</code>. Tests: <code>tests/unit/schemas.test.ts</code> (SAVE_SLOT_IDS and SaveSlotSummarySchema).</li>
+      <li data-date="2026-06-07">Start screen added with New Game and Load Game options and 3 save slots. Files: <code>src/components/StartScreen.tsx</code>, <code>src/hooks/useGamePersistence.ts</code>. PR #2.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

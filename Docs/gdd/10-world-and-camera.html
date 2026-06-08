@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>World, Visual Style, and Camera</title></head>
+<body>
+
+  <h1>World, Visual Style, and Camera</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+
+    <h2>Visual Style</h2>
+    <ul>
+      <li id="world-voxel-art"><strong>Voxel art:</strong> chunky, colorful 3D blocks.</li>
+      <li id="world-perspective-camera"><strong>Perspective camera:</strong> top-down view of the asteroid field.</li>
+    </ul>
+
+    <h3 id="world-color-palette">Color palette</h3>
+    <dl>
+      <dt>Deep space background</dt>
+      <dd>Dark navy/black with subtle star particles.</dd>
+      <dt>Asteroids</dt>
+      <dd>Earthy browns, grays, with gold/crystal highlights for precious types.</dd>
+      <dt>Ship</dt>
+      <dd>Metallic blue-gray with glowing engine trails.</dd>
+      <dt>Fragments</dt>
+      <dd>Bright, glowing particles matching asteroid type.</dd>
+      <dt>UI/HUD</dt>
+      <dd>Green and blue neon against dark overlays.</dd>
+    </dl>
+
+    <h2>Camera</h2>
+    <ul>
+      <li id="camera-follow-lerp">Fixed top-down view. Camera follows the ship with smooth lerp.</li>
+    </ul>
+
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Voxel art style, perspective top-down camera, scene color palette, and smooth-lerp camera follow shipped pre-migration across M1 (Skeleton), M2 (Flight), and M9 (Polish). Perspective camera and lerp follow live in <code>src/game/scene.ts</code> (<code>PerspectiveCamera(50, ...)</code> at <code>CAMERA_HEIGHT = 150</code>, <code>CAMERA_LERP = 0.08</code> applied each frame to <code>camera.position.x/y</code>). Voxel ship and engine glow in <code>src/game/ship-model.ts</code> (<code>BoxGeometry</code> voxels, <code>SHIP_COLORS</code>); voxel asteroids with per-type palettes in <code>src/game/asteroid-model.ts</code> (<code>TYPE_PALETTES</code>, <code>ASTEROID_COLORS</code>). Star field, nebula swirls, and black hole in <code>src/game/background-effects.ts</code> (200 twinkling stars, parallax layers).</li>
+    </ul>
+  </section>
+
+</body>
+</html>

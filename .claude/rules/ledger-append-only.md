@@ -1,42 +1,54 @@
 ---
 description: Ledger files are append-only. Never delete or rewrite past entries.
 paths:
-  - "Docs/PROGRESS_LOG.md"
-  - "Docs/OPEN_QUESTIONS.md"
-  - "Docs/FOLLOWUPS.md"
+  - "Docs/PROGRESS_LOG.html"
+  - "Docs/OPEN_QUESTIONS.html"
+  - "Docs/FOLLOWUPS.html"
   - "Docs/GDD_COVERAGE.json"
 ---
 
-# Ledger append-only discipline
+<h1>Ledger append-only discipline</h1>
 
-This rule loads when editing the four ledger files. They are the externalized memory of the project. The agent does not remember; the project remembers itself. That contract breaks if past entries are rewritten.
+<p>This rule loads when editing the four ledger files. They are the externalized memory of the project. The agent does not remember; the project remembers itself. That contract breaks if past entries are rewritten.</p>
 
-## What to do
+<h2>What to do</h2>
 
-### `Docs/PROGRESS_LOG.md`
+<section data-ledger="Docs/PROGRESS_LOG.html">
+  <h3><code>Docs/PROGRESS_LOG.html</code></h3>
+  <ul>
+    <li>Add new <code>&lt;article data-slice="..."&gt;</code> entries at the TOP of the relevant section. Newest first.</li>
+    <li>Never edit a past entry. If a past entry is wrong, add a new entry that corrects it.</li>
+    <li>Every implementation slice gets its own article. Required <code>&lt;dl&gt;</code> fields: Branch / PR / Changed / Verification / Assumptions / GDD coverage / Followups.</li>
+  </ul>
+</section>
 
-- Add new entries at the TOP of the relevant section. Newest first.
-- Never edit a past entry. If a past entry is wrong, add a new entry that corrects it.
-- Every implementation slice gets its own entry. Format: Branch / PR / Changed / Verification / Assumptions / GDD coverage / Followups.
+<section data-ledger="Docs/OPEN_QUESTIONS.html">
+  <h3><code>Docs/OPEN_QUESTIONS.html</code></h3>
+  <ul>
+    <li>New questions get the next monotonic <code>Q-NNN</code> id (set on the <code>&lt;section data-q="..."&gt;</code>).</li>
+    <li>When a question resolves, leave the entry in place. Update <code>data-status</code> to <code>resolved</code> and fill in the <code>Resolution</code> entry. Move the entry under the <code>&lt;aside id="resolved"&gt;</code> region.</li>
+    <li>Never delete a past question, even if it was wrong. Add a new question that supersedes it and reference the old id in the <code>Resolution</code> entry.</li>
+  </ul>
+</section>
 
-### `Docs/OPEN_QUESTIONS.md`
+<section data-ledger="Docs/FOLLOWUPS.html">
+  <h3><code>Docs/FOLLOWUPS.html</code></h3>
+  <ul>
+    <li>New followups get the next monotonic <code>F-NNN</code> id (set on the <code>&lt;section data-f="..."&gt;</code>).</li>
+    <li>When a followup ships, leave the entry in place and append a <code>&lt;dt&gt;Resolved&lt;/dt&gt;&lt;dd&gt;PR #N&lt;/dd&gt;</code> pair. Move under a <code>&lt;main id="resolved"&gt;</code> region if you have one.</li>
+    <li>Never delete a past followup, even if it became irrelevant. Add a <code>&lt;dt&gt;Resolved&lt;/dt&gt;&lt;dd&gt;N/A (dropped because &lt;reason&gt;)&lt;/dd&gt;</code> pair and move it.</li>
+  </ul>
+</section>
 
-- New questions get the next monotonic `Q-NNN` ID.
-- When a question resolves, leave the entry in place. Update `Status:` to `resolved` and fill in `Resolution:`. Move the entry under the `## Resolved` section.
-- Never delete a past question, even if it was wrong. Add a new question that supersedes it and reference the old ID in the `Resolution:` line.
+<section data-ledger="Docs/GDD_COVERAGE.json">
+  <h3><code>Docs/GDD_COVERAGE.json</code></h3>
+  <ul>
+    <li>Update <code>status</code> and append to <code>implementationRefs</code> / <code>testRefs</code> / <code>followupRefs</code> as work ships.</li>
+    <li>Do not delete rows whose requirements got cut. Set <code>status: "out_of_scope"</code> and add a note.</li>
+    <li>The <code>id</code> of a row is permanent. Do not renumber.</li>
+  </ul>
+</section>
 
-### `Docs/FOLLOWUPS.md`
+<h2>Why this matters</h2>
 
-- New followups get the next monotonic `F-NNN` ID.
-- When a followup ships, leave the entry in place and append a `- Resolved: PR #N` line. Move under a `## Resolved` section if you have one.
-- Never delete a past followup, even if it became irrelevant. Add a `- Resolved: N/A (dropped because <reason>)` line and move it.
-
-### `Docs/GDD_COVERAGE.json`
-
-- Update `status` and append to `implementationRefs` / `testRefs` / `followupRefs` as work ships.
-- Do not delete rows whose requirements got cut. Set `status: "out_of_scope"` and add a note.
-- The `id` of a row is permanent. Do not renumber.
-
-## Why this matters
-
-A future slice cannot trust ledgers that get retroactively edited. The audit trail is the contract. Treating these files as a database (overwrite + delete) destroys the institutional memory that lets the spiral run for weeks.
+<p>A future slice cannot trust ledgers that get retroactively edited. The audit trail is the contract. Treating these files as a database (overwrite + delete) destroys the institutional memory that lets the spiral run for weeks.</p>

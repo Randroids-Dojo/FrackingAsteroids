@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Blaster (Mining Laser)</title></head>
+<body>
+
+  <h1>Blaster (Mining Laser)</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+
+    <h2 id="blaster-fantasy">Blaster (Mining Laser)</h2>
+    <p>The blaster is a short-range mining tool, not a long-range weapon. Projectiles are amber-colored energy pulses that chip away at asteroids. Short range forces the player to fly close to their claim, reinforcing the mining fantasy.</p>
+
+    <h3>Tier table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Fire Rate</th>
+          <th>Projectile Speed</th>
+          <th>Damage</th>
+          <th>Spread</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="blaster-tier-1">
+          <td>1</td>
+          <td>1/sec</td>
+          <td>200 u/s (base)</td>
+          <td>1</td>
+          <td>None</td>
+        </tr>
+        <tr id="blaster-tier-2">
+          <td>2</td>
+          <td>2/sec</td>
+          <td>250 u/s (+25%)</td>
+          <td>1</td>
+          <td>None</td>
+        </tr>
+        <tr id="blaster-tier-3">
+          <td>3</td>
+          <td>3/sec</td>
+          <td>300 u/s (+50%)</td>
+          <td>2</td>
+          <td>None</td>
+        </tr>
+        <tr id="blaster-tier-4">
+          <td>4</td>
+          <td>4/sec</td>
+          <td>350 u/s (+75%)</td>
+          <td>2</td>
+          <td>Dual (plus or minus 8 degrees)</td>
+        </tr>
+        <tr id="blaster-tier-5">
+          <td>5</td>
+          <td>5/sec</td>
+          <td>400 u/s (+100%)</td>
+          <td>3</td>
+          <td>Triple (0 degrees, plus or minus 10 degrees)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Projectile Constants</h3>
+    <dl>
+      <dt id="projectile-speed">Base speed</dt>
+      <dd>200 units/sec (exceeds ship cruise speed ~56 u/s, so bolts outrun the ship).</dd>
+
+      <dt id="projectile-lifetime">Lifetime</dt>
+      <dd>1.5 seconds (~300 unit max range, but effective mining range is much shorter).</dd>
+
+      <dt id="projectile-visual">Visual</dt>
+      <dd>2 to 3 voxel elongated amber pulse (color <code>0xFFAA00</code>).</dd>
+
+      <dt id="projectile-collision">Collision</dt>
+      <dd>circle-circle radius check against asteroids.</dd>
+    </dl>
+
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Added projected aim line and target reticle: a red dashed line from the ship in the aim direction, with a red target circle snapping onto the intersected asteroid or enemy. Files: <code>src/game/aim-reticle.ts</code>, <code>src/game/scene.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Removed the Lazer after the intro until purchased at the Trade Station. Files: <code>src/game/scene.ts</code>. PR #36.</li>
+      <li data-date="2026-06-07">Replaced the mobile fire button with a floating right-side firing joystick; projectile direction tracks the stick angle while blaster cooldown and lazer heat gate actual shots. Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/scene.ts</code>, <code>src/game/fire-button.ts</code>. Tests: <code>tests/unit/virtual-joystick.test.ts</code>, <code>tests/unit/fire-button.test.ts</code>. PR #35.</li>
+      <li data-date="2026-06-07">Added the maxed-ship prologue with auto-fire (triple-fire blaster), auto-mine (lazer), and auto-collect, the Arbiter antagonist, and the module strip to a tier-1 ship. Files: <code>src/game/prologue-config.ts</code>, <code>src/game/arbiter-model.ts</code>, <code>src/game/scene.ts</code>. PR #30.</li>
+      <li data-date="2026-06-07">Added the sustained Lazer beam with the heat/cooldown system. Files: <code>src/game/blaster.ts</code>, <code>src/game/blaster-constants.ts</code>, <code>src/game/lazer-beam.ts</code>. PR #28.</li>
+      <li data-date="2026-06-07">Added the Lazer mining tool and crystalline asteroid type with HUD tool switcher and Trade Station purchase. Files: <code>src/game/blaster.ts</code>, <code>src/game/projectile-model.ts</code>, <code>src/game/collision.ts</code>. PR #24.</li>
+      <li data-date="2026-06-07">Blaster mining shipped pre-migration: tier table (fire rate, speed, damage, spread per tier 1 to 5), projectile constants (200 u/s base, 1.5s lifetime, amber <code>0xFFAA00</code> visual), dual and triple spread firing, and circle-circle projectile-asteroid collision. Files: <code>src/game/blaster-constants.ts</code>, <code>src/game/blaster.ts</code>, <code>src/game/projectile-model.ts</code>, <code>src/game/collision.ts</code>, <code>src/game/collision-constants.ts</code>. Tests: <code>tests/unit/blaster-constants.test.ts</code>, <code>tests/unit/blaster.test.ts</code>, <code>tests/unit/collision.test.ts</code>, <code>tests/unit/collision-constants.test.ts</code>. Milestone M3.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

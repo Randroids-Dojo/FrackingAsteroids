@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>The Prologue</title></head>
+<body>
+
+  <h1>The Prologue</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>New games begin with a cinematic prologue that showcases end-game power before stripping it away. After the prologue, the existing tutorial begins with the player motivated to rebuild.</p>
+
+    <h3 id="prologue-maxed-ship">Maxed-Out Ship</h3>
+    <p>The player starts with a fully upgraded ship (Blaster Mk5, Collector Mk5, Storage Mk5, Lazer unlocked) that is visually larger than the normal ship with detachable module add-ons: weapon turrets, collector scoop, cargo pods, and lazer emitter. Gold accents signal the maxed state.</p>
+
+    <h3>Prologue ship constants</h3>
+    <dl>
+      <dt>Blaster tier</dt><dd>5</dd>
+      <dt>Fire rate bonus</dt><dd>1.1 to the 4th power</dd>
+      <dt>Mining tool</dt><dd>lazer</dd>
+      <dt>Max speed</dt><dd>180 world units per second</dd>
+      <dt>Acceleration</dt><dd>300</dd>
+      <dt>Collector range</dt><dd>40 world units</dd>
+      <dt>Collision radius</dt><dd>5</dd>
+      <dt>Auto-fire range</dt><dd>150 world units</dd>
+    </dl>
+
+    <h3>Auto-Behavior</h3>
+    <p>During the prologue, the ship operates autonomously:</p>
+    <ul>
+      <li id="prologue-auto-fire"><strong>Auto-fire</strong>: Targets nearest asteroid/enemy automatically.</li>
+      <li id="prologue-auto-mine"><strong>Auto-mine</strong>: Lazer beam shreds asteroids including moon-sized rocks (size 0, ~30 world units).</li>
+      <li id="prologue-auto-collect"><strong>Auto-collect</strong>: Magnet collector with 40-unit range vacuums all debris.</li>
+    </ul>
+
+    <h3>Phases</h3>
+    <table>
+      <thead><tr><th>#</th><th>Phase</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr id="prologue-phase-mining"><td>1</td><td>Mining</td><td>Lazer annihilates a dense field of 30 asteroids plus 3 moon-size rocks.</td></tr>
+        <tr id="prologue-phase-combat"><td>2</td><td>Combat</td><td>Triple-fire blaster destroys a 6-ship enemy fleet.</td></tr>
+        <tr id="prologue-phase-speed"><td>3</td><td>Speed</td><td>Boosted max speed (180 u/s) showcase.</td></tr>
+        <tr id="prologue-phase-arbiter"><td>4</td><td>The Arbiter</td><td>A massive AI construct (~20x20 world units) warps in and freezes the ship.</td></tr>
+        <tr id="prologue-phase-strip"><td>5</td><td>Strip</td><td>The Arbiter removes modules one by one (turrets, scoop, cargo, lazer).</td></tr>
+        <tr id="prologue-phase-fade"><td>6</td><td>Fade</td><td>"Systems offline." then "Rebooting..." then player respawns with a tier-1 ship.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Prologue counts and timing constants</h3>
+    <dl>
+      <dt>Asteroid count</dt><dd>30</dd>
+      <dt>Moon count</dt><dd>3</dd>
+      <dt>Enemy fleet size</dt><dd>6</dd>
+      <dt>Mining target</dt><dd>25</dd>
+      <dt>Speed duration</dt><dd>4 seconds</dd>
+      <dt>Ambush size</dt><dd>10</dd>
+      <dt>Arbiter spawn distance</dt><dd>80</dd>
+      <dt>Arbiter approach speed</dt><dd>30</dd>
+      <dt>Arbiter strip delay</dt><dd>1.5 seconds</dd>
+    </dl>
+
+    <h3 id="prologue-arbiter-dialogue">The Arbiter</h3>
+    <p>An all-powerful AI that enforces balance in the asteroid belt. It is a massive AI construct (~20x20 world units, voxel size 2.0). It delivers three lines of dialogue:</p>
+    <ol>
+      <li>"You have grown too powerful, fracker."</li>
+      <li>"The belt was not built for one to dominate."</li>
+      <li>"I am restoring balance."</li>
+    </ol>
+
+    <h3 id="prologue-to-tutorial">After the prologue</h3>
+    <p>After the prologue, the existing tutorial begins with the player motivated to rebuild.</p>
+
+    <h3 id="prologue-skip-button">Skip</h3>
+    <p>A "SKIP INTRO" button is available at any time during the prologue.</p>
+
+    <h3 id="prologue-skip-on-load">Skip on load</h3>
+    <p>Loading a saved game skips the prologue entirely.</p>
+
+    <h3>Moon-Size Asteroids</h3>
+    <p>Size 0 asteroids (moon) are prologue-only, with voxel size 3.0, collision radius 16, and HP ranging from 25 (precious) to 80 (crystalline). They use 5 voxel layers for imposing depth.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Maxed prologue ship model with gold accents and detachable module groups (turrets, scoop, cargoPods, lazerLens) shipped pre-migration. Files: <code>src/game/ship-model.ts</code>, <code>src/game/prologue-config.ts</code>, <code>src/game/arbiter-model.ts</code>.</li>
+      <li data-date="2026-06-07">Prologue auto-fire/auto-mine/auto-collect, phased state machine (mining, combat, speed, arbiter, strip, fade), Arbiter spawn and module strip, and tier-1 respawn shipped pre-migration. Files: <code>src/game/game-tick.ts</code>, <code>src/game/scene.ts</code>, <code>src/hooks/useTutorial.ts</code>. Tests: <code>tests/integration/flows/prologue-flow.test.ts</code>.</li>
+      <li data-date="2026-06-07">Prologue overlay with Arbiter dialogue, "SKIP INTRO" button, and fade text wired so loaded games skip the prologue (skipPrologue equals not isNewGame). Files: <code>src/components/PrologueOverlay.tsx</code>, <code>src/app/page.tsx</code>, <code>src/components/StartScreen.tsx</code>, <code>src/components/GameCanvas.tsx</code>.</li>
+      <li data-date="2026-06-07">Speed-phase warp streaks and aim reticle support the prologue showcase. Files: <code>src/game/warp-streaks.ts</code>, <code>src/game/aim-reticle.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Sustained lazer beam with heat/cooldown drives prologue auto-mine of moon-size rocks. Files: <code>src/game/lazer-beam.ts</code>, <code>src/game/collector-vfx.ts</code>. PR #28.</li>
+      <li data-date="2026-06-07">Removed tutorial ambush and added prologue steps to the tutorial state machine. Files: <code>src/hooks/useTutorial.ts</code>. PR #30.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

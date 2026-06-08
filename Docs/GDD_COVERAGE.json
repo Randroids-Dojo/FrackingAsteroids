@@ -1,393 +1,2120 @@
 {
-  "_comment_1": "ATOMIC GRANULARITY ONLY. One row per requirement, not per chapter. Status sampled from src/ on 2026-05-09. Allowed status values: not_started | partial | done | out_of_scope. Every row should carry implementationRefs and testRefs once status >= partial. followupRefs link to F-NNN entries in FOLLOWUPS.md.",
-  "_comment_2": "FrackingAsteroids keeps a single Docs/GDD.md (vs. a per-file gdd/ tree). gddRef points at section anchors within that file.",
-  "updatedAt": "2026-05-09",
+  "_comment_1": "ATOMIC GRANULARITY. One row per requirement. Status sampled from src/ on 2026-06-07.",
+  "_comment_2": "spiral-html scaffold: GDD lives as an HTML tree under Docs/gdd/; gddRef points at Docs/gdd/<file>#<anchor>.",
+  "updatedAt": "2026-06-07",
   "rows": [
     {
       "id": "REQ-001",
-      "requirement": "Core loop: BLAST → COLLECT → SCRAP → UPGRADE",
-      "gddRef": "Docs/GDD.md#core-loop",
+      "requirement": "Title is FrackingAsteroids; genre is Arcade / Resource Management",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#title-genre",
       "status": "done",
-      "implementationRefs": ["src/game/scene.ts", "src/game/game-tick.ts"],
-      "testRefs": ["tests/integration/flows/mining-flow.test.ts"],
+      "implementationRefs": [
+        "src/app/layout.tsx"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-002",
-      "requirement": "Win condition: max upgrade tier across blaster, collector, and storage",
-      "gddRef": "Docs/GDD.md#win-condition",
-      "status": "partial",
-      "implementationRefs": ["src/components/TradeMenu.tsx"],
+      "requirement": "Platform target is web for desktop and mobile browsers",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#platform",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/GameCanvas.tsx"
+      ],
       "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-003",
-      "requirement": "Blaster tier 1: 1/sec fire rate, 200 u/s projectile, 1 damage, no spread",
-      "gddRef": "Docs/GDD.md#blaster-mining-laser",
+      "requirement": "Tech stack is Next.js, Three.js, Tailwind CSS, and Upstash Redis",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#tech-stack",
       "status": "done",
-      "implementationRefs": ["src/game/blaster.ts", "src/game/blaster-constants.ts"],
-      "testRefs": ["tests/unit/blaster.test.ts", "tests/unit/blaster-constants.test.ts"],
+      "implementationRefs": [
+        "src/game/scene.ts",
+        "src/lib/kv.ts"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-004",
-      "requirement": "Blaster tier 2: 2/sec, 250 u/s (+25%), 1 damage",
-      "gddRef": "Docs/GDD.md#blaster-mining-laser",
+      "requirement": "Art style is voxel-style 3D",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#art-style",
       "status": "done",
-      "implementationRefs": ["src/game/blaster-constants.ts"],
-      "testRefs": ["tests/unit/blaster-constants.test.ts"],
+      "implementationRefs": [
+        "src/game/ship-model.ts",
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-005",
-      "requirement": "Blaster tier 3: 3/sec, 300 u/s (+50%), 2 damage",
-      "gddRef": "Docs/GDD.md#blaster-mining-laser",
+      "requirement": "Elevator pitch: blast asteroids, collect fragments, scrap resources, reinvest in upgrading blaster, collector, and storage",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#elevator-pitch",
       "status": "done",
-      "implementationRefs": ["src/game/blaster-constants.ts"],
-      "testRefs": ["tests/unit/blaster-constants.test.ts"],
+      "implementationRefs": [],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-006",
-      "requirement": "Blaster tier 4: 4/sec, 350 u/s (+75%), 2 damage, dual ±8° spread",
-      "gddRef": "Docs/GDD.md#blaster-mining-laser",
+      "requirement": "Win condition: reach maximum upgrade tier across all three systems (blaster, collector, storage)",
+      "gddRef": "Docs/gdd/01-vision-and-pillars.html#win-condition",
       "status": "done",
-      "implementationRefs": ["src/game/blaster-constants.ts"],
-      "testRefs": ["tests/unit/blaster-constants.test.ts"],
+      "implementationRefs": [
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-007",
-      "requirement": "Blaster tier 5: 5/sec, 400 u/s (+100%), 3 damage, triple (0°, ±10°) spread",
-      "gddRef": "Docs/GDD.md#blaster-mining-laser",
+      "requirement": "Core loop is BLAST then COLLECT then SCRAP then UPGRADE, repeating",
+      "gddRef": "Docs/gdd/02-core-loop.html#loop-cycle",
       "status": "done",
-      "implementationRefs": ["src/game/blaster-constants.ts"],
-      "testRefs": ["tests/unit/blaster-constants.test.ts"],
+      "implementationRefs": [
+        "src/game/scene.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/mining-flow.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-008",
-      "requirement": "Projectile constants: 1.5s lifetime, amber color 0xFFAA00, 2-3 voxel pulse, circle-circle collision",
-      "gddRef": "Docs/GDD.md#projectile-constants",
+      "requirement": "Blast: shoot asteroids with the blaster to break them into fragments",
+      "gddRef": "Docs/gdd/02-core-loop.html#loop-blast",
       "status": "done",
-      "implementationRefs": ["src/game/projectile-model.ts", "src/game/blaster-constants.ts", "src/game/collision.ts"],
-      "testRefs": ["tests/unit/collision.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/asteroid-debris.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-009",
-      "requirement": "Collector tiers 1-5: increasing range and pull speed; tier 4 auto-collects nearby; tier 5 auto-collects all on-screen",
-      "gddRef": "Docs/GDD.md#collector",
-      "status": "partial",
-      "implementationRefs": ["src/game/collector-vfx.ts", "src/game/metal-chunk.ts"],
-      "testRefs": ["tests/unit/collector-vfx.test.ts", "tests/unit/metal-chunk.test.ts"],
+      "requirement": "Collect: fly through or attract fragments with the collector beam",
+      "gddRef": "Docs/gdd/02-core-loop.html#loop-collect",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/collector-vfx.ts",
+        "src/game/metal-chunk.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts",
+        "tests/unit/collector-vfx.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-010",
-      "requirement": "Storage tiers 1-5: capacity 50/125/250/500/1000 with scrap bonuses 0%/10%/20%/35%/50%",
-      "gddRef": "Docs/GDD.md#storage",
-      "status": "partial",
-      "implementationRefs": ["src/components/TradeMenu.tsx", "src/lib/schemas.ts"],
-      "testRefs": ["tests/unit/schemas.test.ts"],
+      "requirement": "Scrap: fragments auto-convert to scrap (currency) in the cargo hold",
+      "gddRef": "Docs/gdd/02-core-loop.html#loop-scrap",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scrap-box.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/unit/scrap-box.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-011",
-      "requirement": "Player ship has 100 HP; HP lost on enemy hit; restored at gas station; persisted across saves",
-      "gddRef": "Docs/GDD.md#player-hp",
+      "requirement": "Upgrade: spend scrap to improve blaster, collector, or storage capacity",
+      "gddRef": "Docs/gdd/02-core-loop.html#loop-upgrade",
       "status": "done",
-      "implementationRefs": ["src/game/scene.ts", "src/game/game-tick.ts", "src/lib/schemas.ts"],
-      "testRefs": ["tests/unit/game-tick-station.test.ts", "tests/unit/schemas.test.ts"],
+      "implementationRefs": [
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-012",
-      "requirement": "Common asteroid: large, brown/blue crystal palette, 15 HP",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster is a short-range mining tool with amber energy pulses that chip away at asteroids, forcing the player to fly close to their claim",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-fantasy",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/asteroid-spawner.ts"],
-      "testRefs": ["tests/unit/asteroid-model.test.ts", "tests/unit/asteroid-spawner.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-013",
-      "requirement": "Dense asteroid: medium, gray-purple/violet palette, 14 HP",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster tier 1: 1/sec fire rate, 200 u/s projectile speed (base), 1 damage, no spread",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-tier-1",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/asteroid-spawner.ts"],
-      "testRefs": ["tests/unit/asteroid-model.test.ts", "tests/unit/asteroid-spawner.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-014",
-      "requirement": "Precious asteroid: small, gold/yellow palette, 6 HP",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster tier 2: 2/sec fire rate, 250 u/s (+25%), 1 damage, no spread",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-tier-2",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/asteroid-spawner.ts"],
-      "testRefs": ["tests/unit/asteroid-model.test.ts", "tests/unit/asteroid-spawner.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-015",
-      "requirement": "Comet asteroid: blue-teal/cyan palette, 10 HP",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster tier 3: 3/sec fire rate, 300 u/s (+50%), 2 damage, no spread",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-tier-3",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/asteroid-spawner.ts"],
-      "testRefs": ["tests/unit/asteroid-model.test.ts", "tests/unit/asteroid-spawner.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-016",
-      "requirement": "Crystalline asteroid: deep purple/magenta palette, 30 HP, immune to standard blaster",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster tier 4: 4/sec fire rate, 350 u/s (+75%), 2 damage, dual spread (plus or minus 8 degrees)",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-tier-4",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/asteroid-spawner.ts", "src/game/collision.ts"],
-      "testRefs": ["tests/unit/collision.test.ts", "tests/integration/flows/lazer-tool.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts",
+        "src/game/blaster.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-017",
-      "requirement": "Asteroids drift across the field at varying speeds and angles, spawned in a ring around the gas station after the tutorial",
-      "gddRef": "Docs/GDD.md#asteroids",
+      "requirement": "Blaster tier 5: 5/sec fire rate, 400 u/s (+100%), 3 damage, triple spread (0, plus or minus 10 degrees)",
+      "gddRef": "Docs/gdd/03-blaster.html#blaster-tier-5",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-spawner.ts", "src/game/scene.ts"],
-      "testRefs": ["tests/unit/asteroid-spawner.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts",
+        "src/game/blaster.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-018",
-      "requirement": "Lazer purchased at trade station for 200 scrap, 1.5x damage multiplier vs all asteroids",
-      "gddRef": "Docs/GDD.md#lazer-advanced-mining-tool",
+      "requirement": "Projectile base speed is 200 units/sec, exceeding ship cruise speed (~56 u/s) so bolts outrun the ship",
+      "gddRef": "Docs/gdd/03-blaster.html#projectile-speed",
       "status": "done",
-      "implementationRefs": ["src/components/TradeMenu.tsx", "src/game/lazer-beam.ts", "src/game/collision.ts"],
-      "testRefs": ["tests/integration/flows/lazer-tool.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-019",
-      "requirement": "Lazer beam: cyan 0x00CCFF with bright core 0x88EEFF, 120-unit range, instant line-of-sight damage at DPS = 5x base tier per second",
-      "gddRef": "Docs/GDD.md#lazer-advanced-mining-tool",
+      "requirement": "Projectile lifetime is 1.5 seconds (~300 unit max range, shorter effective mining range)",
+      "gddRef": "Docs/gdd/03-blaster.html#projectile-lifetime",
       "status": "done",
-      "implementationRefs": ["src/game/lazer-beam.ts"],
-      "testRefs": ["tests/integration/flows/lazer-tool.test.ts"],
+      "implementationRefs": [
+        "src/game/blaster-constants.ts",
+        "src/game/projectile-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/blaster-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-020",
-      "requirement": "Lazer heat/cooldown: 1.0 heat/sec while firing, max 1.5s, 1.5s overheat cooldown, 0.5/sec passive cool when not firing",
-      "gddRef": "Docs/GDD.md#heatcooldown-system",
+      "requirement": "Projectile visual is a 2 to 3 voxel elongated amber pulse with color 0xFFAA00",
+      "gddRef": "Docs/gdd/03-blaster.html#projectile-visual",
       "status": "done",
-      "implementationRefs": ["src/game/lazer-beam.ts"],
-      "testRefs": ["tests/integration/flows/lazer-tool.test.ts"],
+      "implementationRefs": [
+        "src/game/projectile-model.ts",
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [],
       "followupRefs": []
     },
     {
       "id": "REQ-021",
-      "requirement": "Tutorial popup appears when player tries to shoot crystalline with blaster; freezes game until any-screen tap dismisses; shown each deflection",
-      "gddRef": "Docs/GDD.md#lazer-advanced-mining-tool",
+      "requirement": "Projectile collision uses a circle-circle radius check against asteroids",
+      "gddRef": "Docs/gdd/03-blaster.html#projectile-collision",
       "status": "done",
-      "implementationRefs": ["src/components/LazerTutorialPopup.tsx", "src/hooks/useTutorial.ts"],
-      "testRefs": ["tests/unit/tutorial.test.ts"],
+      "implementationRefs": [
+        "src/game/collision.ts",
+        "src/game/collision-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/collision.test.ts",
+        "tests/unit/collision-constants.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-022",
-      "requirement": "Desktop controls: WASD/arrows move, mouse aims, click fires, right-click or E/Space holds collector, Space pauses",
-      "gddRef": "Docs/GDD.md#controls",
+      "requirement": "Collector tier 1: small range, slow pull speed, no auto-collect",
+      "gddRef": "Docs/gdd/04-collector.html#collector-tier-1",
       "status": "done",
-      "implementationRefs": ["src/game/input.ts", "src/game/ship-controller.ts"],
-      "testRefs": ["tests/unit/input.test.ts", "tests/unit/ship-controller.test.ts"],
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/collector-vfx.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/unit/collector-vfx.test.ts",
+        "tests/unit/metal-chunk.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-023",
-      "requirement": "Mobile controls: left virtual joystick (movement, 10px deadzone), right firing joystick (aim direction; cooldown gates shots), bottom-right collect button, HUD pause button",
-      "gddRef": "Docs/GDD.md#controls",
-      "status": "done",
-      "implementationRefs": ["src/game/virtual-joystick.ts", "src/game/fire-button.ts"],
-      "testRefs": ["tests/unit/virtual-joystick.test.ts", "tests/unit/fire-button.test.ts"],
+      "requirement": "Collector tier 2: medium range, medium pull speed, no auto-collect",
+      "gddRef": "Docs/gdd/04-collector.html#collector-tier-2",
+      "status": "not_started",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/collector-vfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-024",
-      "requirement": "Ship rotation decoupled from movement: faces aim target when present, falls back to movement direction otherwise; no speed gates on input-driven rotation",
-      "gddRef": "Docs/GDD.md#design-notes",
-      "status": "done",
-      "implementationRefs": ["src/game/ship-controller.ts"],
-      "testRefs": ["tests/unit/ship-controller.test.ts"],
+      "requirement": "Collector tier 3: large range, fast pull speed, no auto-collect",
+      "gddRef": "Docs/gdd/04-collector.html#collector-tier-3",
+      "status": "not_started",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/collector-vfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-025",
-      "requirement": "Top-down perspective camera with smooth-lerp ship follow",
-      "gddRef": "Docs/GDD.md#camera",
-      "status": "done",
-      "implementationRefs": ["src/game/scene.ts"],
-      "testRefs": [],
+      "requirement": "Collector tier 4: XL range, fast pull speed, auto-collects nearby fragments",
+      "gddRef": "Docs/gdd/04-collector.html#collector-tier-4",
+      "status": "not_started",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/collector-vfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-026",
-      "requirement": "Gas station: north of start, drive-through full HP repair, trade menu sells materials and buys upgrades",
-      "gddRef": "Docs/GDD.md#gas-station",
-      "status": "done",
-      "implementationRefs": ["src/game/gas-station-model.ts", "src/components/TradeMenu.tsx", "src/game/game-tick.ts"],
-      "testRefs": ["tests/unit/game-tick-station.test.ts"],
+      "requirement": "Collector tier 5: XXL range, instant pull speed, auto-collects all fragments on screen",
+      "gddRef": "Docs/gdd/04-collector.html#collector-tier-5",
+      "status": "not_started",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/collector-vfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-027",
-      "requirement": "Prologue: maxed ship (Mk5 across all systems + Lazer) with detachable modules, gold accents, larger silhouette",
-      "gddRef": "Docs/GDD.md#the-prologue",
+      "requirement": "Storage tier 1: capacity 50, scrap bonus 0%",
+      "gddRef": "Docs/gdd/05-storage.html#storage-tier-1",
       "status": "done",
-      "implementationRefs": ["src/game/ship-model.ts", "src/game/prologue-config.ts", "src/components/PrologueOverlay.tsx"],
-      "testRefs": ["tests/integration/flows/prologue-flow.test.ts"],
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-028",
-      "requirement": "Prologue auto-behavior: auto-fire nearest target, lazer auto-mine including moon-size rocks, magnet auto-collect 40-unit range",
-      "gddRef": "Docs/GDD.md#auto-behavior",
-      "status": "done",
-      "implementationRefs": ["src/game/prologue-config.ts", "src/game/scene.ts"],
-      "testRefs": ["tests/integration/flows/prologue-flow.test.ts"],
+      "requirement": "Storage tier 2: capacity 125, scrap bonus 10%",
+      "gddRef": "Docs/gdd/05-storage.html#storage-tier-2",
+      "status": "partial",
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/components/TradeMenu.tsx",
+        "src/game/types.ts",
+        "src/hooks/useGameState.ts"
+      ],
+      "testRefs": [
+        "tests/unit/types.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-029",
-      "requirement": "Prologue six phases: Mining → Combat (6-ship fleet) → Speed (180 u/s) → Arbiter warp-in → Strip → Fade-and-respawn",
-      "gddRef": "Docs/GDD.md#phases",
-      "status": "done",
-      "implementationRefs": ["src/game/prologue-config.ts", "src/components/PrologueOverlay.tsx"],
-      "testRefs": ["tests/integration/flows/prologue-flow.test.ts"],
+      "requirement": "Storage tier 3: capacity 250, scrap bonus 20%",
+      "gddRef": "Docs/gdd/05-storage.html#storage-tier-3",
+      "status": "partial",
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/components/TradeMenu.tsx",
+        "src/game/types.ts",
+        "src/hooks/useGameState.ts"
+      ],
+      "testRefs": [
+        "tests/unit/types.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-030",
-      "requirement": "The Arbiter: ~20×20 unit AI construct, freezes ship, delivers three dialogue lines, removes modules turrets→scoop→cargo→lazer",
-      "gddRef": "Docs/GDD.md#the-arbiter",
-      "status": "done",
-      "implementationRefs": ["src/game/arbiter-model.ts", "src/components/PrologueOverlay.tsx"],
-      "testRefs": ["tests/integration/flows/prologue-flow.test.ts"],
+      "requirement": "Storage tier 4: capacity 500, scrap bonus 35%",
+      "gddRef": "Docs/gdd/05-storage.html#storage-tier-4",
+      "status": "partial",
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/components/TradeMenu.tsx",
+        "src/game/types.ts",
+        "src/hooks/useGameState.ts"
+      ],
+      "testRefs": [
+        "tests/unit/types.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-031",
-      "requirement": "Prologue skip: SKIP INTRO button always available; loading a saved game skips prologue entirely",
-      "gddRef": "Docs/GDD.md#skip",
-      "status": "done",
-      "implementationRefs": ["src/components/PrologueOverlay.tsx", "src/components/StartScreen.tsx"],
-      "testRefs": ["tests/integration/flows/prologue-flow.test.ts"],
+      "requirement": "Storage tier 5: capacity 1000, scrap bonus 50%",
+      "gddRef": "Docs/gdd/05-storage.html#storage-tier-5",
+      "status": "partial",
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/components/TradeMenu.tsx",
+        "src/game/types.ts",
+        "src/hooks/useGameState.ts"
+      ],
+      "testRefs": [
+        "tests/unit/types.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-032",
-      "requirement": "Moon-size asteroids: size 0, voxel size 3.0, collision radius 16, HP 25-80, 5 voxel layers, prologue-only",
-      "gddRef": "Docs/GDD.md#moon-size-asteroids",
+      "requirement": "Player ship has 100 HP",
+      "gddRef": "Docs/gdd/06-player-hp.html#hp-max",
       "status": "done",
-      "implementationRefs": ["src/game/asteroid-model.ts", "src/game/prologue-config.ts"],
-      "testRefs": ["tests/unit/asteroid-model.test.ts"],
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/game/game-tick.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts",
+        "tests/unit/game-tick.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-033",
-      "requirement": "Zod data models: Ship, Upgrades, Cargo, GameState; types derived via z.infer<>",
-      "gddRef": "Docs/GDD.md#data-models-zod-schemas",
+      "requirement": "HP is lost when the ship is hit by enemy projectiles",
+      "gddRef": "Docs/gdd/06-player-hp.html#hp-damage",
       "status": "done",
-      "implementationRefs": ["src/lib/schemas.ts"],
-      "testRefs": ["tests/unit/schemas.test.ts"],
+      "implementationRefs": [
+        "src/game/game-tick.ts",
+        "src/game/enemy-ship.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/game-tick.test.ts",
+        "tests/unit/enemy-ship.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-034",
-      "requirement": "Persistence via Upstash Redis: useGamePersistence hook, auto-save on collect/sell/buy/repair, lazy KV singleton",
-      "gddRef": "Docs/GDD.md#state-management",
+      "requirement": "HP is restored to full when passing through the gas station (drive-through repair)",
+      "gddRef": "Docs/gdd/06-player-hp.html#hp-repair",
       "status": "done",
-      "implementationRefs": ["src/lib/persistence.ts", "src/lib/kv.ts", "src/hooks/useGamePersistence.ts"],
-      "testRefs": [],
+      "implementationRefs": [
+        "src/game/game-tick.ts",
+        "src/game/gas-station-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/game-tick.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-035",
-      "requirement": "API routes: GET/PUT /api/game/[id], GET /api/health, GET /api/version, POST /api/feedback (all Zod-validated)",
-      "gddRef": "Docs/GDD.md#api-routes",
+      "requirement": "HP is persisted across saves",
+      "gddRef": "Docs/gdd/06-player-hp.html#hp-persist",
       "status": "done",
-      "implementationRefs": ["src/app/api/game/[id]/route.ts", "src/app/api/health/route.ts", "src/app/api/version/route.ts", "src/app/api/feedback/route.ts"],
-      "testRefs": [],
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/lib/persistence.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-036",
-      "requirement": "HUD: scrap counter, cargo bar, upgrade indicators, recharge meter, health bar (when below max), pause button",
-      "gddRef": "Docs/GDD.md#hud-always-visible-during-gameplay",
+      "requirement": "Common asteroid: large size, brown / blue crystal palette, 15 HP",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-common",
       "status": "done",
-      "implementationRefs": ["src/components/HUD.tsx", "src/game/recharge-meter.ts", "src/game/asteroid-health-meter.ts"],
-      "testRefs": ["tests/unit/recharge-meter.test.ts", "tests/unit/asteroid-health-meter.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts",
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-037",
-      "requirement": "Start screen: full-screen menu, 3 save slots for New / Load Game, last-save timestamps, summaries cached in localStorage",
-      "gddRef": "Docs/GDD.md#start-screen",
+      "requirement": "Dense asteroid: medium size, gray-purple / violet palette, 14 HP",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-dense",
       "status": "done",
-      "implementationRefs": ["src/components/StartScreen.tsx", "src/hooks/useGamePersistence.ts"],
-      "testRefs": [],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts",
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-038",
-      "requirement": "Pause overlay: darkened canvas, PAUSED label, Resume button, Feedback FAB",
-      "gddRef": "Docs/GDD.md#pause-overlay",
+      "requirement": "Precious asteroid: small size, gold / yellow accent palette, 6 HP",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-precious",
       "status": "done",
-      "implementationRefs": ["src/components/FeedbackFab.tsx", "src/components/HUD.tsx"],
-      "testRefs": [],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts",
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-039",
-      "requirement": "Screen shake: trauma-based, damage adds trauma 0-1, quadratic falloff, 25 Hz oscillation, decay 4.0/sec",
-      "gddRef": "Docs/GDD.md#visual-effects",
+      "requirement": "Comet asteroid: varies in size, blue-teal / cyan palette, 10 HP",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-comet",
       "status": "done",
-      "implementationRefs": ["src/game/screen-shake.ts"],
-      "testRefs": ["tests/unit/screen-shake.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts",
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-040",
-      "requirement": "Engine trail: orange/red particles, rate and brightness scale with speed, 0.4s fade",
-      "gddRef": "Docs/GDD.md#visual-effects",
+      "requirement": "Crystalline asteroid: varies in size, deep purple / magenta palette, 30 HP, immune to the standard blaster and requires a Lazer to mine",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-crystalline",
       "status": "done",
-      "implementationRefs": ["src/game/engine-trail.ts"],
-      "testRefs": ["tests/unit/engine-trail.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts",
+        "src/game/collision.ts"
+      ],
+      "testRefs": [
+        "tests/unit/collision.test.ts",
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-041",
-      "requirement": "Background: 200 twinkling colored stars, 5 nebula clouds (additive), black hole with 4 spinning accretion rings, parallax layers",
-      "gddRef": "Docs/GDD.md#background-effects",
+      "requirement": "Asteroids drift across the field at varying speeds and angles",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-drift",
       "status": "done",
-      "implementationRefs": ["src/game/background-effects.ts"],
-      "testRefs": ["tests/unit/background-effects.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-spawner.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-042",
-      "requirement": "Procedural music: 4 layers (bass drone, pads, arpeggio, percussion), intensity lerps between peaceful 0.15 and combat 0.8",
-      "gddRef": "Docs/GDD.md#background-music",
+      "requirement": "Asteroids are spawned in a ring around the gas station after the tutorial",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-ring-spawn",
       "status": "done",
-      "implementationRefs": ["src/game/music.ts"],
-      "testRefs": ["tests/unit/music.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-spawner.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
       "followupRefs": []
     },
     {
       "id": "REQ-043",
-      "requirement": "SFX: laser zap, explosion, player hit, engine thrust loop, collector hum, collection pling (all Web Audio synthesized)",
-      "gddRef": "Docs/GDD.md#sound-effects",
+      "requirement": "Asteroids are voxel models with seeded shapes for visual variety",
+      "gddRef": "Docs/gdd/07-asteroids.html#asteroid-seeded-voxel",
       "status": "done",
-      "implementationRefs": ["src/game/sfx.ts", "src/game/audio.ts"],
-      "testRefs": ["tests/unit/sfx.test.ts", "tests/unit/audio.test.ts"],
+      "implementationRefs": [
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-044",
+      "requirement": "Lazer is a sustained beam mining tool: continuous solid beam while the fire button is held, applying instant line-of-sight damage with no projectile travel time",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-sustained-beam",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/lazer-beam.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-045",
+      "requirement": "Lazer is purchased at the Trade Station for 200 scrap",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-cost",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-046",
+      "requirement": "Lazer deals 1.5x damage multiplier to all asteroid types",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-damage-mult",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster-constants.ts",
+        "src/game/collision.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-047",
+      "requirement": "Lazer beam color is cyan 0x00CCFF with a bright core 0x88EEFF",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-color",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/lazer-beam.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-048",
+      "requirement": "Lazer is required to mine crystalline asteroids",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-required-crystalline",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/collision.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-049",
+      "requirement": "Lazer beam range is 120 world units, rendered as a solid glowing cyan line from ship to first asteroid hit or max range",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-range",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster-constants.ts",
+        "src/game/lazer-beam.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-050",
+      "requirement": "Lazer DPS is 5x base tier damage per second, applied continuously every frame",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-dps",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-051",
+      "requirement": "Lazer heat builds at 1.0 heat/sec while firing; meter under the ship fills cyan to orange as heat rises",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-heat-build",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/blaster-constants.ts",
+        "src/game/recharge-meter.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-052",
+      "requirement": "Lazer max heat is 1.5 seconds of sustained fire; at max heat it overheats with a forced stop, meter turns red and drains over the cooldown",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-overheat",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/blaster-constants.ts",
+        "src/game/recharge-meter.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-053",
+      "requirement": "Lazer overheat cooldown is 1.5 seconds, after which heat resets to 0 and the lazer is ready again",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-cooldown",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-054",
+      "requirement": "Lazer passively dissipates heat at 0.5/sec when not firing and not overheated, enabling burst-fire strategies",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-passive-cool",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-055",
+      "requirement": "Players switch between the Blaster and Lazer via a HUD dropdown",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-tool-switch",
+      "status": "partial",
+      "implementationRefs": [
+        "src/components/HUD.tsx",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/mining-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-056",
+      "requirement": "A tutorial popup appears each time the player deflects off crystalline with the blaster, freezing the game until any tap on screen dismisses it",
+      "gddRef": "Docs/gdd/08-lazer.html#lazer-tutorial-popup",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/LazerTutorialPopup.tsx",
+        "src/hooks/useTutorial.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/unit/tutorial.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-057",
+      "requirement": "Desktop: WASD or arrow keys move the ship (twin-stick: movement independent of aim)",
+      "gddRef": "Docs/gdd/09-controls.html#desktop-move",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/input.ts",
+        "src/game/ship-controller.ts"
+      ],
+      "testRefs": [
+        "tests/unit/input.test.ts",
+        "tests/unit/ship-controller.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-058",
+      "requirement": "Desktop: mouse cursor aims the ship (ship rotates to face cursor)",
+      "gddRef": "Docs/gdd/09-controls.html#desktop-aim",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/input.ts",
+        "src/game/ship-controller.ts"
+      ],
+      "testRefs": [
+        "tests/unit/input.test.ts",
+        "tests/unit/ship-controller.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-059",
+      "requirement": "Desktop: mouse click fires the blaster toward the cursor",
+      "gddRef": "Docs/gdd/09-controls.html#desktop-fire",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts",
+        "src/game/blaster.ts"
+      ],
+      "testRefs": [
+        "tests/unit/input.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-060",
+      "requirement": "Desktop: right-click held, or E or Space held, activates the collector",
+      "gddRef": "Docs/gdd/09-controls.html#desktop-collect",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-061",
+      "requirement": "Desktop: Space pauses (revealing the Feedback FAB)",
+      "gddRef": "Docs/gdd/09-controls.html#desktop-pause",
+      "status": "partial",
+      "implementationRefs": [
+        "src/components/HUD.tsx",
+        "src/app/page.tsx",
+        "src/components/FeedbackFab.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-062",
+      "requirement": "Mobile: left thumb virtual joystick (floating anchor, left half of screen) moves the ship",
+      "gddRef": "Docs/gdd/09-controls.html#mobile-move",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/virtual-joystick.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/virtual-joystick.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-063",
+      "requirement": "Mobile: right thumb firing joystick (floating anchor, right half) sets projectile direction by stick angle; blaster cooldown / lazer heat gate actual shots",
+      "gddRef": "Docs/gdd/09-controls.html#mobile-fire",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/virtual-joystick.ts",
+        "src/game/fire-button.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/virtual-joystick.test.ts",
+        "tests/unit/fire-button.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-064",
+      "requirement": "Mobile: visible circular blue collect button on bottom-right, held to activate the metal attractor",
+      "gddRef": "Docs/gdd/09-controls.html#mobile-collect",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/fire-button.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/fire-button.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-065",
+      "requirement": "Mobile: pause button in the HUD",
+      "gddRef": "Docs/gdd/09-controls.html#mobile-pause",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx",
+        "src/app/page.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-066",
+      "requirement": "Ship rotation is decoupled from movement: always faces the aim target, and falls back to movement direction when no aim target is active",
+      "gddRef": "Docs/gdd/09-controls.html#design-rotation-decoupled",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-controller.ts"
+      ],
+      "testRefs": [
+        "tests/unit/ship-controller.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-067",
+      "requirement": "Virtual joystick uses a fixed dead zone of 10px to prevent drift",
+      "gddRef": "Docs/gdd/09-controls.html#design-deadzone",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/virtual-joystick.ts"
+      ],
+      "testRefs": [
+        "tests/unit/virtual-joystick.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-068",
+      "requirement": "Visual style: voxel art, chunky colorful 3D blocks",
+      "gddRef": "Docs/gdd/10-world-and-camera.html#world-voxel-art",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-model.ts",
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-069",
+      "requirement": "Perspective camera presents a top-down view of the asteroid field",
+      "gddRef": "Docs/gdd/10-world-and-camera.html#world-perspective-camera",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-070",
+      "requirement": "Scene color palette: deep navy/black space background with subtle star particles, earthy asteroids with gold/crystal highlights, metallic blue-gray ship with glowing engine trails, bright glowing fragments matching asteroid type, green and blue neon HUD against dark overlays",
+      "gddRef": "Docs/gdd/10-world-and-camera.html#world-color-palette",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts",
+        "src/game/ship-model.ts",
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-071",
+      "requirement": "Camera is a fixed top-down view that follows the ship with smooth lerp",
+      "gddRef": "Docs/gdd/10-world-and-camera.html#camera-follow-lerp",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-072",
+      "requirement": "Gas station is located north of the starting area",
+      "gddRef": "Docs/gdd/11-gas-station.html#station-location",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/gas-station-model.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-073",
+      "requirement": "Gas station provides drive-through repair: restores HP to full when passing close",
+      "gddRef": "Docs/gdd/11-gas-station.html#station-repair",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/game-tick.ts",
+        "src/game/gas-station-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/game-tick-station.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-074",
+      "requirement": "Gas station trade menu sells materials for scrap and buys upgrades",
+      "gddRef": "Docs/gdd/11-gas-station.html#station-trade-menu",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-075",
+      "requirement": "Prologue starts with a fully upgraded ship (Blaster Mk5, Collector Mk5, Storage Mk5, Lazer unlocked), visually larger with detachable module add-ons (weapon turrets, collector scoop, cargo pods, lazer emitter) and gold accents",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-maxed-ship",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-model.ts",
+        "src/game/prologue-config.ts",
+        "src/components/PrologueOverlay.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-076",
+      "requirement": "Prologue auto-fire targets the nearest asteroid/enemy automatically",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-auto-fire",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/game-tick.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-077",
+      "requirement": "Prologue auto-mine: the lazer beam shreds asteroids including moon-sized rocks (size 0, ~30 world units)",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-auto-mine",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/lazer-beam.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-078",
+      "requirement": "Prologue auto-collect: magnet collector with 40-unit range vacuums all debris",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-auto-collect",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/collector-vfx.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-079",
+      "requirement": "Prologue phase 1 Mining: lazer annihilates a dense field of 30 asteroids plus 3 moon-size rocks",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-mining",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/scene.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-080",
+      "requirement": "Prologue phase 2 Combat: triple-fire blaster destroys a 6-ship enemy fleet",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-combat",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/enemy-ship.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-081",
+      "requirement": "Prologue phase 3 Speed: boosted max speed (180 u/s) showcase",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-speed",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/warp-streaks.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-082",
+      "requirement": "Prologue phase 4 The Arbiter: a massive AI construct (~20x20 world units) warps in and freezes the ship",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-arbiter",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/arbiter-model.ts",
+        "src/game/prologue-config.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-083",
+      "requirement": "Prologue phase 5 Strip: the Arbiter removes modules one by one (turrets, scoop, cargo, lazer)",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-strip",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/scene.ts",
+        "src/components/PrologueOverlay.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-084",
+      "requirement": "Prologue phase 6 Fade: 'Systems offline.' then 'Rebooting...' then player respawns with a tier-1 ship",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-phase-fade",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx",
+        "src/game/scene.ts",
+        "src/game/prologue-config.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-085",
+      "requirement": "The Arbiter is an all-powerful AI enforcing belt balance; delivers three lines: 'You have grown too powerful, fracker.', 'The belt was not built for one to dominate.', 'I am restoring balance.'",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-arbiter-dialogue",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/PrologueOverlay.tsx",
+        "src/game/prologue-config.ts",
+        "src/game/arbiter-model.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-086",
+      "requirement": "After the prologue, the existing tutorial begins with the player motivated to rebuild",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-to-tutorial",
+      "status": "done",
+      "implementationRefs": [
+        "src/hooks/useTutorial.ts",
+        "src/components/TutorialOverlay.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-087",
+      "requirement": "A SKIP INTRO button is available at any time during the prologue",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-skip-button",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/PrologueOverlay.tsx",
+        "src/hooks/useTutorial.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-088",
+      "requirement": "Loading a saved game skips the prologue entirely",
+      "gddRef": "Docs/gdd/12-prologue.html#prologue-skip-on-load",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx",
+        "src/components/GameCanvas.tsx",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-089",
+      "requirement": "Moon asteroids are size 0, prologue-only, with voxel size 3.0 and collision radius 16",
+      "gddRef": "Docs/gdd/13-moon-asteroids.html#moon-dimensions",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/asteroid-model.ts",
+        "src/game/asteroid-spawner.ts",
+        "src/game/prologue-config.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-090",
+      "requirement": "Moon asteroid HP ranges from 25 (precious) to 80 (crystalline)",
+      "gddRef": "Docs/gdd/13-moon-asteroids.html#moon-hp",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-091",
+      "requirement": "Moon asteroids use 5 voxel layers for imposing depth",
+      "gddRef": "Docs/gdd/13-moon-asteroids.html#moon-voxel-layers",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-092",
+      "requirement": "Ship schema has fields x, y, rotation, velocityX, velocityY",
+      "gddRef": "Docs/gdd/14-data-models.html#model-ship",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/schemas.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-093",
+      "requirement": "Upgrades schema has fields blaster (number), collector (number), storage (number)",
+      "gddRef": "Docs/gdd/14-data-models.html#model-upgrades",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/schemas.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-094",
+      "requirement": "Cargo schema has fields scrap, fragments, silver, gold, capacity",
+      "gddRef": "Docs/gdd/14-data-models.html#model-cargo",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/schemas.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-095",
+      "requirement": "GameState schema has fields ship, upgrades, cargo, hp, timestamp",
+      "gddRef": "Docs/gdd/14-data-models.html#model-gamestate",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/schemas.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-096",
+      "requirement": "Game state lives in the Three.js render loop at 60fps",
+      "gddRef": "Docs/gdd/15-state-and-persistence.html#state-render-loop",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/unit/game-tick.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-097",
+      "requirement": "React state for UI/HUD is managed via the useGameState hook",
+      "gddRef": "Docs/gdd/15-state-and-persistence.html#state-usegamestate",
+      "status": "done",
+      "implementationRefs": [
+        "src/hooks/useGameState.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-098",
+      "requirement": "Persistence is provided via the useGamePersistence hook backed by Upstash Redis",
+      "gddRef": "Docs/gdd/15-state-and-persistence.html#state-persistence-hook",
+      "status": "done",
+      "implementationRefs": [
+        "src/hooks/useGamePersistence.ts",
+        "src/lib/persistence.ts",
+        "src/lib/kv.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-099",
+      "requirement": "Auto-save triggers on resource collection, selling, buying, and station repair",
+      "gddRef": "Docs/gdd/15-state-and-persistence.html#state-autosave-events",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx",
+        "src/hooks/useGamePersistence.ts",
+        "src/lib/persistence.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-100",
+      "requirement": "A headless GameSimulation mirrors scene.ts orchestration for integration testing",
+      "gddRef": "Docs/gdd/15-state-and-persistence.html#state-headless-sim",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/scene.ts",
+        "src/game/game-tick.ts"
+      ],
+      "testRefs": [
+        "tests/integration/game-simulation.ts",
+        "tests/integration/game-test-harness.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-101",
+      "requirement": "GET /api/game/[id] loads saved game state",
+      "gddRef": "Docs/gdd/16-api-routes.html#api-game-get",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/api/game/[id]/route.ts",
+        "src/lib/persistence.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-102",
+      "requirement": "PUT /api/game/[id] saves game state",
+      "gddRef": "Docs/gdd/16-api-routes.html#api-game-put",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/api/game/[id]/route.ts",
+        "src/lib/persistence.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-103",
+      "requirement": "GET /api/health returns a health check",
+      "gddRef": "Docs/gdd/16-api-routes.html#api-health",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/api/health/route.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-104",
+      "requirement": "GET /api/version returns the current build version",
+      "gddRef": "Docs/gdd/16-api-routes.html#api-version",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/api/version/route.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-105",
+      "requirement": "POST /api/feedback submits player feedback",
+      "gddRef": "Docs/gdd/16-api-routes.html#api-feedback",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/api/feedback/route.ts",
+        "src/components/FeedbackFab.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-106",
+      "requirement": "Scrap counter is in the top-left, showing the current scrap amount",
+      "gddRef": "Docs/gdd/17-hud.html#hud-scrap-counter",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-107",
+      "requirement": "Cargo bar is in the top-left below scrap, showing fragments/capacity",
+      "gddRef": "Docs/gdd/17-hud.html#hud-cargo-bar",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-108",
+      "requirement": "Upgrade indicators are in the top-right, showing the current tier for each system",
+      "gddRef": "Docs/gdd/17-hud.html#hud-upgrade-indicators",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-109",
+      "requirement": "Recharge meter is a small horizontal bar below the ship showing blaster cooldown progress",
+      "gddRef": "Docs/gdd/17-hud.html#hud-recharge-meter",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/recharge-meter.ts"
+      ],
+      "testRefs": [
+        "tests/unit/recharge-meter.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-110",
+      "requirement": "Aim reticle: a red dashed semi-transparent line from the ship center in aim direction extending to screen edge or stopping at the first asteroid/enemy intersection",
+      "gddRef": "Docs/gdd/17-hud.html#hud-aim-line",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/aim-reticle.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/aim-reticle.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-111",
+      "requirement": "Aim reticle target circle marks where shots land: centered on the screen-edge endpoint when clear, or snapped onto and sized to the intersected object",
+      "gddRef": "Docs/gdd/17-hud.html#hud-reticle-target",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/aim-reticle.ts"
+      ],
+      "testRefs": [
+        "tests/unit/aim-reticle.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-112",
+      "requirement": "Aim reticle is hidden during the scripted prologue",
+      "gddRef": "Docs/gdd/17-hud.html#hud-reticle-hidden-prologue",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/aim-reticle.ts",
+        "src/game/scene.ts",
+        "src/game/prologue-config.ts"
+      ],
+      "testRefs": [
+        "tests/unit/aim-reticle.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-113",
+      "requirement": "Health bar is shown when HP is below max",
+      "gddRef": "Docs/gdd/17-hud.html#hud-health-bar",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx",
+        "src/game/asteroid-health-meter.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-health-meter.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-114",
+      "requirement": "Pause button is in the top-right corner (mobile uses a larger touch target)",
+      "gddRef": "Docs/gdd/17-hud.html#hud-pause-button",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-115",
+      "requirement": "Start screen is a full-screen menu shown on app launch with title 'FRACKING ASTEROIDS' and a tagline",
+      "gddRef": "Docs/gdd/18-start-screen.html#start-fullscreen-title",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/StartScreen.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-116",
+      "requirement": "New Game button opens a save slot picker with 3 slots",
+      "gddRef": "Docs/gdd/18-start-screen.html#start-new-game",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/StartScreen.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-117",
+      "requirement": "Load Game button opens a save slot picker with 3 slots",
+      "gddRef": "Docs/gdd/18-start-screen.html#start-load-game",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/StartScreen.tsx",
+        "src/hooks/useGamePersistence.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-118",
+      "requirement": "Each save slot shows its last-save timestamp",
+      "gddRef": "Docs/gdd/18-start-screen.html#start-slot-timestamp",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/StartScreen.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-119",
+      "requirement": "Save slot summaries are stored in localStorage for instant display",
+      "gddRef": "Docs/gdd/18-start-screen.html#start-localstorage-summaries",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/StartScreen.tsx",
+        "src/hooks/useGamePersistence.ts"
+      ],
+      "testRefs": [
+        "tests/unit/schemas.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-120",
+      "requirement": "Pause overlay darkens the game canvas",
+      "gddRef": "Docs/gdd/19-pause-overlay.html#pause-dim-canvas",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx",
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/pause-resume.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-121",
+      "requirement": "Pause overlay shows 'PAUSED' text centered",
+      "gddRef": "Docs/gdd/19-pause-overlay.html#pause-label",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/pause-resume.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-122",
+      "requirement": "Pause overlay shows a Resume button",
+      "gddRef": "Docs/gdd/19-pause-overlay.html#pause-resume-button",
+      "status": "partial",
+      "implementationRefs": [
+        "src/components/HUD.tsx",
+        "src/app/page.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/pause-resume.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-123",
+      "requirement": "Pause overlay reveals the Feedback FAB (floating action button, bottom-right)",
+      "gddRef": "Docs/gdd/19-pause-overlay.html#pause-feedback-fab",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/FeedbackFab.tsx",
+        "src/app/page.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-124",
+      "requirement": "All game objects are built from voxel-style geometry",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-all-objects",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-model.ts",
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-125",
+      "requirement": "Ship is a ~8x8x4 voxel block ship with engine glow",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-ship",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-model.ts",
+        "src/game/ship-constants.ts"
+      ],
+      "testRefs": [
+        "tests/unit/ship-constants.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-126",
+      "requirement": "Asteroids are irregular voxel clusters, procedurally varied per type",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-asteroids",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/asteroid-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-model.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-127",
+      "requirement": "Fragments are small 1 to 2 voxel glowing cubes",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-fragments",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/asteroid-debris.ts"
+      ],
+      "testRefs": [
+        "tests/unit/metal-chunk.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-128",
+      "requirement": "Projectiles are bright amber elongated voxel pulses (mining laser bolts)",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-projectiles",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/projectile-model.ts",
+        "src/game/blaster-constants.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-129",
+      "requirement": "Background is a particle-based star field",
+      "gddRef": "Docs/gdd/20-art-voxel.html#voxel-background",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-130",
+      "requirement": "Screen shake is trauma-based: damage adds trauma (0 to 1), quadratic falloff for intensity, camera offset oscillates at 25 Hz, decays at 4.0/sec, triggered when hit by enemy projectiles",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-screen-shake",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/screen-shake.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [
+        "tests/unit/screen-shake.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-131",
+      "requirement": "Engine trail emits glowing orange/red particles from the ship rear, with emission rate and brightness scaling with ship speed, fading and shrinking over 0.4 seconds",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-engine-trail",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/engine-trail.ts"
+      ],
+      "testRefs": [
+        "tests/unit/engine-trail.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-132",
+      "requirement": "Background twinkling stars: 200 colored points with per-star brightness oscillation",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-stars",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-133",
+      "requirement": "Background nebula swirls: 5 large semi-transparent glowing clouds with additive blending",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-nebula",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-134",
+      "requirement": "Background black hole: dark core with 4 spinning accretion rings (orange/red gradient)",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-black-hole",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-135",
+      "requirement": "All background layers parallax at different rates for depth",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-parallax",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/background-effects.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-136",
+      "requirement": "Explosion effect plays when asteroids/enemies are hit",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-explosion",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/explosion.ts",
+        "src/game/scene.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-137",
+      "requirement": "Color palette: space #0a0a1a to #111133 gradient; mining laser #FFAA00 amber and #FFDD44 bright core; HUD #00FF88 green, #00AAFF blue, #FF4444 red, #FFAA00 amber; engine trail #FF6600/#FF4400/#FF8800/#FFAA00; nebulae #220044/#001133/#110022; black hole rings #FF4400/#FF8800/#FFAA00/#FF6600",
+      "gddRef": "Docs/gdd/21-visual-effects.html#vfx-color-palette",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/background-effects.ts",
+        "src/game/engine-trail.ts",
+        "src/game/explosion.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-138",
+      "requirement": "All audio is procedurally synthesized using the Web Audio API with no external audio files",
+      "gddRef": "Docs/gdd/22-audio.html#audio-procedural",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/audio.ts",
+        "src/game/sfx.ts",
+        "src/game/music.ts"
+      ],
+      "testRefs": [
+        "tests/unit/audio.test.ts",
+        "tests/unit/sfx.test.ts",
+        "tests/unit/music.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-139",
+      "requirement": "Background music is a four-layer procedural soundtrack: layer 0 deep bass drone (always playing), layer 1 pad chords (fade in at low intensity), layer 2 arpeggiated melody (fade in during moderate activity), layer 3 percussion pulse (fade in during combat)",
+      "gddRef": "Docs/gdd/22-audio.html#audio-music-layers",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/music.ts"
+      ],
+      "testRefs": [
+        "tests/unit/music.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-140",
+      "requirement": "Music intensity lerps smoothly between peaceful (0.15) and combat (0.8)",
+      "gddRef": "Docs/gdd/22-audio.html#audio-music-intensity",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/music.ts"
+      ],
+      "testRefs": [
+        "tests/unit/music.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-141",
+      "requirement": "SFX laser fire: short chirpy zap (bandpass-filtered square wave)",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-laser",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/sfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/sfx.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-142",
+      "requirement": "SFX explosion: low boom with noise burst when asteroids/enemies are hit",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-explosion",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/sfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/sfx.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-143",
+      "requirement": "SFX player hit: sharp impact with distortion crack",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-player-hit",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/sfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/sfx.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-144",
+      "requirement": "SFX engine thrust: filtered noise loop, volume/frequency scale with ship speed",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-engine",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/sfx.ts"
+      ],
+      "testRefs": [
+        "tests/unit/sfx.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-145",
+      "requirement": "SFX collector hum: low sawtooth drone when the magnet is active",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-collector-hum",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/audio.ts"
+      ],
+      "testRefs": [
+        "tests/unit/audio.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-146",
+      "requirement": "SFX collection pling: metallic ping on pickup",
+      "gddRef": "Docs/gdd/22-audio.html#audio-sfx-pling",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/audio.ts"
+      ],
+      "testRefs": [
+        "tests/unit/audio.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-147",
+      "requirement": "M1 Skeleton complete: project setup, build pipeline, deploy to Vercel",
+      "gddRef": "Docs/gdd/23-milestones.html#m1-skeleton",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/layout.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-148",
+      "requirement": "M2 Flight complete: ship rendering and movement (desktop plus mobile)",
+      "gddRef": "Docs/gdd/23-milestones.html#m2-flight",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/ship-controller.ts",
+        "src/game/ship-model.ts"
+      ],
+      "testRefs": [
+        "tests/unit/ship-controller.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-149",
+      "requirement": "M3 Mining complete: blaster firing, asteroid collision, debris and metal spawning",
+      "gddRef": "Docs/gdd/23-milestones.html#m3-mining",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/blaster.ts",
+        "src/game/collision.ts",
+        "src/game/asteroid-debris.ts"
+      ],
+      "testRefs": [
+        "tests/integration/flows/mining-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-150",
+      "requirement": "M4 Economy complete: metal collection, scrap conversion, trade menu at station",
+      "gddRef": "Docs/gdd/23-milestones.html#m4-economy",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/metal-chunk.ts",
+        "src/game/scrap-box.ts",
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [
+        "tests/unit/scrap-box.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-151",
+      "requirement": "M5 Upgrades complete: upgrade purchasing at station, tier progression",
+      "gddRef": "Docs/gdd/23-milestones.html#m5-upgrades",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/TradeMenu.tsx"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-152",
+      "requirement": "M6 Tutorial complete: guided onboarding with tutorial state machine",
+      "gddRef": "Docs/gdd/23-milestones.html#m6-tutorial",
+      "status": "done",
+      "implementationRefs": [
+        "src/hooks/useTutorial.ts",
+        "src/components/TutorialOverlay.tsx"
+      ],
+      "testRefs": [
+        "tests/unit/tutorial.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-153",
+      "requirement": "M7 Asteroid Field complete: multiple asteroid types/sizes spawned after tutorial",
+      "gddRef": "Docs/gdd/23-milestones.html#m7-asteroid-field",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/asteroid-spawner.ts"
+      ],
+      "testRefs": [
+        "tests/unit/asteroid-spawner.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-154",
+      "requirement": "M8 Persistence complete: auto-save on game events, KV backend storage",
+      "gddRef": "Docs/gdd/23-milestones.html#m8-persistence",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/persistence.ts",
+        "src/lib/kv.ts"
+      ],
+      "testRefs": [],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-155",
+      "requirement": "M9 Polish complete: background music, SFX, particles, screen shake, background effects",
+      "gddRef": "Docs/gdd/23-milestones.html#m9-polish",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/music.ts",
+        "src/game/sfx.ts",
+        "src/game/screen-shake.ts",
+        "src/game/background-effects.ts"
+      ],
+      "testRefs": [
+        "tests/unit/screen-shake.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-156",
+      "requirement": "M10 Lazer & Crystalline complete: crystalline asteroid type, Lazer mining tool, HUD tool switcher, trade station purchase",
+      "gddRef": "Docs/gdd/23-milestones.html#m10-lazer",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/lazer-beam.ts",
+        "src/components/HUD.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/lazer-tool.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-157",
+      "requirement": "M11 Prologue complete: maxed ship intro with auto-fire/mine/collect, The Arbiter antagonist, module strip, prologue-to-tutorial transition",
+      "gddRef": "Docs/gdd/23-milestones.html#m11-prologue",
+      "status": "done",
+      "implementationRefs": [
+        "src/game/prologue-config.ts",
+        "src/game/arbiter-model.ts",
+        "src/components/PrologueOverlay.tsx"
+      ],
+      "testRefs": [
+        "tests/integration/flows/prologue-flow.test.ts"
+      ],
       "followupRefs": []
     }
   ]

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Milestones</title></head>
+<body>
+
+  <h1>Milestones</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>Milestones M1 through M11 mark the major capability stages of the game. Each milestone is complete and represents a coherent slice of shipped functionality, from the initial project skeleton through the prologue intro sequence.</p>
+
+    <table>
+      <thead>
+        <tr><th>Milestone</th><th>Name</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr id="m1-skeleton"><td>M1</td><td>Skeleton</td><td>Project setup, build pipeline, deploy to Vercel.</td></tr>
+        <tr id="m2-flight"><td>M2</td><td>Flight</td><td>Ship rendering and movement (desktop plus mobile).</td></tr>
+        <tr id="m3-mining"><td>M3</td><td>Mining</td><td>Blaster firing, asteroid collision, debris and metal spawning.</td></tr>
+        <tr id="m4-economy"><td>M4</td><td>Economy</td><td>Metal collection, scrap conversion, trade menu at station.</td></tr>
+        <tr id="m5-upgrades"><td>M5</td><td>Upgrades</td><td>Upgrade purchasing at station, tier progression.</td></tr>
+        <tr id="m6-tutorial"><td>M6</td><td>Tutorial</td><td>Guided onboarding with tutorial state machine.</td></tr>
+        <tr id="m7-asteroid-field"><td>M7</td><td>Asteroid Field</td><td>Multiple asteroid types and sizes spawned after tutorial.</td></tr>
+        <tr id="m8-persistence"><td>M8</td><td>Persistence</td><td>Auto-save on game events, KV backend storage.</td></tr>
+        <tr id="m9-polish"><td>M9</td><td>Polish</td><td>Background music, SFX, particles, screen shake, background effects.</td></tr>
+        <tr id="m10-lazer"><td>M10</td><td>Lazer and Crystalline</td><td>Crystalline asteroid type, Lazer mining tool, HUD tool switcher, trade station purchase.</td></tr>
+        <tr id="m11-prologue"><td>M11</td><td>Prologue</td><td>Maxed ship intro with auto-fire, auto-mine, and auto-collect, The Arbiter antagonist, module strip, prologue-to-tutorial transition.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">M11 Prologue: maxed-ship intro with auto-fire/mine/collect, The Arbiter antagonist, and module strip leading into the tutorial. Prologue steps added to the state machine. Files: <code>src/game/prologue-config.ts</code>, <code>src/game/arbiter-model.ts</code>, <code>src/components/PrologueOverlay.tsx</code>. Tests: <code>tests/integration/flows/prologue-flow.test.ts</code>. PR #30.</li>
+      <li data-date="2026-06-07">M10 Lazer and Crystalline: sustained Lazer beam with heat/cooldown system, crystalline asteroid type, and HUD tool switcher. Files: <code>src/game/lazer-beam.ts</code>, <code>src/components/HUD.tsx</code>. Tests: <code>tests/integration/flows/lazer-tool.test.ts</code>. PRs #24, #28.</li>
+      <li data-date="2026-06-07">M9 Polish: background music, SFX, particles, screen shake, and background effects. Files: <code>src/game/music.ts</code>, <code>src/game/sfx.ts</code>, <code>src/game/screen-shake.ts</code>, <code>src/game/background-effects.ts</code>. Tests: <code>tests/unit/screen-shake.test.ts</code>. PR #22.</li>
+      <li data-date="2026-06-07">M8 Persistence: auto-save on game events with KV backend storage, shipped pre-migration. Files: <code>src/lib/persistence.ts</code>, <code>src/lib/kv.ts</code>.</li>
+      <li data-date="2026-06-07">M7 Asteroid Field: varied asteroid types and sizes loaded around the world after the tutorial respawn. Files: <code>src/game/asteroid-spawner.ts</code>. Tests: <code>tests/unit/asteroid-spawner.test.ts</code>. PR #21.</li>
+      <li data-date="2026-06-07">M6 Tutorial: interactive guided onboarding driven by a tutorial state machine. Files: <code>src/hooks/useTutorial.ts</code>, <code>src/components/TutorialOverlay.tsx</code>. Tests: <code>tests/unit/tutorial.test.ts</code>. PR #12.</li>
+      <li data-date="2026-06-07">M5 Upgrades: upgrade purchasing at the station with tier progression. Files: <code>src/components/TradeMenu.tsx</code>. PR #15.</li>
+      <li data-date="2026-06-07">M4 Economy: metal collection, scrap conversion, and trade menu at the station. Files: <code>src/game/metal-chunk.ts</code>, <code>src/game/scrap-box.ts</code>, <code>src/components/TradeMenu.tsx</code>. Tests: <code>tests/unit/scrap-box.test.ts</code>. PR #13.</li>
+      <li data-date="2026-06-07">M3 Mining: blaster firing, asteroid collision, debris, and metal spawning. Files: <code>src/game/blaster.ts</code>, <code>src/game/collision.ts</code>, <code>src/game/asteroid-debris.ts</code>. Tests: <code>tests/integration/flows/mining-flow.test.ts</code>. PR #7.</li>
+      <li data-date="2026-06-07">M2 Flight: ship rendering and twin-stick movement for desktop (mouse aiming) and mobile (virtual joystick). Files: <code>src/game/ship-controller.ts</code>, <code>src/game/ship-model.ts</code>. Tests: <code>tests/unit/ship-controller.test.ts</code>. PRs #3, #5.</li>
+      <li data-date="2026-06-07">M1 Skeleton: project setup, build pipeline, and deploy to Vercel. Files: <code>src/app/layout.tsx</code>. PR #1.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

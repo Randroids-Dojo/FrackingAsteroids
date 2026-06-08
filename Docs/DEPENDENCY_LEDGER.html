@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dependency Ledger: FrackingAsteroids</title>
+</head>
+<body>
+
+<header>
+  <h1>Dependency Ledger</h1>
+  <p>Watched dependencies for <strong>FrackingAsteroids</strong>. Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship blaster, collector, and storage. A tight arcade loop with strategic depth. The agent runs the <strong>Dependency Upgrade Gate</strong> (see <a href="IMPLEMENTATION_PLAN.html#dependency-upgrade-gate"><code>Docs/IMPLEMENTATION_PLAN.html</code></a>) at two trigger points:</p>
+  <ol>
+    <li><strong>After every push to <code>main</code></strong> (after pulling main and verifying production), before picking the next slice.</li>
+    <li><strong>Before opening a new PR</strong>, so the new branch starts from a fresh-deps baseline.</li>
+  </ol>
+  <p>If a watched dep has a newer release than the version pinned in this ledger, the upgrade is the next slice (unless red CI, broken <code>main</code>, or a P0 incident takes over).</p>
+</header>
+
+<section id="watch-list">
+  <h2>Watch list</h2>
+  <p>Add one entry per watched dep. Remove an entry when the project no longer depends on it. Update the <strong>Currently pinned</strong> value in the same PR that bumps the version.</p>
+  <p>Per-dep entry shape:</p>
+  <dl>
+    <dt>Name</dt><dd>package or repo identifier.</dd>
+    <dt>Why watched</dt><dd>one sentence explaining why this dep is on the ledger (internally maintained, framework major, security-sensitive, prior breakage).</dd>
+    <dt>Source</dt><dd>where to look for the latest version (npm registry URL, GitHub releases page, git tags).</dd>
+    <dt>Pin format</dt><dd>how the project pins (npm semver, github tag, git ref, file path).</dd>
+    <dt>Currently pinned</dt><dd>the version on <code>main</code> right now. Update on every successful upgrade.</dd>
+    <dt>Detect-new</dt><dd>command or URL the agent uses to discover new releases.</dd>
+    <dt>Migration notes</dt><dd>per-dep gotchas the agent should expect during upgrades.</dd>
+  </dl>
+
+  <article data-dep="@randroids-dojo/vibekit">
+    <h3><code>@randroids-dojo/vibekit</code></h3>
+    <dl>
+      <dt>Name</dt><dd><code>@randroids-dojo/vibekit</code></dd>
+      <dt>Why watched</dt><dd>internally maintained, pre-1.0, breaking changes possible on every release. FrackingAsteroids consumes the kit's portable and server modules.</dd>
+      <dt>Source</dt><dd><a href="https://github.com/Randroids-Dojo/VibeKit/releases">https://github.com/Randroids-Dojo/VibeKit/releases</a></dd>
+      <dt>Pin format</dt><dd><code>github:Randroids-Dojo/VibeKit#vX.Y.Z</code> (tag-pinned)</dd>
+      <dt>Currently pinned</dt><dd><code>v0.1.0</code></dd>
+      <dt>Detect-new</dt><dd><code>gh api repos/Randroids-Dojo/VibeKit/releases/latest --jq .tag_name</code></dd>
+      <dt>Migration notes</dt><dd>
+        <ul>
+          <li>Pre-1.0 means any release may break callers (release-please uses <code>bump-patch-for-minor-pre-major</code>, so feat-level changes still ship as patches and may carry signature changes).</li>
+          <li>Read the kit's <code>CHANGELOG.md</code> between the pinned and target tag.</li>
+          <li>Type errors usually surface in <code>pnpm type-check</code>. Smoke any feature that imports from the kit.</li>
+        </ul>
+      </dd>
+    </dl>
+  </article>
+</section>
+
+<section id="upgrade-procedure">
+  <h2>Upgrade procedure</h2>
+  <p>For each dep with a newer release, run one PR per dep.</p>
+
+  <section data-step="0">
+    <h3>0. Skip rule</h3>
+    <p>If a higher-priority slice is in flight (red CI, P0 incident, broken <code>main</code>, broken deploy), defer the upgrade and add a backlog item.</p>
+  </section>
+
+  <section data-step="1">
+    <h3>1. Detect</h3>
+    <p>Run the dep's <strong>Detect-new</strong> command. Compare to <strong>Currently pinned</strong>. If equal, the gate passes; pick a regular slice. If newer, continue.</p>
+  </section>
+
+  <section data-step="2">
+    <h3>2. Read the upstream CHANGELOG</h3>
+    <p>Open the dep's CHANGELOG between the pinned and target version. List every breaking change and migration the bump implies BEFORE editing project code.</p>
+  </section>
+
+  <section data-step="3">
+    <h3>3. Branch</h3>
+    <p>Branch name: <code>chore/deps/&lt;dep-short-name&gt;-&lt;from&gt;-to-&lt;to&gt;</code> (example: <code>chore/deps/vibekit-0.1.0-to-0.1.4</code>). One dep per branch.</p>
+  </section>
+
+  <section data-step="4">
+    <h3>4. Bump the pin</h3>
+    <p>Update <code>package.json</code> (or the project's equivalent) and the <strong>Currently pinned</strong> line in this ledger. Run <code>pnpm install</code> (or the project's lockfile-refresh).</p>
+  </section>
+
+  <section data-step="5">
+    <h3>5. Type-check</h3>
+    <p>Run the project's type-check command. If failures look like trivial signature shifts, fix them in this PR. If they require deeper migration, <strong>abort</strong>: revert the pin change, file an <code>F-NNN</code> followup for the migration work, add a backlog item, resume the regular loop without the bump.</p>
+  </section>
+
+  <section data-step="6">
+    <h3>6. Tests</h3>
+    <p>Project-appropriate. Same decision rule: trivial fixes belong in the bump PR, deep migrations get their own.</p>
+  </section>
+
+  <section data-step="7">
+    <h3>7. Build</h3>
+    <p>Run the production build before opening the PR if the dep affects runtime code.</p>
+  </section>
+
+  <section data-step="8">
+    <h3>8. Smoke test</h3>
+    <p>Run smoke tests for any feature that imports from the upgraded dep.</p>
+  </section>
+
+  <section data-step="9">
+    <h3>9. Open the PR</h3>
+    <ul>
+      <li><strong>Title</strong>: <code>chore(deps): bump &lt;dep&gt; from &lt;from&gt; to &lt;to&gt;</code>.</li>
+      <li><strong>Body</strong> must include: link to the CHANGELOG diff, breaking changes that applied, migrations applied, verification commands run, and the new <strong>Currently pinned</strong> value.</li>
+    </ul>
+  </section>
+
+  <section data-step="10">
+    <h3>10. Merge through the standard flow</h3>
+    <p>CI green, bot review settled, preview deploy green, then merge. Pull <code>main</code>. Verify production deploy. Smoke test production for the touched flows.</p>
+  </section>
+</section>
+
+<section id="when-to-add">
+  <h2>When to add a dep to this ledger</h2>
+  <p>Add when the dep is internally maintained, critical infrastructure (framework or runtime major, security-sensitive lib), or has bitten the project before with an unexpected upgrade-time breakage. Commodity deps with slow major cadence go through standard semver and lockfile churn (Renovate or Dependabot), not this ledger.</p>
+</section>
+
+</body>
+</html>

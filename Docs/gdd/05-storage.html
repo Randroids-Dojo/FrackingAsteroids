@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Storage</title></head>
+<body>
+
+  <h1>Storage</h1>
+  <p data-status="partial">Status: partial</p>
+
+  <section data-role="spec">
+    <p>Storage is one of the three upgradeable ship systems (alongside Blaster and Collector). It governs how much cargo the hold can carry and a bonus applied to scrap. Storage advances through five tiers. Each tier raises the cargo capacity and grants an increasing scrap bonus.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Capacity</th>
+          <th>Scrap Bonus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="storage-tier-1">
+          <td>1</td>
+          <td>50</td>
+          <td>0%</td>
+        </tr>
+        <tr id="storage-tier-2">
+          <td>2</td>
+          <td>125</td>
+          <td>10%</td>
+        </tr>
+        <tr id="storage-tier-3">
+          <td>3</td>
+          <td>250</td>
+          <td>20%</td>
+        </tr>
+        <tr id="storage-tier-4">
+          <td>4</td>
+          <td>500</td>
+          <td>35%</td>
+        </tr>
+        <tr id="storage-tier-5">
+          <td>5</td>
+          <td>1000</td>
+          <td>50%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The storage tier is part of the persisted upgrade set: <code>Upgrades { blaster, collector, storage }</code>, each an integer from 1 to 5. The cargo hold tracks <code>fragments</code> against <code>capacity</code> in the <code>Cargo</code> schema. New games start at storage tier 1 with a cargo capacity of 50.</p>
+
+    <p>Storage upgrades are purchased at the gas station Trade menu by spending scrap. The win condition requires reaching the maximum upgrade tier across all three systems, storage included.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Storage system shipped pre-migration as part of the Economy (M4) and Upgrades (M5) milestones. The persisted <code>storage</code> tier (1 to 5) and <code>capacity</code> field are defined in <code>src/lib/schemas.ts</code> with a default new-game cargo capacity of 50. Storage upgrade cost ladder (<code>STORAGE_COSTS</code>: tier 2 = 30, tier 3 = 100, tier 4 = 300, tier 5 = 800) lives in <code>src/game/types.ts</code>. Purchase flow runs through <code>buyUpgrade</code> in <code>src/hooks/useGameState.ts</code> and the Trade menu in <code>src/components/TradeMenu.tsx</code>; the cargo bar reads <code>capacity</code> in <code>src/components/HUD.tsx</code>. Schema defaults verified by <code>tests/unit/schemas.test.ts</code> and cost ladder by <code>tests/unit/types.test.ts</code>. Note: the per-tier capacity scaling (125, 250, 500, 1000) and per-tier scrap bonus (10%, 20%, 35%, 50%) from the spec are not yet applied in code: <code>buyUpgrade</code> only increments the tier number, and <code>capacity</code> stays at 50 with no scrap bonus logic.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Pause Overlay</title></head>
+<body>
+
+  <h1>Pause Overlay</h1>
+  <p data-status="partial">Status: partial</p>
+
+  <section data-role="spec">
+    <p>The pause overlay is the UI shown when the game is paused. On desktop, pressing Space pauses the game and reveals the Feedback FAB. A Pause button also lives in the HUD (top-right corner; larger touch target on mobile). The overlay surfaces the paused state without obscuring the game world entirely.</p>
+
+    <p>The pause overlay consists of the following elements:</p>
+    <ul>
+      <li id="pause-dim-canvas">Darkened game canvas: the game canvas is dimmed behind the overlay.</li>
+      <li id="pause-label">"PAUSED" text centered: the word PAUSED is displayed centered over the dimmed canvas.</li>
+      <li id="pause-resume-button">Resume control: resuming is driven by the HUD pause button toggling to a play icon (see HUD pause control below), not a dedicated button inside the overlay.</li>
+      <li id="pause-feedback-fab">Feedback FAB: a floating action button that appears in the bottom-right corner while paused.</li>
+    </ul>
+
+    <p>Related controls and context from the surrounding spec:</p>
+    <dl>
+      <dt>Desktop pause</dt>
+      <dd>Space pauses the game and reveals the Feedback FAB.</dd>
+      <dt>HUD pause control</dt>
+      <dd>Pause button in the top-right corner of the HUD (mobile: larger touch target).</dd>
+      <dt>Feedback submission</dt>
+      <dd>The Feedback FAB submits player feedback through the <code>POST /api/feedback</code> route.</dd>
+    </dl>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Pause overlay shipped pre-migration. The overlay renders when <code>paused</code> is true: a centered "PAUSED" label over a dimmed canvas (<code>bg-black/60</code> full-screen layer), with the Feedback FAB and Sound FAB revealed while paused. Files: <code>src/app/page.tsx</code> (overlay block and <code>FeedbackFab</code>/<code>SoundFab</code> gating), <code>src/components/FeedbackFab.tsx</code> (bottom-right floating action button, feedback form, <code>POST /api/feedback</code>), <code>src/components/HUD.tsx</code> (pause/resume toggle button in the top bar). Resume is driven by the HUD pause button toggling to a play icon rather than a dedicated Resume button inside the overlay. Tests: <code>tests/integration/flows/pause-resume.test.ts</code>, <code>tests/unit/blaster.test.ts</code> (pause/unpause fire-state clearing).</li>
+    </ul>
+  </section>
+
+</body>
+</html>

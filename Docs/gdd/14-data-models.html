@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Data Models (Zod Schemas)</title></head>
+<body>
+
+  <h1>Data Models (Zod Schemas)</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The persisted game state is described by a small set of Zod schemas. These schemas are the contract for save/load: the same shapes flow through the React UI state, the Three.js render loop, and the Upstash Redis persistence layer. The canonical shapes are:</p>
+
+    <pre><code>Ship { x, y, rotation, velocityX, velocityY }
+Upgrades { blaster: number, collector: number, storage: number }
+Cargo { scrap: number, fragments: number, silver: number, gold: number, capacity: number }
+GameState { ship, upgrades, cargo, hp, timestamp }</code></pre>
+
+    <h3 id="model-ship">Ship</h3>
+    <p>The ship schema captures the ship's position, facing, and motion in world space.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>x</td><td>number</td><td>World-space x position</td></tr>
+        <tr><td>y</td><td>number</td><td>World-space y position</td></tr>
+        <tr><td>rotation</td><td>number</td><td>Facing angle (radians)</td></tr>
+        <tr><td>velocityX</td><td>number</td><td>Velocity along x</td></tr>
+        <tr><td>velocityY</td><td>number</td><td>Velocity along y</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="model-upgrades">Upgrades</h3>
+    <p>The upgrades schema tracks the current tier (1 to 5) for each of the three ship systems.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>blaster</td><td>number</td><td>Blaster tier</td></tr>
+        <tr><td>collector</td><td>number</td><td>Collector tier</td></tr>
+        <tr><td>storage</td><td>number</td><td>Storage tier</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="model-cargo">Cargo</h3>
+    <p>The cargo schema holds the player's resources and the cargo hold capacity.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>scrap</td><td>number</td><td>Currency (converted from fragments)</td></tr>
+        <tr><td>fragments</td><td>number</td><td>Uncollected or unconverted fragments</td></tr>
+        <tr><td>silver</td><td>number</td><td>Silver material count</td></tr>
+        <tr><td>gold</td><td>number</td><td>Gold material count</td></tr>
+        <tr><td>capacity</td><td>number</td><td>Cargo hold capacity (storage tier 1 default is 50)</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="model-gamestate">GameState</h3>
+    <p>The top-level game state composes the ship, upgrades, and cargo schemas, plus the player's HP and a save timestamp.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>ship</td><td>Ship</td><td>Ship position, facing, and motion</td></tr>
+        <tr><td>upgrades</td><td>Upgrades</td><td>Current tier per system</td></tr>
+        <tr><td>cargo</td><td>Cargo</td><td>Resources and capacity</td></tr>
+        <tr><td>hp</td><td>number</td><td>Player HP (0 to 100; 100 default)</td></tr>
+        <tr><td>timestamp</td><td>number</td><td>Last-save time (epoch ms)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>State management context</h3>
+    <ul>
+      <li>Game state lives in the Three.js render loop (60fps).</li>
+      <li>React state for UI/HUD via the <code>useGameState</code> hook.</li>
+      <li>Persistence via the <code>useGamePersistence</code> hook backed by Upstash Redis.</li>
+      <li>Auto-save fires on resource collection, selling, buying, and station repair.</li>
+      <li>A headless <code>GameSimulation</code> mirrors scene orchestration for integration testing.</li>
+    </ul>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Zod schemas for Ship, Upgrades, Cargo, and GameState shipped pre-migration. Implemented with tier bounds (1 to 5), HP bounds (0 to 100), capacity minimum, and a <code>defaultGameState()</code> factory (tier-1 ship, capacity 50, 100 HP). Files: <code>src/lib/schemas.ts</code>. Tests: <code>tests/unit/schemas.test.ts</code>.</li>
+      <li data-date="2026-06-07">Schemas backed the persistence layer landed under Milestone M8 (auto-save on game events, KV backend storage), covering the GameState save/load contract through the game API routes.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

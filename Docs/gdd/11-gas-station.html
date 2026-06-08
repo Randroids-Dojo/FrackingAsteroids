@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Gas Station</title></head>
+<body>
+
+  <h1>Gas Station</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The gas station is a fixed structure in the world that serves two gameplay functions: drive-through repair and trade. It is rendered as a voxel "Moon's Drive-In" style space station with neon signage.</p>
+
+    <h2>Location</h2>
+    <ul>
+      <li id="station-location">Located north of the starting area.</li>
+    </ul>
+
+    <h2>Drive-through repair</h2>
+    <ul>
+      <li id="station-repair">Drive-through repair: restores HP to full when passing close.</li>
+    </ul>
+    <p>The player ship has 100 HP. HP is lost when hit by enemy projectiles. HP is restored to full when passing through the gas station (drive-through repair). HP is persisted across saves.</p>
+
+    <h2>Trade menu</h2>
+    <ul>
+      <li id="station-trade-menu">Trade menu: sell materials for scrap, buy upgrades.</li>
+    </ul>
+    <p>The trade menu lets the player sell collected materials (silver and gold) for scrap currency, and spend scrap to buy upgrades for the blaster, collector, and storage systems, as well as the Lazer mining tool.</p>
+
+    <h3>Upgrade tiers reachable at the station</h3>
+    <p>The trade menu progresses each system across the tier tables defined in the ship systems spec.</p>
+
+    <table>
+      <caption>Storage tiers (capacity and scrap bonus)</caption>
+      <thead>
+        <tr><th>Tier</th><th>Capacity</th><th>Scrap Bonus</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>50</td><td>0%</td></tr>
+        <tr><td>2</td><td>125</td><td>10%</td></tr>
+        <tr><td>3</td><td>250</td><td>20%</td></tr>
+        <tr><td>4</td><td>500</td><td>35%</td></tr>
+        <tr><td>5</td><td>1000</td><td>50%</td></tr>
+      </tbody>
+    </table>
+
+    <p>The Lazer mining tool is also purchased at the trade station for 200 scrap.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Gas station, drive-through repair, and trade menu shipped pre-migration during M4 (Economy) and M5 (Upgrades). Station model and neon animation in <code>src/game/gas-station-model.ts</code>; station placed north of start at world position (30, 200) in <code>src/game/scene.ts</code>; proximity, drive-through repair to full HP, and tutorial catch-up logic in <code>src/game/game-tick.ts</code> (STATION_NEAR_DISTANCE 80, STATION_ENTER_DISTANCE 60, STATION_REPAIR_DISTANCE 30, PLAYER_MAX_HP 100); trade menu sell and buy panels in <code>src/components/TradeMenu.tsx</code>. Station proximity tutorial catch-up covered by <code>tests/unit/game-tick-station.test.ts</code>.</li>
+      <li data-date="2026-06-07">Lazer purchase wired into the trade menu via <code>onBuyLazer</code> in <code>src/components/TradeMenu.tsx</code> (Lazer mining tool added in PR #24, sustained beam in PR #28).</li>
+    </ul>
+  </section>
+
+</body>
+</html>

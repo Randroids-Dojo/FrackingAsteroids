@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Visual Effects and Color Palette</title></head>
+<body>
+
+  <h1>Visual Effects and Color Palette</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>This section ports the Visual Effects and Color Palette portions of "6. Art &amp; Audio Direction" from the monolith GDD. It covers the screen shake system, the engine trail, the layered parallax background (twinkling stars, nebula swirls, black hole), the explosion effect, and the canonical color palette.</p>
+
+    <h2>Visual Effects</h2>
+
+    <h3 id="vfx-screen-shake">Screen Shake</h3>
+    <ul>
+      <li>Triggered when the player is hit by enemy projectiles.</li>
+      <li>Trauma-based system: damage adds trauma (0 to 1), with quadratic falloff for intensity.</li>
+      <li>Camera offset oscillates at 25 Hz and decays at a rate of 4.0 per second.</li>
+    </ul>
+
+    <h3 id="vfx-engine-trail">Engine Trail</h3>
+    <ul>
+      <li>Glowing orange/red particles emitted from the ship rear.</li>
+      <li>Emission rate and brightness scale with ship speed.</li>
+      <li>Particles fade and shrink over 0.4 seconds.</li>
+    </ul>
+
+    <h3>Background Effects</h3>
+    <ul>
+      <li id="vfx-stars">Twinkling deep-space stars: 200 colored points with per-star brightness oscillation.</li>
+      <li id="vfx-nebula">Nebula swirls: 5 large semi-transparent glowing clouds with additive blending.</li>
+      <li id="vfx-black-hole">Black hole: dark core with 4 spinning accretion rings (orange/red gradient).</li>
+      <li id="vfx-parallax">All background layers parallax at different rates for depth.</li>
+    </ul>
+
+    <h3 id="vfx-explosion">Explosion</h3>
+    <ul>
+      <li>Explosion effect plays when asteroids or enemies are hit.</li>
+      <li>Low boom with noise burst on the audio side (when asteroids/enemies are hit).</li>
+    </ul>
+
+    <h2 id="vfx-color-palette">Color Palette</h2>
+    <table>
+      <thead>
+        <tr><th>Element</th><th>Colors</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Space</td><td><code>#0a0a1a</code> to <code>#111133</code> gradient</td></tr>
+        <tr><td>Asteroids</td><td>brown (common), gray-purple (dense), gold (precious), blue-teal (comet), deep purple (crystalline)</td></tr>
+        <tr><td>Mining laser</td><td><code>#FFAA00</code> (amber bolt), <code>#FFDD44</code> (bright core)</td></tr>
+        <tr><td>HUD</td><td><code>#00FF88</code> (green), <code>#00AAFF</code> (blue), <code>#FF4444</code> (red), <code>#FFAA00</code> (amber)</td></tr>
+        <tr><td>Engine trail</td><td><code>#FF6600</code>, <code>#FF4400</code>, <code>#FF8800</code>, <code>#FFAA00</code> (orange spectrum)</td></tr>
+        <tr><td>Nebulae</td><td><code>#220044</code> (purple), <code>#001133</code> (blue), <code>#110022</code> (magenta)</td></tr>
+        <tr><td>Black hole rings</td><td><code>#FF4400</code>, <code>#FF8800</code>, <code>#FFAA00</code>, <code>#FF6600</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Aim assist visuals shipped: projected aim line and target reticle rendered for the active weapon. Files: <code>src/game/aim-reticle.ts</code>, <code>src/game/scene.ts</code>. Tests: <code>tests/unit/aim-reticle.test.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Mobile firing joystick replaced the fire button (orange tint distinguishes it from the white movement stick). Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/scene.ts</code>. PR #35.</li>
+      <li data-date="2026-06-07">Lazer mining tool and crystalline asteroid type added, including the sustained beam visual. Files: <code>src/game/lazer-beam.ts</code>, <code>src/game/scene.ts</code>. PR #24, PR #28.</li>
+      <li data-date="2026-06-07">Game polish landed: background music, SFX, particles, screen shake, and background effects. Trauma-based screen shake (25 Hz oscillation, 4.0/sec decay) triggers on player hits; engine trail emits speed-scaled orange/red particles fading over 0.4s; twinkling stars (200 points), 5 nebula swirls with additive blending, and a black hole with 4 spinning accretion rings parallax at different rates; explosions play on asteroid/enemy hits. Files: <code>src/game/screen-shake.ts</code>, <code>src/game/engine-trail.ts</code>, <code>src/game/background-effects.ts</code>, <code>src/game/explosion.ts</code>, <code>src/game/scene.ts</code>. Tests: <code>tests/unit/screen-shake.test.ts</code>, <code>tests/unit/engine-trail.test.ts</code>, <code>tests/unit/background-effects.test.ts</code>. PR #22.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

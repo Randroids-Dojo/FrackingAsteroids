@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>State Management and Persistence</title></head>
+<body>
+
+  <h1>State Management and Persistence</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>This section ports the State Management portion of Technical Design (section 4 of the GDD). It describes where game state lives, how the UI reads it, how it is persisted, when it is saved, and how it is mirrored for headless testing.</p>
+
+    <h2>Data Models (Zod Schemas)</h2>
+    <dl>
+      <dt><code>Ship</code></dt><dd>x, y, rotation, velocityX, velocityY</dd>
+      <dt><code>Upgrades</code></dt><dd>blaster: number, collector: number, storage: number</dd>
+      <dt><code>Cargo</code></dt><dd>scrap: number, fragments: number, silver: number, gold: number, capacity: number</dd>
+      <dt><code>GameState</code></dt><dd>ship, upgrades, cargo, hp, timestamp</dd>
+    </dl>
+
+    <h2>State Management</h2>
+
+    <h3 id="state-render-loop">Game state lives in the Three.js render loop (60fps)</h3>
+    <p>The authoritative game state lives in the Three.js render loop running at 60fps. The simulation advances each frame through the shared tick function.</p>
+
+    <h3 id="state-usegamestate">React state for UI/HUD via the useGameState hook</h3>
+    <p>React state for the UI and HUD is managed via the <code>useGameState</code> hook. The hook owns paused state, scrap, cargo, upgrades, and player HP, and exposes actions such as collect, sell, buy, and spend.</p>
+
+    <h3 id="state-persistence-hook">Persistence via the useGamePersistence hook backed by Upstash Redis</h3>
+    <p>Persistence is provided via the <code>useGamePersistence</code> hook, which saves and loads game state through the <code>/api/game/[id]</code> route. The route is backed by Upstash Redis.</p>
+
+    <h3 id="state-autosave-events">Auto-save events</h3>
+    <p>Auto-save triggers on the following game events:</p>
+    <ul>
+      <li>resource collection</li>
+      <li>selling</li>
+      <li>buying</li>
+      <li>station repair</li>
+    </ul>
+
+    <h3 id="state-headless-sim">Headless GameSimulation mirrors scene.ts orchestration</h3>
+    <p>A headless <code>GameSimulation</code> mirrors the <code>scene.ts</code> orchestration for integration testing. It uses the same tick function that <code>scene.ts</code> uses, so the simulation and the rendered game stay in sync.</p>
+
+    <h2>API Routes</h2>
+    <table>
+      <thead>
+        <tr><th>Route</th><th>Method</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/api/game/[id]</code></td><td>GET</td><td>Load saved game state</td></tr>
+        <tr><td><code>/api/game/[id]</code></td><td>PUT</td><td>Save game state</td></tr>
+        <tr><td><code>/api/health</code></td><td>GET</td><td>Health check</td></tr>
+        <tr><td><code>/api/version</code></td><td>GET</td><td>Current build version</td></tr>
+        <tr><td><code>/api/feedback</code></td><td>POST</td><td>Submit player feedback</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">State management and persistence shipped pre-migration. The 60fps render loop and shared tick orchestration live in <code>src/game/scene.ts</code> and <code>src/game/game-tick.ts</code>. React UI/HUD state lives in <code>src/hooks/useGameState.ts</code>. Persistence lives in <code>src/hooks/useGamePersistence.ts</code>, <code>src/lib/persistence.ts</code>, and <code>src/lib/kv.ts</code> (Upstash Redis). Auto-save on collect, sell, buy, and station repair is wired in <code>src/app/page.tsx</code> via requestSave. The headless mirror lives in <code>tests/integration/game-simulation.ts</code> and <code>tests/integration/game-test-harness.ts</code>. This corresponds to GDD milestone M8 (Persistence), now complete.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

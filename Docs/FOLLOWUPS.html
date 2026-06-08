@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Followups</title>
+</head>
+<body>
+
+<header>
+  <h1>Followups</h1>
+  <p>Backlog spillover discovered during implementation. Keep items PR-sized when possible.</p>
+  <aside data-role="convention">
+    <strong>Critical convention.</strong> Every followup must carry a <code>data-priority</code> attribute. Three buckets:
+    <ul>
+      <li><code>blocks-release</code>: cannot ship v1 without this.</li>
+      <li><code>nice-to-have</code>: improves the product but does not block.</li>
+      <li><code>polish</code>: post-release cleanup.</li>
+    </ul>
+  </aside>
+</header>
+
+<section id="how-to-add" data-role="entry-template">
+  <h2>How to add a followup</h2>
+  <pre><code>&lt;section data-f="F-NNN" data-priority="blocks-release|nice-to-have|polish"&gt;
+  &lt;h3&gt;F-NNN: Short title&lt;/h3&gt;
+  &lt;dl&gt;
+    &lt;dt&gt;Context&lt;/dt&gt;&lt;dd&gt;one or two sentences on why this came up.&lt;/dd&gt;
+    &lt;dt&gt;Blocker (if any)&lt;/dt&gt;&lt;dd&gt;the condition that prevents working on this now.&lt;/dd&gt;
+    &lt;dt&gt;Unblock condition&lt;/dt&gt;&lt;dd&gt;what has to be true to start.&lt;/dd&gt;
+    &lt;dt&gt;PR / Dot reference&lt;/dt&gt;&lt;dd&gt;#N or dots-N (when picked up)&lt;/dd&gt;
+  &lt;/dl&gt;
+&lt;/section&gt;</code></pre>
+  <p>Keep <code>F-NNN</code> IDs monotonically increasing. When a followup ships, leave the entry in place and append a <code>&lt;dt&gt;Resolved&lt;/dt&gt;&lt;dd&gt;PR #N&lt;/dd&gt;</code> entry. Never delete.</p>
+</section>
+
+<main>
+<section id="blocks-release">
+  <h2>Blocks Release</h2>
+  <p>(none yet)</p>
+</section>
+
+<section id="nice-to-have">
+  <h2>Nice To Have</h2>
+
+  <section data-f="F-001" data-priority="nice-to-have">
+    <h3>F-001: Split GDD into a Docs/gdd/ tree</h3>
+    <dl>
+      <dt>Context</dt><dd>the spiral methodology recommends one file per requirement under <code>Docs/gdd/</code>. FrackingAsteroids currently has a single <code>Docs/GDD.md</code>. Coverage row <code>gddRef</code> anchors point at sections within that file. If the GDD grows or per-section build logs become noisy, split.</dd>
+      <dt>Blocker</dt><dd>none.</dd>
+      <dt>Unblock condition</dt><dd>GDD additions feel cramped, or build-log entries on multiple unrelated features collide in one file.</dd>
+      <dt>PR / Dot reference</dt><dd>(not started)</dd>
+      <dt>Resolved</dt><dd>2026-06-07. Done as part of the spiral-html migration: the monolith was split into a 23 file requirement tree under <code>Docs/gdd/</code> with <code>Docs/gdd/index.html</code>, and coverage was expanded to 157 requirement granular rows.</dd>
+    </dl>
+  </section>
+
+</section>
+
+<section id="polish">
+  <h2>Polish</h2>
+  <p>(none yet)</p>
+</section>
+</main>
+
+</body>
+</html>

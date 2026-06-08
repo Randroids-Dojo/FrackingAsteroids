@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Asteroids</title></head>
+<body>
+
+  <h1>Asteroids</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>Asteroids are the core minable objects of the field. They come in five types, each with a distinct color palette, size, and HP value. They are voxel models with seeded shapes for visual variety, drift across the field at varying speeds and angles, and are spawned in a ring around the gas station after the tutorial.</p>
+
+    <h3 id="asteroid-types">Asteroid types</h3>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Size</th><th>Color Palette</th><th>HP</th></tr>
+      </thead>
+      <tbody>
+        <tr id="asteroid-common"><td>Common</td><td>Large</td><td>Brown / blue crystal</td><td>15</td></tr>
+        <tr id="asteroid-dense"><td>Dense</td><td>Medium</td><td>Gray-purple / violet</td><td>14</td></tr>
+        <tr id="asteroid-precious"><td>Precious</td><td>Small</td><td>Gold / yellow accent</td><td>6</td></tr>
+        <tr id="asteroid-comet"><td>Comet</td><td>Varies</td><td>Blue-teal / cyan</td><td>10</td></tr>
+        <tr id="asteroid-crystalline"><td>Crystalline</td><td>Varies</td><td>Deep purple / magenta</td><td>30</td></tr>
+      </tbody>
+    </table>
+
+    <ul>
+      <li>Five types with distinct color palettes and sizes.</li>
+      <li id="asteroid-crystalline-immune">Crystalline asteroids are immune to the standard blaster and require a Lazer to mine.</li>
+      <li id="asteroid-drift">Asteroids drift across the field at varying speeds and angles.</li>
+      <li id="asteroid-ring-spawn">Spawned in a ring around the gas station after the tutorial.</li>
+      <li id="asteroid-seeded-voxel">Voxel models with seeded shapes for visual variety.</li>
+    </ul>
+
+    <h3 id="moon-size-asteroids">Moon-size asteroids</h3>
+    <p>Size 0 asteroids (moon) are prologue-only, with voxel size 3.0, collision radius 16, and HP ranging from 25 (precious) to 80 (crystalline). They use 5 voxel layers for imposing depth.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Five asteroid types with seeded voxel shapes, per-type color palettes, ring spawning around the station, and drift velocity. Files: <code>src/game/asteroid-model.ts</code>, <code>src/game/asteroid-spawner.ts</code>, <code>src/game/scene.ts</code>. Shipped pre-migration. Tests: <code>tests/unit/asteroid-model.test.ts</code>, <code>tests/unit/asteroid-spawner.test.ts</code>.</li>
+      <li data-date="2026-06-07">Crystalline asteroid type added: immune to the blaster (projectiles deflect with no damage), minable only with the Lazer. Files: <code>src/game/asteroid-model.ts</code>, <code>src/game/asteroid-spawner.ts</code>, <code>src/game/collision.ts</code>. PR #24. Tests: <code>tests/unit/collision.test.ts</code>, <code>tests/integration/flows/lazer-tool.test.ts</code>.</li>
+      <li data-date="2026-06-07">Varied asteroids loaded around the world after tutorial respawn, spawned in a ring around the gas station. Files: <code>src/game/asteroid-spawner.ts</code>, <code>src/game/scene.ts</code>. PR #21.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

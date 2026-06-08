@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Lazer (Advanced Mining Tool)</title></head>
+<body>
+
+  <h1>Lazer (Advanced Mining Tool)</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+
+    <p>The Lazer is a sustained beam mining tool that allows harvesting crystalline asteroids and deals 1.5x damage to all asteroid types. Unlike the Blaster's discrete projectile shots, the Lazer emits a continuous solid beam while the fire button is held. The beam does instant line-of-sight damage to any asteroid it touches. Purchased at the Trade Station for 200 scrap. Players switch between the Blaster and Lazer via a HUD dropdown.</p>
+
+    <h2>Properties</h2>
+
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr id="lazer-cost"><td>Cost</td><td>200 scrap</td></tr>
+        <tr id="lazer-damage-mult"><td>Damage Multiplier</td><td>1.5x (all asteroids)</td></tr>
+        <tr id="lazer-color"><td>Beam Color</td><td>Cyan (<code>0x00CCFF</code>) with bright core (<code>0x88EEFF</code>)</td></tr>
+        <tr id="lazer-required-crystalline"><td>Required For</td><td>Crystalline asteroids</td></tr>
+        <tr id="lazer-range"><td>Beam Range</td><td>120 world units</td></tr>
+        <tr id="lazer-dps"><td>DPS</td><td>5x base tier damage per second (continuous)</td></tr>
+        <tr id="lazer-overheat"><td>Max Heat</td><td>1.5 seconds of sustained fire</td></tr>
+        <tr id="lazer-passive-cool"><td>Passive Cool Rate</td><td>0.5 heat/sec (when not firing)</td></tr>
+        <tr id="lazer-cooldown"><td>Overheat Cooldown</td><td>1.5 seconds</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="lazer-sustained-beam">Beam Mechanics</h2>
+
+    <ul>
+      <li>The beam renders as a solid glowing cyan line from the ship to the first asteroid hit (or max range). Damage is applied every frame, with no projectile travel time.</li>
+    </ul>
+
+    <h2 id="lazer-heat-build">Heat / Cooldown System</h2>
+
+    <ul>
+      <li>While firing: heat builds at 1.0 heat/sec. A meter under the ship fills up (cyan to orange as heat rises).</li>
+      <li>At max heat (1.5s sustained fire): the lazer <strong>overheats</strong>, a forced stop, meter turns red and drains over the 1.5s cooldown period.</li>
+      <li>After cooldown: heat resets to 0, lazer is ready to fire again.</li>
+      <li>When not firing (and not overheated): heat passively dissipates at 0.5/sec, allowing burst fire strategies to avoid overheating.</li>
+    </ul>
+
+    <h2 id="lazer-tool-switch">Tool Switching</h2>
+
+    <p>Players switch between the Blaster and Lazer via a HUD dropdown.</p>
+
+    <h2 id="lazer-tutorial-popup">Crystalline Tutorial Popup</h2>
+
+    <p>A tutorial popup appears when the player tries to shoot a crystalline asteroid with the blaster, hinting that they need a Lazer. The game freezes during the popup and is dismissed by pressing anywhere on screen. The popup appears every time the player deflects off crystalline.</p>
+
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-05-31">Aim reticle and projected aim line added: a red dashed line projects from the ship in the firing direction and a target circle snaps onto the first intersected asteroid or enemy, shared by blaster and lazer aiming. Files: <code>src/game/game-tick.ts</code>, <code>src/components/HUD.tsx</code>. PR #37.</li>
+      <li data-date="2026-05-31">Lazer removed from the player after the prologue until purchased at the Trade Station, so the HUD tool switch only exposes the lazer once owned. Files: <code>src/components/TradeMenu.tsx</code>, <code>src/game/scene.ts</code>. PR #36.</li>
+      <li data-date="2026-05-28">Mobile firing joystick replaced the fire button: the right-side floating joystick sets <code>fireTarget</code> each frame and the lazer heat gate throttles actual output. Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/scene.ts</code>. PR #35.</li>
+      <li data-date="2026-04-05">Prologue auto-mine showcase uses the lazer beam to shred a dense field including moon-size rocks before The Arbiter strips modules. Files: <code>src/game/scene.ts</code>, <code>src/hooks/useTutorial.ts</code>. PR #30.</li>
+      <li data-date="2026-03-29">Sustained lazer beam with heat and cooldown system: continuous beam while held, 5x base DPS applied per frame, 1.0 heat/sec build, 0.5/sec passive cool, 1.5s max heat and 1.5s overheat cooldown, with the meter under the ship coloring cyan to orange to red. Files: <code>src/game/lazer-beam.ts</code>, <code>src/game/blaster.ts</code>, <code>src/game/blaster-constants.ts</code>, <code>src/game/recharge-meter.ts</code>, <code>src/game/game-tick.ts</code>, <code>tests/integration/flows/lazer-tool.test.ts</code>. PR #28.</li>
+      <li data-date="2026-03-28">Lazer mining tool and crystalline asteroid type introduced: 200 scrap Trade Station purchase, 1.5x damage multiplier to all asteroids, crystalline asteroids immune to the blaster and requiring the lazer, HUD tool switch, and the crystalline deflect tutorial popup that freezes the game until dismissed by a tap. Files: <code>src/game/collision.ts</code>, <code>src/game/blaster-constants.ts</code>, <code>src/components/TradeMenu.tsx</code>, <code>src/components/HUD.tsx</code>, <code>src/components/LazerTutorialPopup.tsx</code>, <code>src/hooks/useTutorial.ts</code>, <code>tests/integration/flows/lazer-tool.test.ts</code>, <code>tests/unit/mining-tool.test.ts</code>, <code>tests/unit/tutorial.test.ts</code>. PR #24.</li>
+    </ul>
+  </section>
+
+</body>
+</html>
