@@ -31,6 +31,19 @@
 
 <main id="entries">
 
+  <article data-slice="joystick-vibekit-headless" data-date="2026-06-08">
+    <h3>Consume vibekit headless joystick</h3>
+    <dl>
+      <dt>Branch</dt><dd><code>feat/joystick-vibekit-headless</code></dd>
+      <dt>PR</dt><dd>TBD</dd>
+      <dt>Changed</dt><dd>Refactored <code>src/game/virtual-joystick.ts</code> so both the movement joystick and the firing joystick delegate headless state to vibekit's <code>createJoystick</code> / <code>beginJoystick</code> / <code>moveJoystick</code> / <code>endJoystick</code> / <code>readJoystick</code> instead of hand-rolled origin tracking. FrackingAsteroids keeps ownership of the DOM overlay, the left-half / right-half touch regions, the 10px dead zone, the 0.3 cardinal threshold, and the existing <code>InputState</code> / fire-angle outputs. vibekit's joystick normalizes deflection over its <code>JOYSTICK_RADIUS</code> (64), which only affects deflection magnitude; FA reads sign-thresholded cardinals plus the direction angle, so activation direction and rotation are unchanged.</dd>
+      <dt>Verification</dt><dd><code>npm run type-check</code>, <code>npm run lint</code>, <code>npm run format:check</code>, <code>npm run test:unit</code> (558/558, including <code>tests/unit/virtual-joystick.test.ts</code> 34/34), <code>npm run test:integration</code> (28/28), and <code>git diff --check</code> passed. Dash scan returned no matches.</dd>
+      <dt>Assumptions</dt><dd>FA only consumes cardinal direction and angle from the joystick, so adopting vibekit's 64px deflection radius in place of the prior 50px is a no-op for gameplay direction.</dd>
+      <dt>GDD coverage</dt><dd>unchanged. Build log appended to <code>Docs/gdd/09-controls.html</code>.</dd>
+      <dt>Followups</dt><dd>none.</dd>
+    </dl>
+  </article>
+
   <article data-slice="bump-vibekit-0.2.0" data-date="2026-06-08">
     <h3>Bump @randroids-dojo/vibekit v0.1.0 to v0.2.0</h3>
     <dl>

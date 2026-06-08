@@ -1,7 +1,17 @@
 import type { InputState } from './input'
+import {
+  beginJoystick,
+  createJoystick,
+  endJoystick,
+  JOYSTICK_RADIUS,
+  moveJoystick,
+  readJoystick,
+  type JoystickState,
+} from '@randroids-dojo/vibekit'
 
-const JOYSTICK_DEAD_ZONE = 10
-const JOYSTICK_MAX_RADIUS = 50
+const JOYSTICK_DEAD_ZONE_PIXELS = 10
+const JOYSTICK_MAX_RADIUS = JOYSTICK_RADIUS
+const DIRECTION_THRESHOLD = 0.3
 const BASE_RADIUS = 60
 const KNOB_RADIUS = 24
 
@@ -75,19 +85,20 @@ function createOverlay(
   }
 }
 
+function touchBelongsToJoystick(touch: Touch, joystickState: JoystickState): boolean {
+  return joystickState.active && touch.identifier === joystickState.pointerId
+}
+
 /**
  * Creates a virtual joystick that writes to an InputState and renders
- * a visible base + knob overlay. Active only on touch devices - the
- * left half of the container acts as the joystick area. A touch-start
- * anchors the joystick center, then dragging sets the direction.
+ * a visible base + knob overlay. Active only on touch devices. The
+ * left half of the container acts as the joystick area.
  */
 export function createVirtualJoystick(
   inputState: InputState,
   container: HTMLElement,
 ): VirtualJoystick {
-  let activeId: number | null = null
-  let originX = 0
-  let originY = 0
+  const joystick = createJoystick()
 
   const overlay = createOverlay(container, COLOR_MOVE)
 
@@ -96,46 +107,44 @@ export function createVirtualJoystick(
     return touch.clientX - rect.left < rect.width / 2
   }
 
+  function resetInputState(): void {
+    inputState.up = false
+    inputState.down = false
+    inputState.left = false
+    inputState.right = false
+    inputState.joystickAngle = null
+  }
+
   function updateDirection(touch: Touch): void {
-    const dx = touch.clientX - originX
-    const dy = touch.clientY - originY
+    moveJoystick(joystick, touch.clientX, touch.clientY)
+
+    const dx = joystick.currentX - joystick.originX
+    const dy = joystick.currentY - joystick.originY
 
     overlay.move(dx, dy)
 
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    if (dist < JOYSTICK_DEAD_ZONE) {
-      inputState.up = false
-      inputState.down = false
-      inputState.left = false
-      inputState.right = false
-      inputState.joystickAngle = null
+    const dist = Math.hypot(dx, dy)
+    if (dist < JOYSTICK_DEAD_ZONE_PIXELS) {
+      resetInputState()
       return
     }
 
-    // Normalize to max radius
-    const nx = dx / Math.max(dist, JOYSTICK_MAX_RADIUS)
-    const ny = dy / Math.max(dist, JOYSTICK_MAX_RADIUS)
+    const vector = readJoystick(joystick)
 
-    // Map to cardinal directions with 0.3 threshold for diagonals
-    inputState.right = nx > 0.3
-    inputState.left = nx < -0.3
-    inputState.down = ny > 0.3 // screen Y is inverted vs game Y
-    inputState.up = ny < -0.3
+    inputState.right = vector.x > DIRECTION_THRESHOLD
+    inputState.left = vector.x < -DIRECTION_THRESHOLD
+    inputState.down = vector.y > DIRECTION_THRESHOLD
+    inputState.up = vector.y < -DIRECTION_THRESHOLD
 
-    // Store precise angle for smooth 360° ship rotation.
-    // Screen coords: dx is right, dy is down. Game coords: +Y is up.
-    // Ship rotation formula: atan2(-game_dx, game_dy) = atan2(-dx, -dy)
-    inputState.joystickAngle = Math.atan2(-dx, -dy)
+    inputState.joystickAngle = Math.atan2(-vector.x, -vector.y)
   }
 
   function onTouchStart(e: TouchEvent): void {
-    if (activeId !== null) return
+    if (joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
       if (isLeftHalf(touch)) {
-        activeId = touch.identifier
-        originX = touch.clientX
-        originY = touch.clientY
+        beginJoystick(joystick, touch.identifier, touch.clientX, touch.clientY)
 
         const rect = container.getBoundingClientRect()
         overlay.show(touch.clientX - rect.left, touch.clientY - rect.top)
@@ -147,10 +156,10 @@ export function createVirtualJoystick(
   }
 
   function onTouchMove(e: TouchEvent): void {
-    if (activeId === null) return
+    if (!joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
-      if (touch.identifier === activeId) {
+      if (touchBelongsToJoystick(touch, joystick)) {
         updateDirection(touch)
         e.preventDefault()
         return
@@ -159,20 +168,16 @@ export function createVirtualJoystick(
   }
 
   function resetAndHide(): void {
-    activeId = null
-    inputState.up = false
-    inputState.down = false
-    inputState.left = false
-    inputState.right = false
-    inputState.joystickAngle = null
+    endJoystick(joystick)
+    resetInputState()
     overlay.hide()
   }
 
   function onTouchEnd(e: TouchEvent): void {
-    if (activeId === null) return
+    if (!joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
-      if (touch.identifier === activeId) {
+      if (touchBelongsToJoystick(touch, joystick)) {
         resetAndHide()
         return
       }
@@ -191,12 +196,8 @@ export function createVirtualJoystick(
       container.removeEventListener('touchmove', onTouchMove)
       container.removeEventListener('touchend', onTouchEnd)
       container.removeEventListener('touchcancel', onTouchEnd)
-      activeId = null
-      inputState.up = false
-      inputState.down = false
-      inputState.left = false
-      inputState.right = false
-      inputState.joystickAngle = null
+      endJoystick(joystick)
+      resetInputState()
       overlay.destroy()
     },
   }
@@ -213,9 +214,7 @@ export function createVirtualJoystick(
  * the collect and tool-toggle buttons keep working independently.
  */
 export function createFiringJoystick(container: HTMLElement): FiringJoystick {
-  let activeId: number | null = null
-  let originX = 0
-  let originY = 0
+  const joystick = createJoystick()
   let fireAngle: number | null = null
 
   const overlay = createOverlay(container, COLOR_FIRE)
@@ -231,30 +230,29 @@ export function createFiringJoystick(container: HTMLElement): FiringJoystick {
   }
 
   function updateDirection(touch: Touch): void {
-    const dx = touch.clientX - originX
-    const dy = touch.clientY - originY
+    moveJoystick(joystick, touch.clientX, touch.clientY)
+
+    const dx = joystick.currentX - joystick.originX
+    const dy = joystick.currentY - joystick.originY
 
     overlay.move(dx, dy)
 
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    if (dist < JOYSTICK_DEAD_ZONE) {
+    const dist = Math.hypot(dx, dy)
+    if (dist < JOYSTICK_DEAD_ZONE_PIXELS) {
       fireAngle = null
       return
     }
 
-    // Screen coords: +X right, +Y down. World coords: +X right, +Y up.
-    // World aim angle: atan2(world_dy, world_dx) = atan2(-screen_dy, screen_dx).
-    fireAngle = Math.atan2(-dy, dx)
+    const vector = readJoystick(joystick)
+    fireAngle = Math.atan2(-vector.y, vector.x)
   }
 
   function onTouchStart(e: TouchEvent): void {
-    if (activeId !== null) return
+    if (joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
       if (isRightHalf(touch) && !isOnButton(touch.target)) {
-        activeId = touch.identifier
-        originX = touch.clientX
-        originY = touch.clientY
+        beginJoystick(joystick, touch.identifier, touch.clientX, touch.clientY)
 
         const rect = container.getBoundingClientRect()
         overlay.show(touch.clientX - rect.left, touch.clientY - rect.top)
@@ -266,10 +264,10 @@ export function createFiringJoystick(container: HTMLElement): FiringJoystick {
   }
 
   function onTouchMove(e: TouchEvent): void {
-    if (activeId === null) return
+    if (!joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
-      if (touch.identifier === activeId) {
+      if (touchBelongsToJoystick(touch, joystick)) {
         updateDirection(touch)
         e.preventDefault()
         return
@@ -278,16 +276,16 @@ export function createFiringJoystick(container: HTMLElement): FiringJoystick {
   }
 
   function resetAndHide(): void {
-    activeId = null
+    endJoystick(joystick)
     fireAngle = null
     overlay.hide()
   }
 
   function onTouchEnd(e: TouchEvent): void {
-    if (activeId === null) return
+    if (!joystick.active) return
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i]
-      if (touch.identifier === activeId) {
+      if (touchBelongsToJoystick(touch, joystick)) {
         resetAndHide()
         return
       }
@@ -306,7 +304,7 @@ export function createFiringJoystick(container: HTMLElement): FiringJoystick {
       container.removeEventListener('touchmove', onTouchMove)
       container.removeEventListener('touchend', onTouchEnd)
       container.removeEventListener('touchcancel', onTouchEnd)
-      activeId = null
+      endJoystick(joystick)
       fireAngle = null
       overlay.destroy()
     },
