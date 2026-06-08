@@ -12,8 +12,8 @@ import type { Projectile } from './types'
 /** Collision radius for the enemy ship. */
 export const ENEMY_COLLISION_RADIUS = 3
 
-/** Enemy HP — takes 3 hits to destroy. */
-export const ENEMY_MAX_HP = 3
+/** Enemy HP — survives a few hits with the basic blaster, falls quickly to the lazer beam. */
+export const ENEMY_MAX_HP = 6
 
 /** Enemy movement speed (units/sec). */
 const ENEMY_SPEED = 18
@@ -235,7 +235,7 @@ export function createEnemyShip(x: number, y: number): EnemyShip {
     vx: 0,
     vy: 0,
     rotation: 0,
-    hp: Math.ceil(ENEMY_MAX_HP / 2),
+    hp: ENEMY_MAX_HP,
     maxHp: ENEMY_MAX_HP,
     alive: true,
     heading: Math.random() * Math.PI * 2,
@@ -523,6 +523,45 @@ export function checkProjectileEnemyCollisions(
   }
 
   return { surviving, hitProjectileIds }
+}
+
+/**
+ * Check the lazer beam (line segment) against the enemy ship.
+ * Mutates enemy HP. Returns the closest-point projection of the enemy onto
+ * the beam as `t` (0..1) so the caller can shorten the rendered beam to the
+ * nearest target — mirrors how `checkBeamAsteroidCollisions` reports hits.
+ */
+export function checkBeamEnemyCollision(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  damage: number,
+  enemy: EnemyShip,
+): { hit: boolean; t: number } {
+  if (!enemy.alive || enemy.hp <= 0) return { hit: false, t: 1 }
+
+  const dx = endX - startX
+  const dy = endY - startY
+  const lenSq = dx * dx + dy * dy
+  if (lenSq < 0.0001) return { hit: false, t: 1 }
+
+  let t = ((enemy.x - startX) * dx + (enemy.y - startY) * dy) / lenSq
+  t = Math.max(0, Math.min(1, t))
+  const px = startX + t * dx
+  const py = startY + t * dy
+  const ddx = enemy.x - px
+  const ddy = enemy.y - py
+  const distSq = ddx * ddx + ddy * ddy
+  if (distSq >= ENEMY_COLLISION_RADIUS * ENEMY_COLLISION_RADIUS) {
+    return { hit: false, t: 1 }
+  }
+
+  enemy.hp = Math.max(0, enemy.hp - damage)
+  if (enemy.hp <= 0) {
+    enemy.alive = false
+  }
+  return { hit: true, t }
 }
 
 // ---------------------------------------------------------------------------
