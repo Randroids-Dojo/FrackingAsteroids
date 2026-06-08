@@ -1,0 +1,37 @@
+{
+  "artifactRootPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/docs\/reviews\/20260607-220302-F2FB8EA5",
+  "captures" : [
+    {
+      "browserSnapshotRelativePath" : "captures\/D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A.browser.json",
+      "browserTitle" : "Randroid88 - Twitch",
+      "browserURL" : "https:\/\/www.twitch.tv\/randroid88",
+      "createdAt" : "2026-06-08T03:14:21.103Z",
+      "id" : "D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A",
+      "note" : "First-90-seconds flow is clean: title -> save slot -> skippable intro attract-mode -> guided tutorial with step dots. The tagline (Blast. Collect. Scrap. Upgrade.) plus tutorial cards communicate the goal quickly. No auth walls or dead ends. Skip actions use a YES\/NO confirm so they are not hit by accident.",
+      "rating" : 4,
+      "screenshotRelativePath" : "captures\/D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A.png",
+      "severity" : "note",
+      "tags" : [
+        "onboarding",
+        "first-session",
+        "ux"
+      ]
+    }
+  ],
+  "createdAt" : "2026-06-08T03:03:02.257Z",
+  "docsProfile" : {
+    "docsDirectoryPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/docs",
+    "hasFollowupsHTML" : true,
+    "hasFunFactorHTML" : true,
+    "hasLegacyMarkdown" : false,
+    "hasOpenQuestionsHTML" : true,
+    "hasPlaytestHTML" : true,
+    "kind" : "fullSpiralHTML",
+    "projectRootPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids"
+  },
+  "id" : "20260607-220302-F2FB8EA5",
+  "projectRootPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids",
+  "resumedAt" : "2026-06-08T03:14:20.957Z",
+  "status" : "paused",
+  "title" : "Playtest review 2026-06-07"
+}

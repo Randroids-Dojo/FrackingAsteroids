@@ -376,6 +376,34 @@ npm run test:integration
 npm run build
 ```
 
+## Game Controls
+
+How to actually play the game. Source of truth: `src/game/input.ts` (movement and aim) and `src/game/scene.ts` (fire, collect, tool toggle).
+
+### Desktop
+
+- **Move**: `W`/`A`/`S`/`D` or the arrow keys. Bindings key off `event.code` (`KeyW`/`ArrowUp`, etc.), see `KEY_MAP` in `src/game/input.ts`.
+- **Aim**: move the mouse over the canvas. The ship rotates to face the cursor and a dashed line shows the aim direction. Aiming is mouse-only on desktop.
+- **Fire blaster**: left-click. Hold the left mouse button to auto-fire (`mouseHoldingFire` in `scene.ts`).
+- **Collect metal chunks**: hold `E` or `Space`, or hold the right mouse button (the collector/magnet). The chunk must be within the collector's radius, which is small at Collector Mk1, so fly close before holding.
+- **Switch tool** (Blaster to Lazer, once the Lazer is owned): `Q` (`onToolToggleKeyDown` in `scene.ts`).
+- **Pause**: the `II` button in the top-right HUD.
+
+### Mobile
+
+- Left-side virtual joystick steers the ship (sole control for facing direction). Right-side firing joystick and on-screen collect / tool-toggle buttons handle the rest. Right-side taps fire in the ship's current facing; they do not affect aim or rotation.
+
+### The core loop
+
+Shoot an asteroid until it breaks into small metal chunks, fly within collector range of a chunk and hold collect to tractor it in (`CARGO` increments), then return to the gas station (the colorful structure with the cart icon) to scrap cargo into `SCRAP` and buy upgrades. The starter Blaster Mk1 is deliberately weak: asteroids take many hits.
+
+### Driving the game from browser automation (playtests, E2E)
+
+- **The ship uses acceleration physics, so you must HOLD movement keys.** Discrete single key presses barely move it; the ship needs a sustained keydown to build velocity. In a headless/automation context, dispatch a real `keydown`, wait a few hundred ms, then dispatch `keyup`, rather than firing one-shot key taps.
+- Synthetic `KeyboardEvent`s dispatched on `window` work for all keyboard controls. Set the correct `code` (`KeyW`, `KeyD`, `KeyE`, `Space`, `KeyQ`); the handlers read `event.code`, not `event.key`.
+- Collection only registers when the ship is actually inside the collector radius of a chunk. Being "near" on screen is not enough at Mk1; close the distance first, then hold `E`/`Space`.
+- Aiming responds to `mousemove` over the canvas; firing responds to left mouse-down (hold to auto-fire). Asteroids and chunks drift, so lead a moving target or close to point-blank range.
+
 ## Input and Event Handling
 
 - **No duplicate event listeners on shared elements**: before adding mouse/touch handlers to a container, check whether other systems (e.g. virtual joystick, aim handler) already listen on the same element for the same event types. Two systems fighting over `touchmove` on the same element is a bug.
