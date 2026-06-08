@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Out of scope</title>
+</head>
+<body>
+
+  <h1>Out of scope</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>This file is the explicit scope fence. It lists items that have been considered and rejected for v1, with a one-line rationale each. The loop must not scope-creep into anything listed here without explicit approval. Some entries are code that exists in <code>src/</code> but has no sourcing requirement in the GDD; those are recorded here so the coverage ledger stays requirement-granular rather than backfilling rows for incidental implementation detail.</p>
+
+    <ul>
+      <li id="volume-control"><strong>Volume control / SoundFab.</strong> <code>src/game/volume-control.ts</code> and <code>src/components/SoundFab.tsx</code> exist, but the GDD specifies no volume-control requirement. Treated as implementation detail, not a sourced requirement.</li>
+      <li id="shop-fab"><strong>ShopFab component.</strong> <code>src/components/ShopFab.tsx</code> exists, but the GDD describes trading via the gas station trade menu, not a separate shop FAB requirement.</li>
+      <li id="update-banner"><strong>UpdateBanner.</strong> <code>src/components/UpdateBanner.tsx</code> exists, but no GDD requirement describes an update or version banner UI.</li>
+      <li id="silver-gold-cargo"><strong>Silver and gold cargo fields.</strong> Present in the Cargo Zod schema, but the GDD gives no gameplay rules for earning or spending silver or gold beyond their existence as model fields.</li>
+      <li id="collision-constants"><strong>Collision constants module.</strong> <code>src/game/collision-constants.ts</code> is an internal tuning detail, not a distinct GDD requirement beyond the circle-circle collision statement.</li>
+      <li id="types-module"><strong>Types module.</strong> <code>src/game/types.ts</code> is shared TypeScript typing infrastructure, not a GDD-sourced requirement.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

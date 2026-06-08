@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Vision and Pillars</title></head>
+<body>
+
+  <h1>Vision and Pillars</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>FrackingAsteroids is a tight arcade loop with strategic depth. Every destroyed asteroid is an investment opportunity. This section is the canonical overview: identity, platform, technology, art direction, the elevator pitch, and the win condition.</p>
+
+    <h2>Overview</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr id="title-genre"><th>Title</th><td>FrackingAsteroids</td></tr>
+      <tr><th>Genre</th><td>Arcade / Resource Management</td></tr>
+      <tr id="platform"><th>Platform</th><td>Web (desktop and mobile browsers)</td></tr>
+      <tr id="tech-stack"><th>Tech Stack</th><td>Next.js, Three.js, Tailwind CSS, Upstash Redis</td></tr>
+      <tr id="art-style"><th>Art Style</th><td>Voxel-style 3D</td></tr>
+    </table>
+
+    <h3 id="title-genre-detail">Title and Genre</h3>
+    <p>The title is FrackingAsteroids. The genre is Arcade / Resource Management.</p>
+
+    <h3 id="platform-detail">Platform</h3>
+    <p>The platform target is web, covering desktop and mobile browsers.</p>
+
+    <h3 id="tech-stack-detail">Tech Stack</h3>
+    <p>The tech stack is Next.js, Three.js, Tailwind CSS, and Upstash Redis.</p>
+
+    <h3 id="art-style-detail">Art Style</h3>
+    <p>The art style is voxel-style 3D: chunky, colorful blocks rendered with a perspective camera giving a top-down view of the asteroid field.</p>
+
+    <h3 id="elevator-pitch">Elevator Pitch</h3>
+    <p>Blast asteroids, collect their fragments, scrap the resources, and reinvest in upgrading your ship's blaster, collector, and storage systems. A tight arcade loop with strategic depth: every destroyed asteroid is an investment opportunity.</p>
+
+    <h3 id="core-loop">Core Loop</h3>
+    <p>BLAST to COLLECT to SCRAP to UPGRADE, then repeat.</p>
+    <ol>
+      <li><strong>Blast</strong>: Shoot asteroids with your blaster to break them into fragments.</li>
+      <li><strong>Collect</strong>: Fly through or attract fragments with your collector beam.</li>
+      <li><strong>Scrap</strong>: Fragments auto-convert to scrap (currency) in your cargo hold.</li>
+      <li><strong>Upgrade</strong>: Spend scrap to improve blaster, collector, or storage capacity.</li>
+    </ol>
+
+    <h3 id="win-condition">Win Condition</h3>
+    <p>Reach maximum upgrade tier across all three systems (blaster, collector, storage).</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Aim line and target reticle shipped: a projected dashed aim line plus a snap-to-target reticle for the blaster. Files: <code>src/components/GameCanvas.tsx</code>, <code>src/game/scene.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Lazer gated behind purchase: the Lazer is removed after the intro until bought at the Trade Station. Files: <code>src/components/TradeMenu.tsx</code>, <code>src/game/scene.ts</code>. PR #36.</li>
+      <li data-date="2026-06-07">Mobile right-side firing joystick replaced the fire button. Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/scene.ts</code>, <code>src/game/fire-button.ts</code>. PR #35.</li>
+      <li data-date="2026-06-07">Prologue maxed-ship intro with auto-fire / auto-mine / auto-collect, The Arbiter antagonist, and module strip into the tutorial. Files: <code>src/game/scene.ts</code>, <code>src/game/ship-model.ts</code>. PR #30.</li>
+      <li data-date="2026-06-07">Sustained Lazer beam with heat and cooldown system. Files: <code>src/game/scene.ts</code>. PR #28.</li>
+      <li data-date="2026-06-07">Lazer mining tool and crystalline asteroid type added. Files: <code>src/game/asteroid-model.ts</code>, <code>src/components/TradeMenu.tsx</code>. PR #24.</li>
+      <li data-date="2026-06-07">Game polish pass: music, SFX, particles, screen shake, background effects. Files: <code>src/game/scene.ts</code>. PR #22.</li>
+      <li data-date="2026-06-07">Vision and pillars shipped pre-migration. Title, genre, platform, tech stack (Next.js, Three.js, Tailwind CSS, Upstash Redis), voxel art style, elevator pitch, and the maximum-tier win condition are all live. Files: <code>src/app/layout.tsx</code>, <code>src/components/GameCanvas.tsx</code>, <code>src/game/scene.ts</code>, <code>src/lib/kv.ts</code>, <code>src/game/ship-model.ts</code>, <code>src/game/asteroid-model.ts</code>, <code>src/components/TradeMenu.tsx</code>.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

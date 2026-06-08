@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Audio</title></head>
+<body>
+
+  <h1>Audio</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>All audio is procedurally synthesized using the Web Audio API. There are no external audio files. The system is split into background music, sound effects, and shared audio context handling.</p>
+
+    <h2>Background Music</h2>
+    <h3 id="audio-procedural">Procedural synthesis (no external files)</h3>
+    <p>Every sound in the game, both music and SFX, is generated live through the Web Audio API. No sample files, streams, or external audio assets are loaded.</p>
+
+    <h3 id="audio-music-layers">Four-layer procedural soundtrack</h3>
+    <p>The background music is a four-layer procedural soundtrack generated live. Each layer fades in as overall intensity rises.</p>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Sound</th><th>Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Layer 0</td><td>Deep bass drone</td><td>Always playing</td></tr>
+        <tr><td>Layer 1</td><td>Pad chords</td><td>Fades in at low intensity</td></tr>
+        <tr><td>Layer 2</td><td>Arpeggiated melody</td><td>Fades in during moderate activity</td></tr>
+        <tr><td>Layer 3</td><td>Percussion pulse</td><td>Fades in during combat</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="audio-music-intensity">Intensity lerp</h3>
+    <p>Music intensity lerps smoothly between peaceful (0.15) and combat (0.8).</p>
+
+    <h2>Sound Effects</h2>
+    <dl>
+      <dt id="audio-sfx-laser">Laser fire</dt>
+      <dd>Short chirpy zap (bandpass-filtered square wave).</dd>
+
+      <dt id="audio-sfx-explosion">Explosion</dt>
+      <dd>Low boom with noise burst (when asteroids or enemies are hit).</dd>
+
+      <dt id="audio-sfx-player-hit">Player hit</dt>
+      <dd>Sharp impact with distortion crack.</dd>
+
+      <dt id="audio-sfx-engine">Engine thrust</dt>
+      <dd>Filtered noise loop, volume and frequency scale with ship speed.</dd>
+
+      <dt id="audio-sfx-collector-hum">Collector hum</dt>
+      <dd>Low sawtooth drone when the magnet is active.</dd>
+
+      <dt id="audio-sfx-pling">Collection pling</dt>
+      <dd>Metallic ping on pickup.</dd>
+    </dl>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Audio system shipped pre-migration as part of the M9 Polish milestone. Procedural Web Audio synthesis with no external files, four-layer intensity-driven background music (bass drone, pad chords, arpeggio, percussion) lerping between peaceful and combat, and SFX for laser fire, explosion, player hit, engine thrust, collector hum, and collection pling. Files: <code>src/game/music.ts</code>, <code>src/game/sfx.ts</code>, <code>src/game/audio.ts</code>, <code>src/game/volume-control.ts</code>. Tests: <code>tests/unit/music.test.ts</code>, <code>tests/unit/sfx.test.ts</code>, <code>tests/unit/audio.test.ts</code>. PR #22.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

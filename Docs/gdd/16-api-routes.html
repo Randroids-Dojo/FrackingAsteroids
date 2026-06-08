@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>API Routes</title></head>
+<body>
+
+  <h1>API Routes</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The app exposes a small set of Next.js App Router route handlers. Game state persistence is backed by Upstash Redis (KV). Game state lives in the Three.js render loop at 60fps, with React state mirroring UI/HUD via the <code>useGameState</code> hook, and persistence driven through the <code>useGamePersistence</code> hook. Auto-save fires on resource collection, selling, buying, and station repair.</p>
+
+    <table>
+      <thead>
+        <tr><th>Route</th><th>Method</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/api/game/[id]</code></td><td>GET</td><td>Load saved game state</td></tr>
+        <tr><td><code>/api/game/[id]</code></td><td>PUT</td><td>Save game state</td></tr>
+        <tr><td><code>/api/health</code></td><td>GET</td><td>Health check</td></tr>
+        <tr><td><code>/api/version</code></td><td>GET</td><td>Current build version</td></tr>
+        <tr><td><code>/api/feedback</code></td><td>POST</td><td>Submit player feedback</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="api-game-get">GET /api/game/[id]</h3>
+    <p>Loads saved game state for the given save id. Reads from KV under the key prefix <code>game:</code>, parses the stored JSON, and validates it against <code>GameStateSchema</code>. Returns the state as JSON when present and valid. Returns HTTP 404 with <code>{ "error": "not found" }</code> when no saved state exists for the id.</p>
+
+    <h3 id="api-game-put">PUT /api/game/[id]</h3>
+    <p>Saves game state for the given save id. The request body is validated against <code>GameStateSchema</code>. On a validation failure it returns HTTP 400 with <code>{ "error": "invalid state" }</code> and the flattened validation details. On a successful save it returns <code>{ "ok": true }</code>. When the KV store is unavailable and the write fails, it returns HTTP 503 with <code>{ "error": "storage unavailable" }</code>.</p>
+
+    <h3 id="api-health">GET /api/health</h3>
+    <p>Health check endpoint. Returns <code>{ "status": "ok", "timestamp": &lt;ms&gt; }</code> where the timestamp is the current epoch time in milliseconds.</p>
+
+    <h3 id="api-version">GET /api/version</h3>
+    <p>Reports the current build version. Returns <code>{ "version": &lt;value&gt;, "timestamp": &lt;ms&gt; }</code>. The version is read from the <code>NEXT_PUBLIC_APP_VERSION</code> environment variable, falling back to <code>"dev"</code> when unset.</p>
+
+    <h3 id="api-feedback">POST /api/feedback</h3>
+    <p>Submits player feedback. The request body is validated against <code>FeedbackSchema</code>. On a validation failure it returns HTTP 400 with <code>{ "error": "invalid feedback" }</code> and the flattened validation details. On success the feedback is persisted to KV under the key <code>feedback:&lt;timestamp&gt;</code> and the handler returns <code>{ "ok": true }</code>. Persistence is best effort: if the KV write throws, the error is logged and the request still succeeds. The feedback FAB (floating action button) on the pause overlay POSTs the player's message to this route.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">API routes shipped pre-migration as scaffold infrastructure. GET and PUT for <code>/api/game/[id]</code> load and save game state through Upstash Redis with Zod validation. Files: <code>src/app/api/game/[id]/route.ts</code>, <code>src/lib/persistence.ts</code>, <code>src/lib/kv.ts</code>, <code>src/lib/schemas.ts</code>.</li>
+      <li data-date="2026-06-07">Health and version endpoints shipped pre-migration. <code>/api/health</code> returns a status/timestamp payload; <code>/api/version</code> returns the build version from <code>NEXT_PUBLIC_APP_VERSION</code>. Files: <code>src/app/api/health/route.ts</code>, <code>src/app/api/version/route.ts</code>.</li>
+      <li data-date="2026-06-07">Feedback submission shipped pre-migration. <code>/api/feedback</code> validates and persists player messages to KV; the pause-overlay feedback FAB POSTs to it. Files: <code>src/app/api/feedback/route.ts</code>, <code>src/components/FeedbackFab.tsx</code>.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

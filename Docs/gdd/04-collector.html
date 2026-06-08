@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Collector</title></head>
+<body>
+
+  <h1>Collector</h1>
+  <p data-status="partial">Status: partial</p>
+
+  <section data-role="spec">
+    <p>The Collector is the ship system that attracts metal fragments (and scrap boxes) toward the ship so they can be absorbed into the cargo hold. It is the second step of the core loop (BLAST, COLLECT, SCRAP, UPGRADE). The player activates it by holding the collector input (right-click, E, or Space on desktop; the dedicated collect button on mobile). While active, nearby metal chunks within the collector range are pulled toward the ship with force-based acceleration that ramps up as chunks get closer, and a cyan range ring plus inward-spiraling particles render around the ship.</p>
+
+    <p>The Collector has five upgrade tiers. Higher tiers increase the attraction range and pull speed, and the top two tiers add auto-collect behavior that gathers fragments without the player needing to fly through them.</p>
+
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Range</th><th>Pull Speed</th><th>Auto-Collect</th></tr>
+      </thead>
+      <tbody>
+        <tr id="collector-tier-1"><td>1</td><td>Small</td><td>Slow</td><td>No</td></tr>
+        <tr id="collector-tier-2"><td>2</td><td>Medium</td><td>Medium</td><td>No</td></tr>
+        <tr id="collector-tier-3"><td>3</td><td>Large</td><td>Fast</td><td>No</td></tr>
+        <tr id="collector-tier-4"><td>4</td><td>XL</td><td>Fast</td><td>Nearby</td></tr>
+        <tr id="collector-tier-5"><td>5</td><td>XXL</td><td>Instant</td><td>All on screen</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Implemented collector constants (tier 1 baseline)</h3>
+    <dl>
+      <dt>Collector range</dt><dd>12 world units (small radius), fixed for normal gameplay.</dd>
+      <dt>Pull acceleration</dt><dd>400 units/sec squared, stronger when the chunk is closer to the ship.</dd>
+      <dt>Max pull speed</dt><dd>100 units/sec while attracting.</dd>
+      <dt>Steer factor</dt><dd>0.15 per frame, damping existing drift toward the ship direction to reduce orbiting.</dd>
+      <dt>Collect distance</dt><dd>metal chunk radius (1.5) plus ship collision radius; once inside, the chunk is absorbed.</dd>
+    </dl>
+
+    <h3>Visual effects</h3>
+    <ul>
+      <li>A pulsing cyan range ring (64 segments, color 0x00aaff) drawn at the collector range around the ship.</li>
+      <li>12 inward-spiraling stream particles (cyan/blue tones: 0x00ccff, 0x00aaff, 0x44ddff, 0x0088ff) that spiral toward center at 40 units/sec inward and 4 radians/sec rotation, fading and shrinking as they approach the ship, then respawning at the edge.</li>
+      <li>A low sawtooth collector hum plays while the magnet is active; a metallic pickup pling plays on collection.</li>
+    </ul>
+
+    <p>Note: the prologue ship uses a magnet collector with a 40-unit range that vacuums all debris, supplied through a range override. This is a scripted prologue value and is separate from the player-upgradable tier system described above.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Collector implemented as a single fixed-range attractor (range 12, force-based pull accel 400 u/s^2, max pull speed 100 u/s) with cyan range ring and inward-spiraling stream particles, plus collector hum and pickup pling audio. Matches the tier 1 baseline (small range, slow pull, no auto-collect). The tiered scaling (medium/large/XL/XXL range, faster/instant pull, and auto-collect for tiers 4 and 5) is not yet wired to <code>upgrades.collector</code>; range only varies via a prologue override. Files: <code>src/game/metal-chunk.ts</code>, <code>src/game/collector-vfx.ts</code>, <code>src/game/game-tick.ts</code>, <code>src/game/scrap-box.ts</code>, <code>src/game/audio.ts</code>. Shipped pre-migration (M4 Economy).</li>
+    </ul>
+  </section>
+
+</body>
+</html>

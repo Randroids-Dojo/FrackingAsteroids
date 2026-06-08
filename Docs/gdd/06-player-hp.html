@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Player HP</title></head>
+<body>
+
+  <h1>Player HP</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The player ship has 100 HP. HP is lost when hit by enemy projectiles. HP is restored to full when passing through the gas station (drive-through repair). HP is persisted across saves.</p>
+
+    <h3 id="hp-max">Maximum HP</h3>
+    <p>The player ship has 100 HP. This is the starting and maximum value. HP cannot exceed 100 and cannot drop below 0.</p>
+    <dl>
+      <dt>Starting HP</dt>
+      <dd>100</dd>
+      <dt>Maximum HP</dt>
+      <dd>100</dd>
+      <dt>Minimum HP</dt>
+      <dd>0</dd>
+    </dl>
+
+    <h3 id="hp-damage">Damage from enemy projectiles</h3>
+    <p>HP is lost when the ship is hit by enemy projectiles. Each enemy projectile carries a damage value that is subtracted from current HP on impact, clamped so HP never falls below 0. Being hit also triggers screen shake (trauma scales with damage taken) and the player-hit sound effect.</p>
+    <ul>
+      <li>Standard enemy projectile: deals the projectile's own damage value.</li>
+      <li>Ambush (prologue) projectile: deals 20 damage.</li>
+    </ul>
+
+    <h3 id="hp-repair">Drive-through repair at the gas station</h3>
+    <p>HP is restored to full when passing through the gas station (drive-through repair). When the ship enters repair range of the station, HP is set back to the maximum of 100. The repair fires once per visit: a flag prevents repeated healing while the ship lingers in range, and the flag resets when the ship leaves the station range so a later pass repairs again.</p>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Repair amount</td><td>Full (restores HP to 100)</td></tr>
+        <tr><td>Repair distance</td><td>30 world units from the station</td></tr>
+        <tr><td>Repeat policy</td><td>Once per visit; resets on leaving station range</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="hp-persist">Persistence across saves</h3>
+    <p>HP is persisted across saves. The <code>hp</code> field is part of the saved game state schema (an integer between 0 and 100) and is written and read back through the persistence layer. A default new game starts with <code>hp: 100</code>.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Player HP system shipped pre-migration. Ship starts at 100 HP, takes damage from enemy projectiles, fully repairs at the gas station drive-through, and persists in the save schema. Files: <code>src/lib/schemas.ts</code> (<code>hp</code> field, default 100), <code>src/game/game-tick.ts</code> (<code>PLAYER_MAX_HP = 100</code>, projectile damage subtraction, station repair at <code>STATION_REPAIR_DISTANCE = 30</code>), <code>src/game/scene.ts</code> (HP wiring, screen shake on hit), <code>src/game/enemy-ship.ts</code> (enemy projectile generation), <code>src/game/gas-station-model.ts</code> (station model), <code>src/lib/persistence.ts</code> (save/load via <code>GameStateSchema</code>). Tests: <code>tests/unit/schemas.test.ts</code>, <code>tests/unit/game-tick.test.ts</code>, <code>tests/unit/enemy-ship.test.ts</code>.</li>
+      <li data-date="2026-06-07">Prologue ambush projectiles deal 20 damage to the player as part of the scripted intro combat phase. Files: <code>src/game/game-tick.ts</code>. PR #30.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

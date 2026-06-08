@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Art Style: Voxel</title></head>
+<body>
+
+  <h1>Art Style: Voxel</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The game uses a voxel-style 3D art direction. All visible game objects are built from cube (box) voxel geometry assembled into THREE.Group meshes. This section captures the voxel construction rules for each object class.</p>
+
+    <h2>Voxel construction rules</h2>
+    <dl>
+      <dt>All game objects</dt>
+      <dd>Built from voxel-style geometry (box voxels).</dd>
+
+      <dt id="voxel-ship">Ship</dt>
+      <dd>A roughly 8x8x4 voxel block ship with engine glow.</dd>
+
+      <dt id="voxel-asteroids">Asteroids</dt>
+      <dd>Irregular voxel clusters, procedurally varied per type.</dd>
+
+      <dt id="voxel-fragments">Fragments</dt>
+      <dd>Small 1 to 2 voxel glowing cubes.</dd>
+
+      <dt id="voxel-projectiles">Projectiles</dt>
+      <dd>Bright amber elongated voxel pulses (mining laser bolts).</dd>
+
+      <dt id="voxel-background">Background</dt>
+      <dd>Particle-based star field.</dd>
+    </dl>
+
+    <h3 id="voxel-all-objects">All game objects are voxel geometry</h3>
+    <p>Every game object class (ship, asteroids, fragments, projectiles) is constructed from cube voxels assembled into THREE.Group meshes. The background is the one layer that uses particle points rather than voxel cubes.</p>
+
+    <h2>Color palette (voxel objects)</h2>
+    <table>
+      <thead>
+        <tr><th>Element</th><th>Colors</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Space</td><td><code>#0a0a1a</code> to <code>#111133</code> gradient</td></tr>
+        <tr><td>Asteroids</td><td>brown (common), gray-purple (dense), gold (precious), blue-teal (comet), deep purple (crystalline)</td></tr>
+        <tr><td>Mining laser</td><td><code>#FFAA00</code> (amber bolt), <code>#FFDD44</code> (bright core)</td></tr>
+        <tr><td>HUD</td><td><code>#00FF88</code> (green), <code>#00AAFF</code> (blue), <code>#FF4444</code> (red), <code>#FFAA00</code> (amber)</td></tr>
+        <tr><td>Engine trail</td><td><code>#FF6600</code>, <code>#FF4400</code>, <code>#FF8800</code>, <code>#FFAA00</code> (orange spectrum)</td></tr>
+        <tr><td>Nebulae</td><td><code>#220044</code> (purple), <code>#001133</code> (blue), <code>#110022</code> (magenta)</td></tr>
+        <tr><td>Black hole rings</td><td><code>#FF4400</code>, <code>#FF8800</code>, <code>#FFAA00</code>, <code>#FF6600</code></td></tr>
+      </tbody>
+    </table>
+    <p>Note: full visual-effects (screen shake, engine trail, background nebula/black hole) and audio direction are specified in their own GDD sections. This file is scoped to the voxel construction of game objects and the particle star field.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Added projected aim line and target reticle to support voxel projectile aiming. Files: <code>src/game/aim-reticle.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Voxel projectile model gained the cyan/magenta lazer bolt variant alongside the amber blaster bolt. Files: <code>src/game/projectile-model.ts</code>, <code>src/game/blaster-constants.ts</code>. Lazer mining tool and crystalline asteroid type shipped in PR #24; sustained lazer beam in PR #28.</li>
+      <li data-date="2026-06-07">Game polish pass shipped procedural music, SFX, particles, screen shake, and the particle-based background star field (twinkling stars, nebula swirls, black hole). Files: <code>src/game/background-effects.ts</code>, <code>src/game/engine-trail.ts</code>, <code>src/game/screen-shake.ts</code>, <code>src/game/explosion.ts</code>. PR #22.</li>
+      <li data-date="2026-06-07">Voxel ship, asteroids, fragments, and projectiles shipped pre-migration. Voxel ship block with engine glow plus prologue maxed-ship variant in <code>src/game/ship-model.ts</code> and <code>src/game/ship-constants.ts</code> (<code>VOXEL_SIZE</code> 0.5, <code>SHIP_COLORS</code> hull/cockpit/engine/wingTip). Procedurally varied per-type asteroid voxel clusters with seeded shape variation in <code>src/game/asteroid-model.ts</code>. Glowing metal fragment nuggets in <code>src/game/metal-chunk.ts</code> and break-off debris in <code>src/game/asteroid-debris.ts</code>. Amber voxel laser bolts in <code>src/game/projectile-model.ts</code>.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

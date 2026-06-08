@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Controls</title></head>
+<body>
+
+  <h1>Controls</h1>
+  <p data-status="partial">Status: partial</p>
+
+  <section data-role="spec">
+    <p>The ship uses twin-stick style controls: movement is independent of aim. The control scheme adapts to the input device, with a keyboard and mouse layout on desktop and a dual virtual joystick layout on mobile (touch).</p>
+
+    <h2>Desktop</h2>
+    <table>
+      <thead>
+        <tr><th>Input</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr id="desktop-move"><td>WASD or Arrow Keys</td><td>Move ship (twin-stick: movement independent of aim)</td></tr>
+        <tr id="desktop-aim"><td>Mouse cursor</td><td>Aim ship (ship rotates to face cursor)</td></tr>
+        <tr id="desktop-fire"><td>Mouse click</td><td>Fire blaster toward cursor</td></tr>
+        <tr id="desktop-collect"><td>Right-click (hold), or E or Space (hold)</td><td>Activate collector</td></tr>
+        <tr id="desktop-pause"><td>Space</td><td>Pause (reveals Feedback FAB)</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Mobile</h2>
+    <table>
+      <thead>
+        <tr><th>Input</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr id="mobile-move"><td>Left thumb virtual joystick</td><td>Move (floating anchor, left half of screen)</td></tr>
+        <tr id="mobile-fire"><td>Right thumb firing joystick</td><td>Fire (floating anchor, right half of screen). Projectile direction tracks the stick angle. Blaster cooldown / lazer heat gate actual shots.</td></tr>
+        <tr id="mobile-collect"><td>Collect button</td><td>Visible circular blue button on bottom-right, hold to activate metal attractor</td></tr>
+        <tr id="mobile-pause"><td>Pause button</td><td>Pause button in HUD</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Design Notes</h2>
+    <ul>
+      <li id="design-rotation-decoupled">Ship rotation is decoupled from movement direction: the ship always faces the aim target. When no aim target is active, the ship faces the movement direction as a fallback.</li>
+      <li id="design-deadzone">Virtual joystick uses a fixed dead zone of 10px to prevent drift.</li>
+    </ul>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Added projected aim line and target reticle: a red dashed line projected in the aim direction (mouse on desktop, right firing joystick on mobile), with a target circle marking where shots land. Files: <code>src/game/aim-reticle.ts</code>, <code>src/game/scene.ts</code>. PR #37.</li>
+      <li data-date="2026-06-07">Replaced the mobile fire button with a floating right-side firing joystick whose stick angle sets projectile direction; blaster cooldown / lazer heat gate actual shots. Added <code>createFiringJoystick</code> with a 10px dead zone mirroring the movement joystick. Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/fire-button.ts</code>, <code>src/game/scene.ts</code>. Tests: <code>tests/unit/virtual-joystick.test.ts</code>, <code>tests/unit/fire-button.test.ts</code>. PR #35.</li>
+      <li data-date="2026-06-07">Desktop input, twin-stick movement, mouse aim, mouse-click fire, right-click / E / Space hold-to-collect, decoupled ship rotation with movement-direction fallback, mobile movement joystick, and the blue circular bottom-right collect button shipped pre-migration. Files: <code>src/game/input.ts</code>, <code>src/game/ship-controller.ts</code>, <code>src/game/virtual-joystick.ts</code>, <code>src/game/fire-button.ts</code>, <code>src/game/scene.ts</code>, <code>src/components/HUD.tsx</code>. Tests: <code>tests/unit/input.test.ts</code>, <code>tests/unit/ship-controller.test.ts</code>, <code>tests/unit/virtual-joystick.test.ts</code>, <code>tests/unit/fire-button.test.ts</code>.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

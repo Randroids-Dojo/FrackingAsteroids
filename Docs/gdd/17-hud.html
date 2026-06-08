@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>HUD</title></head>
+<body>
+  <h1>HUD</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The HUD is always visible during gameplay. It surfaces resource state, ship status, weapon readiness, and aim guidance without taking input focus away from the play field. The elements below are ported from the GDD User Interface section.</p>
+
+    <h2>HUD elements</h2>
+    <table>
+      <thead>
+        <tr><th>Element</th><th>Placement</th><th>Shows</th></tr>
+      </thead>
+      <tbody>
+        <tr id="hud-scrap-counter"><td>Scrap counter</td><td>Top-left</td><td>Current scrap amount</td></tr>
+        <tr id="hud-cargo-bar"><td>Cargo bar</td><td>Top-left, below scrap</td><td>Fragments / capacity</td></tr>
+        <tr id="hud-upgrade-indicators"><td>Upgrade indicators</td><td>Top-right</td><td>Current tier for each system</td></tr>
+        <tr id="hud-recharge-meter"><td>Recharge meter</td><td>Small horizontal bar below ship</td><td>Blaster cooldown progress</td></tr>
+        <tr id="hud-health-bar"><td>Health bar</td><td>Top-left (shown when HP below max)</td><td>Hull HP remaining</td></tr>
+        <tr id="hud-pause-button"><td>Pause button</td><td>Top-right corner (mobile: larger touch target)</td><td>Pause / resume control</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="hud-aim-line">Aim reticle</h2>
+    <p>The aim reticle is a red, dashed, semi-transparent line projected from the center of the ship in the aim direction (mouse on desktop, right firing joystick on mobile). The line extends to the edge of the visible screen, or stops early when it intersects an asteroid or enemy ship.</p>
+    <p id="hud-reticle-target">A red target circle (reticle) marks where shots will land: centered on the screen-edge endpoint when nothing is in the way, or snapped onto and sized to the intersected object (asteroid or enemy).</p>
+    <p id="hud-reticle-hidden-prologue">The aim reticle is hidden during the scripted prologue.</p>
+
+    <h2>Related HUD colors</h2>
+    <p>The HUD color palette uses <code>#00FF88</code> (green), <code>#00AAFF</code> (blue), <code>#FF4444</code> (red), and <code>#FFAA00</code> (amber).</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-05-31">Added projected aim line and target reticle: a red dashed semi-transparent line from the ship to the screen edge or first asteroid/enemy intersection, with a target circle that snaps onto and sizes to the intersected object. Hidden during the scripted prologue (gated on the tutorial step in <code>src/game/scene.ts</code>). Files: <code>src/game/aim-reticle.ts</code>, <code>src/game/scene.ts</code>, <code>tests/unit/aim-reticle.test.ts</code>. PR #37.</li>
+      <li data-date="2026-05-28">Replaced the mobile fire button with a right-side firing joystick that drives the aim direction on touch devices, feeding the same aim/fire path the reticle reads. Files: <code>src/game/virtual-joystick.ts</code>, <code>src/game/scene.ts</code>. PR #35.</li>
+      <li data-date="2026-03-25">Dynamic HUD sizing to prevent overlap on small screens: responsive clamp-based font sizing and layout for the scrap counter, cargo bar, upgrade indicators, hull bar, and pause button. Files: <code>src/components/HUD.tsx</code>. PR #16.</li>
+      <li data-date="2026-06-07">Pre-migration: scrap counter, cargo bar, silver/gold counts, upgrade tier indicators, conditional hull health bar, and the pause button (44px minimum touch target) shipped in the HUD component. Files: <code>src/components/HUD.tsx</code>.</li>
+      <li data-date="2026-06-07">Pre-migration: recharge meter below the ship showing blaster cooldown (and lazer heat/cooldown) progress as a left-to-right horizontal bar. Files: <code>src/game/recharge-meter.ts</code>, <code>tests/unit/recharge-meter.test.ts</code>.</li>
+      <li data-date="2026-06-07">Pre-migration: asteroid health meter shown above an asteroid only when it has taken damage (hp below maxHp), with color shifts at the damaged and critical thresholds. Files: <code>src/game/asteroid-health-meter.ts</code>, <code>tests/unit/asteroid-health-meter.test.ts</code>.</li>
+    </ul>
+  </section>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Moon-Size Asteroids</title></head>
+<body>
+
+  <h1>Moon-Size Asteroids</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>Moon-size asteroids are the largest asteroid class in the belt. They appear only during the cinematic prologue, where the maxed-out ship's lazer annihilates a dense field that includes 3 moon-size rocks alongside 30 ordinary asteroids. Outside the prologue they are never spawned.</p>
+
+    <p>In the prologue auto-mine phase, the lazer beam shreds asteroids including moon-sized rocks described as size 0, approximately 30 world units across.</p>
+
+    <h3 id="moon-dimensions">Dimensions and collision</h3>
+    <p>Size 0 asteroids (moon) are prologue-only, with voxel size 3.0 and collision radius 16.</p>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Size class</td><td>0 (moon)</td></tr>
+        <tr><td>Availability</td><td>Prologue only</td></tr>
+        <tr><td>Voxel size</td><td>3.0</td></tr>
+        <tr><td>Collision radius</td><td>16</td></tr>
+      </tbody>
+    </table>
+    <p>For comparison, the other size classes use a voxel size of 2.0 (size 1, large), 1.4 (size 2, medium), and 1.0 (size 3, small).</p>
+
+    <h3 id="moon-hp">Hit points</h3>
+    <p>Moon asteroid HP ranges from 25 (precious) to 80 (crystalline). HP depends on the asteroid type at size 0:</p>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Moon (size 0) HP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Precious</td><td>25</td></tr>
+        <tr><td>Dense</td><td>60</td></tr>
+        <tr><td>Crystalline</td><td>80</td></tr>
+      </tbody>
+    </table>
+    <p>Precious is the lowest at 25 HP and crystalline is the highest at 80 HP, giving the moon class a 25 to 80 HP range.</p>
+
+    <h3 id="moon-voxel-layers">Voxel depth</h3>
+    <p>Moon asteroids use 5 voxel layers for imposing depth. Where ordinary asteroids build their voxel cluster across the central z planes (z = 0 and z = plus or minus 1), moon-size asteroids add two extra layers at z = plus 2 and z = minus 2, producing the full 5-layer stack (z = -2, -1, 0, +1, +2). The extra layers give the moon class its imposing, rounded silhouette.</p>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-07">Moon-size asteroid class (size 0) shipped pre-migration. Defines voxel size 3.0, collision radius 16, the 5 voxel layer depth (z = -2 through +2), and the size 0 HP table (precious 25, dense 60, crystalline 80). Files: <code>src/game/asteroid-model.ts</code>, <code>src/game/asteroid-spawner.ts</code>.</li>
+      <li data-date="2026-06-07">Crystalline asteroid type and Lazer mining tool added, establishing the crystalline 80 HP top end of the moon range. Files: <code>src/game/asteroid-spawner.ts</code>, <code>src/game/asteroid-model.ts</code>, <code>src/game/lazer-beam.ts</code>. PR #24.</li>
+      <li data-date="2026-06-07">Prologue mining phase wired to spawn 3 moon-size rocks in a dense field for the lazer showcase, with prologue-specific spawn helpers. Files: <code>src/game/asteroid-spawner.ts</code>, <code>src/game/prologue-config.ts</code>. PR #30.</li>
+    </ul>
+  </section>
+
+</body>
+</html>
