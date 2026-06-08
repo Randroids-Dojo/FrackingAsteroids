@@ -1,5 +1,5 @@
 {
-  "artifactRootPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/docs\/reviews\/20260607-220302-F2FB8EA5",
+  "artifactRootPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/Docs\/reviews\/20260607-220302-F2FB8EA5",
   "captures" : [
     {
       "browserSnapshotRelativePath" : "captures\/D2A63BCA-FB50-4EBB-B4B3-A9C60041C69A.browser.json",
@@ -20,7 +20,7 @@
   ],
   "createdAt" : "2026-06-08T03:03:02.257Z",
   "docsProfile" : {
-    "docsDirectoryPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/docs",
+    "docsDirectoryPath" : "\/Users\/randroid\/Documents\/Dev\/FrackingAsteroids\/Docs",
     "hasFollowupsHTML" : true,
     "hasFunFactorHTML" : true,
     "hasLegacyMarkdown" : false,

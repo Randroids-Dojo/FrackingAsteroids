@@ -391,7 +391,11 @@ How to actually play the game. Source of truth: `src/game/input.ts` (movement an
 
 ### Mobile
 
-- Left-side virtual joystick steers the ship (sole control for facing direction). Right-side firing joystick and on-screen collect / tool-toggle buttons handle the rest. Right-side taps fire in the ship's current facing; they do not affect aim or rotation.
+- **Move**: left-side virtual joystick (sole control for facing direction).
+- **Fire**: right-side firing joystick. Right-side taps fire in the ship's current facing; they do not affect aim or rotation.
+- **Collect**: hold the on-screen `Collect` button (bottom-right, beside the firing joystick). The collector is active while the button is held, same as desktop `E` / `Space` / right-click (`createCollectButton` in `src/game/fire-button.ts`).
+- **Switch tool**: tap the on-screen tool-toggle button (bottom-right, next to Collect), same as desktop `Q` (`createToolToggleButton` in `src/game/fire-button.ts`).
+- **Pause**: the same `II` button in the top-right HUD as desktop (`onPause` in `src/components/HUD.tsx`); it works for both pointer and touch.
 
 ### The core loop
 
