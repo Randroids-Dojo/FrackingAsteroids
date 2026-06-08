@@ -1,30 +1,31 @@
 import { getKv } from './kv'
 import { GameStateSchema } from './schemas'
 import type { GameState } from './schemas'
+import { readKv, writeKv } from '@randroids-dojo/vibekit/server'
+import { z } from 'zod'
 
 const KEY_PREFIX = 'game:'
+const PersistedGameStateSchema: z.ZodType<GameState, z.ZodTypeDef, unknown> = z.preprocess(
+  (raw) => {
+    if (typeof raw !== 'string') return raw
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return raw
+    }
+  },
+  GameStateSchema,
+)
+const PersistedGameStateReadSchema = PersistedGameStateSchema as z.ZodSchema<GameState>
 
 export async function saveGame(id: string, state: GameState): Promise<boolean> {
   const kv = getKv()
   if (!kv) return false
-  try {
-    await kv.set(`${KEY_PREFIX}${id}`, JSON.stringify(state))
-    return true
-  } catch {
-    return false
-  }
+  return await writeKv(kv, `${KEY_PREFIX}${id}`, state)
 }
 
 export async function loadGame(id: string): Promise<GameState | null> {
   const kv = getKv()
   if (!kv) return null
-  try {
-    const raw = await kv.get(`${KEY_PREFIX}${id}`)
-    if (!raw) return null
-    const data = typeof raw === 'string' ? JSON.parse(raw) : raw
-    const result = GameStateSchema.safeParse(data)
-    return result.success ? result.data : null
-  } catch {
-    return null
-  }
+  return await readKv(kv, `${KEY_PREFIX}${id}`, PersistedGameStateReadSchema)
 }

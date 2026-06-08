@@ -31,6 +31,19 @@
 
 <main id="entries">
 
+  <article data-slice="persistence-vibekit-kv" data-date="2026-06-08">
+    <h3>Back persistence with vibekit server KV</h3>
+    <dl>
+      <dt>Branch</dt><dd><code>refactor/persistence-vibekit-kv</code></dd>
+      <dt>PR</dt><dd>TBD</dd>
+      <dt>Changed</dt><dd>Migrated <code>src/lib/persistence.ts</code> internals to vibekit's <code>@randroids-dojo/vibekit/server</code> <code>readKv</code> and <code>writeKv</code> instead of hand-rolled <code>kv.set(JSON.stringify(...))</code> / <code>kv.get</code> + parse. The <code>saveGame</code> / <code>loadGame</code> facade, the <code>game:</code> key prefix, <code>GameStateSchema</code> validation, and the <code>/api/game/[id]</code> route contract (404 missing, 503 KV down, 400 invalid body) are unchanged. Reads accept both new object values and legacy JSON-string saves via a <code>z.preprocess</code> wrapper, so existing production saves still load.</dd>
+      <dt>Verification</dt><dd><code>npm run type-check</code>, <code>npm run lint</code>, <code>npm run format:check</code>, <code>npm run test:unit</code> (558/558), <code>npm run test:integration</code> (28/28), <code>npm run test:coverage</code> (95.28% lines, 90.73% branches, 96.85% functions), and <code>git diff --check</code> passed. Dash scan returned no matches.</dd>
+      <dt>Assumptions</dt><dd>vibekit <code>readKv</code> / <code>writeKv</code> take a raw Upstash <code>Redis</code> (which FA's <code>getKv()</code> returns), so the v0.2.0 <code>KvLike</code> adapter is not needed. Upstash auto-serializes object writes and deserializes on read, so new saves round-trip as objects while legacy string saves are parsed by the preprocess step.</dd>
+      <dt>GDD coverage</dt><dd>unchanged. Build logs appended to <code>Docs/gdd/15-state-and-persistence.html</code> and <code>Docs/gdd/16-api-routes.html</code>.</dd>
+      <dt>Followups</dt><dd>none.</dd>
+    </dl>
+  </article>
+
   <article data-slice="joystick-vibekit-headless" data-date="2026-06-08">
     <h3>Consume vibekit headless joystick</h3>
     <dl>
