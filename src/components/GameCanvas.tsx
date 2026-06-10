@@ -4,10 +4,12 @@ import { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 
 import type { GameScene, MetalVariant } from '@/game/scene'
 import type { TutorialStep } from '@/hooks/useTutorial'
 import type { MiningTool } from '@/game/types'
+import type { JumpDestination } from '@/game/galaxy'
 
 export interface GameCanvasHandle {
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
+  jumpToSystem: (destination: JumpDestination) => void
   setMiningTool: (tool: MiningTool) => void
   setLazerOwned: (owned: boolean) => void
 }
@@ -102,6 +104,9 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(function
     },
     resetShipToStation: () => {
       sceneRef.current?.resetShipToStation()
+    },
+    jumpToSystem: (destination: JumpDestination) => {
+      sceneRef.current?.jumpToSystem(destination)
     },
     setMiningTool: (tool: MiningTool) => {
       sceneRef.current?.setMiningTool(tool)

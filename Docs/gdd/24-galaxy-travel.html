@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Galaxy Map, System Jumps, and Fuel</title></head>
+<body>
+
+  <h1>Galaxy Map, System Jumps, and Fuel</h1>
+  <p data-status="done">Status: done</p>
+
+  <section data-role="spec">
+    <p>The galaxy map lets the player leave the current local asteroid field and jump to another solar system. It expands the mining loop without replacing the core BLAST, COLLECT, SCRAP, UPGRADE cycle.</p>
+
+    <h2 id="galaxy-map">Galaxy map</h2>
+    <ul>
+      <li>The HUD shows current fuel and exposes a galaxy map button.</li>
+      <li>The map lists every known solar system, the current system, each route's fuel cost, danger level, and resource focus.</li>
+      <li>Systems that cannot be reached with current fuel remain visible but disabled.</li>
+      <li>Opening the map pauses the live canvas. Closing the map returns to normal play.</li>
+    </ul>
+
+    <h2 id="solar-system-jumps">Solar system jumps</h2>
+    <ul>
+      <li>A successful jump deducts fuel, updates the current solar system, moves the station to that system, snaps the ship to the system entry point, and spawns a fresh asteroid field around the station.</li>
+      <li>Transient combat and collection objects from the previous system do not carry across a jump.</li>
+      <li>Jump state is saved with the rest of the game state.</li>
+    </ul>
+
+    <h2 id="fuel-mechanics">Fuel mechanics</h2>
+    <ul>
+      <li>The starter fuel tank holds 100 fuel and starts full.</li>
+      <li>Jump costs are deterministic, based on distance between systems on the galaxy map, with a minimum non-zero route cost.</li>
+      <li>The trade station sells fuel packs for scrap. Fuel packs add up to 25 fuel without exceeding tank capacity.</li>
+      <li>Legacy saves without travel state load into Terra Prime with a full tank.</li>
+    </ul>
+  </section>
+
+  <section data-role="build-log">
+    <h2>Build log</h2>
+    <ul>
+      <li data-date="2026-06-10">Galaxy map, solar system jumps, persisted travel state, and fuel packs landed. The pure route and fuel rules live in <code>src/game/galaxy.ts</code>; travel persistence is in <code>src/lib/schemas.ts</code>; the HUD and map UI are in <code>src/components/HUD.tsx</code> and <code>src/components/GalaxyMap.tsx</code>; station refuel is in <code>src/components/TradeMenu.tsx</code>; scene jumps are wired through <code>src/components/GameCanvas.tsx</code> and <code>src/game/scene.ts</code>. Tests: <code>tests/unit/galaxy.test.ts</code>, <code>tests/unit/schemas.test.ts</code>. PR TBD.</li>
+    </ul>
+  </section>
+
+</body>
+</html>

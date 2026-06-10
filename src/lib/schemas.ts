@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DEFAULT_TRAVEL_STATUS, MAX_FUEL, SOLAR_SYSTEM_IDS } from '@/game/galaxy'
 
 export const ShipSchema = z.object({
   x: z.number(),
@@ -25,10 +26,18 @@ export const CargoSchema = z.object({
 })
 export type Cargo = z.infer<typeof CargoSchema>
 
+export const TravelSchema = z.object({
+  currentSystem: z.enum(SOLAR_SYSTEM_IDS),
+  fuel: z.number().int().min(0).max(MAX_FUEL),
+  maxFuel: z.number().int().min(1).max(MAX_FUEL),
+})
+export type Travel = z.infer<typeof TravelSchema>
+
 export const GameStateSchema = z.object({
   ship: ShipSchema,
   upgrades: UpgradesSchema,
   cargo: CargoSchema,
+  travel: TravelSchema.default(DEFAULT_TRAVEL_STATUS),
   hp: z.number().int().min(0).max(100),
   timestamp: z.number(),
 })
@@ -53,6 +62,7 @@ export function defaultGameState(): GameState {
     ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
     upgrades: { blaster: 1, collector: 1, storage: 1 },
     cargo: { scrap: 0, fragments: 0, silver: 0, gold: 0, capacity: 50 },
+    travel: { ...DEFAULT_TRAVEL_STATUS },
     hp: 100,
     timestamp: Date.now(),
   }

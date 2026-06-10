@@ -92,6 +92,7 @@ import {
 import type { ShipwreckDebris } from './enemy-ship'
 import { disposeScrapBox } from './scrap-box'
 import type { TutorialStep } from '@/hooks/useTutorial'
+import type { JumpDestination } from './galaxy'
 
 function disposeMesh(obj: THREE.Object3D): void {
   if (obj instanceof THREE.Mesh) {
@@ -151,6 +152,7 @@ export interface GameScene {
   dispose: () => void
   setFireRateBonus: (multiplier: number) => void
   resetShipToStation: () => void
+  jumpToSystem: (destination: JumpDestination) => void
   setMiningTool: (tool: MiningTool) => void
   setLazerOwned: (owned: boolean) => void
 }
@@ -966,8 +968,8 @@ export function createGameScene(
       updateBlackHole(blackHole, now / 1000, camera.position.x, camera.position.y)
 
       // --- Tutorial: Station Arrow ---
-      const sdx = GAS_STATION_X - ship.x
-      const sdy = GAS_STATION_Y - ship.y
+      const sdx = tickState.stationX - ship.x
+      const sdy = tickState.stationY - ship.y
       const sDist = Math.sqrt(sdx * sdx + sdy * sdy)
       const inStationRange = sDist <= 60
       const tutStep = getTutorialStep()
@@ -1186,13 +1188,123 @@ export function createGameScene(
     toolToggleButton?.setVisible(owned)
   }
 
-  /** Reset ship to just north of station with full HP, swap to normal ship, clear prologue. */
-  function resetShipToStation() {
-    // Move ship to just north of the station (outside station range)
-    ship.x = GAS_STATION_X
-    ship.y = GAS_STATION_Y + STATION_ENTER_DISTANCE - 10
+  function clearAsteroidField() {
+    for (const [, entry] of asteroidModels) {
+      scene.remove(entry.model)
+      entry.model.traverse(disposeMesh)
+    }
+    asteroidModels.clear()
+    tickState.asteroidHitCounts.clear()
+    asteroids.length = 0
+  }
+
+  function spawnAsteroidsAroundStation(stationX: number, stationY: number) {
+    const newAsteroids = spawnAsteroidField(stationX, stationY)
+    for (const a of newAsteroids) {
+      asteroids.push(a)
+
+      const model = createAsteroidModel(a.type, a.size, hashString(a.id))
+      model.position.set(a.x, a.y, 0)
+      scene.add(model)
+
+      const hm = createHealthMeter()
+      model.add(hm)
+      asteroidModels.set(a.id, { model, healthMeter: hm })
+      tickState.asteroidHitCounts.set(a.id, 0)
+    }
+  }
+
+  function clearTransientWorldObjects() {
+    for (const [, model] of projectileModels) {
+      scene.remove(model)
+      model.traverse(disposeMesh)
+    }
+    projectileModels.clear()
+    tickState.projectileElapsed.clear()
+    tickState.projectiles.length = 0
+
+    for (let i = tickState.enemyProjectiles.length - 1; i >= 0; i--) {
+      scene.remove(tickState.enemyProjectiles[i].mesh)
+      disposeEnemyProjectile(tickState.enemyProjectiles[i])
+    }
+    tickState.enemyProjectiles.length = 0
+
+    if (tickState.enemy) {
+      scene.remove(tickState.enemy.mesh)
+      disposeEnemyShip(tickState.enemy)
+      tickState.enemy = null
+    }
+
+    for (const ae of tickState.ambushEnemies) {
+      scene.remove(ae.mesh)
+      disposeEnemyShip(ae)
+    }
+    tickState.ambushEnemies.length = 0
+
+    for (let i = tickState.metalChunks.length - 1; i >= 0; i--) {
+      scene.remove(tickState.metalChunks[i].mesh)
+      disposeMetalChunk(tickState.metalChunks[i])
+    }
+    tickState.metalChunks.length = 0
+
+    for (let i = tickState.scrapBoxes.length - 1; i >= 0; i--) {
+      scene.remove(tickState.scrapBoxes[i].mesh)
+      disposeScrapBox(tickState.scrapBoxes[i])
+    }
+    tickState.scrapBoxes.length = 0
+
+    for (let i = explosions.length - 1; i >= 0; i--) {
+      scene.remove(explosions[i].group)
+      disposeExplosion(explosions[i])
+    }
+    explosions.length = 0
+
+    for (let i = debrisChunks.length - 1; i >= 0; i--) {
+      scene.remove(debrisChunks[i].mesh)
+      disposeDebrisChunk(debrisChunks[i])
+    }
+    debrisChunks.length = 0
+
+    for (let i = shipwreckDebrisList.length - 1; i >= 0; i--) {
+      scene.remove(shipwreckDebrisList[i].group)
+      disposeShipwreckDebris(shipwreckDebrisList[i])
+    }
+    shipwreckDebrisList.length = 0
+  }
+
+  function setStationPosition(stationX: number, stationY: number) {
+    tickState.stationX = stationX
+    tickState.stationY = stationY
+    gasStation.group.position.set(stationX, stationY, 0)
+  }
+
+  function setShipEntryPosition(entryX: number, entryY: number) {
+    ship.x = entryX
+    ship.y = entryY
     ship.velocityX = 0
     ship.velocityY = 0
+    tickState.nearStationFired = false
+    tickState.wasInStationRange = false
+    tickState.repairedThisVisit = false
+
+    shipModel.position.set(ship.x, ship.y, 0)
+    rechargeMeter.position.set(ship.x, ship.y, 0)
+    camera.position.x = ship.x
+    camera.position.y = ship.y
+  }
+
+  function jumpToSystem(destination: JumpDestination) {
+    clearTransientWorldObjects()
+    clearAsteroidField()
+    setStationPosition(destination.stationX, destination.stationY)
+    setShipEntryPosition(destination.entryX, destination.entryY)
+    spawnAsteroidsAroundStation(destination.stationX, destination.stationY)
+  }
+
+  /** Reset ship to just north of station with full HP, swap to normal ship, clear prologue. */
+  function resetShipToStation() {
+    setStationPosition(GAS_STATION_X, GAS_STATION_Y)
+    setShipEntryPosition(GAS_STATION_X, GAS_STATION_Y + STATION_ENTER_DISTANCE - 10)
 
     // Restore full HP
     tickState.playerHp = PLAYER_MAX_HP
@@ -1230,6 +1342,7 @@ export function createGameScene(
     scene.remove(shipModel)
     shipModel.traverse(disposeMesh)
     shipModel = createShipModel('normal')
+    shipModel.position.set(ship.x, ship.y, 0)
     scene.add(shipModel)
 
     // Remove Arbiter
@@ -1239,87 +1352,11 @@ export function createGameScene(
       arbiterModel = null
     }
 
-    // Remove ambush enemies
-    for (const ae of tickState.ambushEnemies) {
-      scene.remove(ae.mesh)
-      disposeEnemyShip(ae)
-    }
-    tickState.ambushEnemies.length = 0
-
-    // Remove all enemy projectiles
-    for (let i = tickState.enemyProjectiles.length - 1; i >= 0; i--) {
-      scene.remove(tickState.enemyProjectiles[i].mesh)
-      disposeEnemyProjectile(tickState.enemyProjectiles[i])
-    }
-    tickState.enemyProjectiles.length = 0
-
-    // Clear all explosions
-    for (let i = explosions.length - 1; i >= 0; i--) {
-      scene.remove(explosions[i].group)
-      disposeExplosion(explosions[i])
-    }
-    explosions.length = 0
-
-    // Clear shipwreck debris
-    for (let i = shipwreckDebrisList.length - 1; i >= 0; i--) {
-      scene.remove(shipwreckDebrisList[i].group)
-      disposeShipwreckDebris(shipwreckDebrisList[i])
-    }
-    shipwreckDebrisList.length = 0
-
-    // Clear leftover collectibles and rubble from the prologue (metal chunks,
-    // enemy scrap, and visual asteroid debris) so they don't carry into the world.
-    for (let i = tickState.metalChunks.length - 1; i >= 0; i--) {
-      scene.remove(tickState.metalChunks[i].mesh)
-      disposeMetalChunk(tickState.metalChunks[i])
-    }
-    tickState.metalChunks.length = 0
-
-    for (let i = tickState.scrapBoxes.length - 1; i >= 0; i--) {
-      scene.remove(tickState.scrapBoxes[i].mesh)
-      disposeScrapBox(tickState.scrapBoxes[i])
-    }
-    tickState.scrapBoxes.length = 0
-
-    for (let i = debrisChunks.length - 1; i >= 0; i--) {
-      scene.remove(debrisChunks[i].mesh)
-      disposeDebrisChunk(debrisChunks[i])
-    }
-    debrisChunks.length = 0
+    clearTransientWorldObjects()
 
     // --- Spawn asteroid field around the station ---
-    // Remove old asteroid models from scene
-    for (const [, entry] of asteroidModels) {
-      scene.remove(entry.model)
-      entry.model.traverse(disposeMesh)
-    }
-    asteroidModels.clear()
-    tickState.asteroidHitCounts.clear()
-
-    // Clear old asteroid data and generate new field
-    asteroids.length = 0
-    const newAsteroids = spawnAsteroidField(GAS_STATION_X, GAS_STATION_Y)
-    for (const a of newAsteroids) {
-      asteroids.push(a)
-
-      // Create a visually unique model for each asteroid
-      const model = createAsteroidModel(a.type, a.size, hashString(a.id))
-      model.position.set(a.x, a.y, 0)
-      scene.add(model)
-
-      const hm = createHealthMeter()
-      model.add(hm)
-      asteroidModels.set(a.id, { model, healthMeter: hm })
-      tickState.asteroidHitCounts.set(a.id, 0)
-    }
-
-    // Sync ship model to new position immediately so it's not visible at the old spot
-    shipModel.position.set(ship.x, ship.y, 0)
-    rechargeMeter.position.set(ship.x, ship.y, 0)
-
-    // Snap camera to station immediately
-    camera.position.x = ship.x
-    camera.position.y = ship.y
+    clearAsteroidField()
+    spawnAsteroidsAroundStation(GAS_STATION_X, GAS_STATION_Y)
   }
 
   /** Simple string hash for deterministic asteroid shape seeds. */
@@ -1336,5 +1373,12 @@ export function createGameScene(
   // Reset straight to the station with the normal ship.
   if (skipPrologue) resetShipToStation()
 
-  return { dispose, setFireRateBonus, resetShipToStation, setMiningTool, setLazerOwned }
+  return {
+    dispose,
+    setFireRateBonus,
+    resetShipToStation,
+    jumpToSystem,
+    setMiningTool,
+    setLazerOwned,
+  }
 }

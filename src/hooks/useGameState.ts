@@ -2,9 +2,11 @@
 
 import { useState, useCallback } from 'react'
 import { defaultGameState } from '@/lib/schemas'
-import type { Cargo, Upgrades } from '@/lib/schemas'
+import type { Cargo, Travel, Upgrades } from '@/lib/schemas'
 import type { MetalVariant } from '@/game/scene'
 import { PLAYER_MAX_HP } from '@/game/scene'
+import { buyFuelPack, resolveJump } from '@/game/galaxy'
+import type { FuelPurchaseResult, JumpResult, SolarSystemId } from '@/game/galaxy'
 
 /** Scrap value per unit of silver ore. */
 export const SILVER_SCRAP_VALUE = 5
@@ -15,6 +17,7 @@ export interface GameStateHook {
   paused: boolean
   scrap: number
   cargo: Cargo
+  travel: Travel
   upgrades: Upgrades
   playerHp: number
   playerMaxHp: number
@@ -25,12 +28,15 @@ export interface GameStateHook {
   sellMaterials: () => number
   buyUpgrade: (type: keyof Upgrades, cost: number, onPurchased?: (ok: boolean) => void) => void
   spendScrap: (amount: number) => boolean
+  jumpToSystem: (targetId: SolarSystemId) => JumpResult
+  buyFuel: () => FuelPurchaseResult
 }
 
 export function useGameState(): GameStateHook {
   const [paused, setPaused] = useState(false)
   const [cargo, setCargo] = useState(() => defaultGameState().cargo)
   const [scrap, setScrap] = useState(0)
+  const [travel, setTravel] = useState(() => defaultGameState().travel)
   const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP)
   const [upgrades, setUpgrades] = useState(() => defaultGameState().upgrades)
 
@@ -103,10 +109,29 @@ export function useGameState(): GameStateHook {
     return success
   }, [])
 
+  const jumpToSystem = useCallback(
+    (targetId: SolarSystemId): JumpResult => {
+      const result = resolveJump(travel, targetId)
+      if (result.ok) setTravel(result.travel)
+      return result
+    },
+    [travel],
+  )
+
+  const buyFuel = useCallback((): FuelPurchaseResult => {
+    const result = buyFuelPack(travel, scrap)
+    if (result.ok) {
+      setTravel(result.travel)
+      setScrap((prev) => prev - result.scrapSpent)
+    }
+    return result
+  }, [scrap, travel])
+
   return {
     paused,
     scrap,
     cargo,
+    travel,
     upgrades,
     playerHp,
     playerMaxHp: PLAYER_MAX_HP,
@@ -117,5 +142,7 @@ export function useGameState(): GameStateHook {
     sellMaterials,
     buyUpgrade,
     spendScrap,
+    jumpToSystem,
+    buyFuel,
   }
 }

@@ -7,6 +7,7 @@ import {
   ShipSchema,
   UpgradesSchema,
   CargoSchema,
+  TravelSchema,
   SaveSlotSummarySchema,
   SAVE_SLOT_IDS,
 } from '../../src/lib/schemas'
@@ -104,6 +105,35 @@ describe('CargoSchema', () => {
   })
 })
 
+describe('TravelSchema', () => {
+  it('accepts valid travel state', () => {
+    const result = TravelSchema.safeParse({
+      currentSystem: 'terra-prime',
+      fuel: 75,
+      maxFuel: 100,
+    })
+    assert.equal(result.success, true)
+  })
+
+  it('rejects unknown systems', () => {
+    const result = TravelSchema.safeParse({
+      currentSystem: 'unknown',
+      fuel: 75,
+      maxFuel: 100,
+    })
+    assert.equal(result.success, false)
+  })
+
+  it('rejects fuel above max capacity', () => {
+    const result = TravelSchema.safeParse({
+      currentSystem: 'terra-prime',
+      fuel: 101,
+      maxFuel: 100,
+    })
+    assert.equal(result.success, false)
+  })
+})
+
 describe('GameStateSchema', () => {
   it('accepts a full valid game state', () => {
     const state = defaultGameState()
@@ -126,6 +156,18 @@ describe('GameStateSchema', () => {
     const state = defaultGameState()
     const result = GameStateSchema.safeParse({ ...state, hp: -1 })
     assert.equal(result.success, false)
+  })
+
+  it('defaults missing travel state for legacy saves', () => {
+    const state = defaultGameState()
+    const { travel, ...legacyState } = state
+    void travel
+    const result = GameStateSchema.safeParse(legacyState)
+    assert.equal(result.success, true)
+    if (result.success) {
+      assert.equal(result.data.travel.currentSystem, 'terra-prime')
+      assert.equal(result.data.travel.fuel, 100)
+    }
   })
 })
 
@@ -199,5 +241,12 @@ describe('defaultGameState', () => {
   it('starts at full HP', () => {
     const state = defaultGameState()
     assert.equal(state.hp, 100)
+  })
+
+  it('starts in Terra Prime with full fuel', () => {
+    const state = defaultGameState()
+    assert.equal(state.travel.currentSystem, 'terra-prime')
+    assert.equal(state.travel.fuel, 100)
+    assert.equal(state.travel.maxFuel, 100)
   })
 })
