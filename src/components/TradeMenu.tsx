@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import type { Cargo, Upgrades } from '@/lib/schemas'
+import type { Cargo, Travel, Upgrades } from '@/lib/schemas'
 import type { TutorialStep } from '@/hooks/useTutorial'
 import { SILVER_SCRAP_VALUE, GOLD_SCRAP_VALUE } from '@/hooks/useGameState'
+import { FUEL_PACK_AMOUNT, FUEL_PACK_COST } from '@/game/galaxy'
 
 /** Cost to purchase the Lazer mining tool. */
 export const LAZER_COST = 200
@@ -27,24 +28,28 @@ const UPGRADE_CATALOG = [
 
 interface TradeMenuProps {
   cargo: Cargo
+  travel: Travel
   scrap: number
   upgrades: Upgrades
   tutorialStep: TutorialStep
   hasLazer: boolean
   onSell: () => void
   onBuy: (type: keyof Upgrades, cost: number) => void
+  onBuyFuel: () => void
   onBuyLazer: () => void
   onClose: () => void
 }
 
 export function TradeMenu({
   cargo,
+  travel,
   scrap,
   upgrades,
   tutorialStep,
   hasLazer,
   onSell,
   onBuy,
+  onBuyFuel,
   onBuyLazer,
   onClose,
 }: TradeMenuProps) {
@@ -119,10 +124,12 @@ export function TradeMenu({
           ) : (
             <BuyPanel
               scrap={scrap}
+              travel={travel}
               upgrades={upgrades}
               hasLazer={hasLazer}
               isTutorial={isTutorialBuy}
               onBuy={onBuy}
+              onBuyFuel={onBuyFuel}
               onBuyLazer={onBuyLazer}
             />
           )}
@@ -199,24 +206,52 @@ function SellPanel({
 
 function BuyPanel({
   scrap,
+  travel,
   upgrades,
   hasLazer,
   isTutorial,
   onBuy,
+  onBuyFuel,
   onBuyLazer,
 }: {
   scrap: number
+  travel: Travel
   upgrades: Upgrades
   hasLazer: boolean
   isTutorial: boolean
   onBuy: (type: keyof Upgrades, cost: number) => void
+  onBuyFuel: () => void
   onBuyLazer: () => void
 }) {
   const canAffordLazer = scrap >= LAZER_COST && !hasLazer
+  const fuelMissing = Math.max(0, travel.maxFuel - travel.fuel)
+  const fuelToAdd = Math.min(FUEL_PACK_AMOUNT, fuelMissing)
+  const canBuyFuel = fuelMissing > 0 && scrap >= FUEL_PACK_COST
 
   return (
     <div className="flex flex-col gap-3">
       <div className="text-white/60 text-xs mb-1">UPGRADES</div>
+      <div className="flex items-center justify-between p-3 rounded border border-hud-amber/30 bg-hud-amber/10">
+        <div className="flex-1">
+          <div className="text-sm font-bold text-hud-amber">Jump Fuel</div>
+          <div className="text-xs text-white/40">
+            {fuelMissing === 0
+              ? 'Tank full'
+              : `+${fuelToAdd} fuel, current ${travel.fuel}/${travel.maxFuel}`}
+          </div>
+        </div>
+        <button
+          onClick={onBuyFuel}
+          disabled={!canBuyFuel}
+          className={`ml-3 px-4 py-2 rounded text-xs font-bold tracking-wider transition-all ${
+            canBuyFuel
+              ? 'bg-hud-amber/20 border border-hud-amber/60 text-hud-amber hover:bg-hud-amber/40'
+              : 'bg-white/5 border border-white/10 text-white/20 cursor-not-allowed'
+          }`}
+        >
+          {fuelMissing === 0 ? 'FULL' : `${FUEL_PACK_COST}`}
+        </button>
+      </div>
       {UPGRADE_CATALOG.map((item) => {
         const currentLevel = upgrades[item.type]
         const maxed = currentLevel >= 5

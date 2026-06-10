@@ -41,6 +41,7 @@
   <section data-role="build-log">
     <h2>Build log</h2>
     <ul>
+      <li data-date="2026-06-10">Hardened <code>PUT /api/game/[id]</code> so malformed or empty JSON bodies return the existing invalid-state 400 response instead of throwing during request parsing. Files: <code>src/app/api/game/[id]/route.ts</code>. Tests: <code>tests/unit/game-api-route.test.ts</code>. PR TBD.</li>
       <li data-date="2026-06-08">Game route persistence now flows through the FrackingAsteroids facade backed by Vibekit server KV helpers. GET and PUT route contracts are unchanged: reads still return 404 for missing or invalid state, writes still return 503 when KV is unavailable, and bodies remain validated by <code>GameStateSchema</code>. Files: <code>src/app/api/game/[id]/route.ts</code>, <code>src/lib/persistence.ts</code>. PR TBD.</li>
       <li data-date="2026-06-07">API routes shipped pre-migration as scaffold infrastructure. GET and PUT for <code>/api/game/[id]</code> load and save game state through Upstash Redis with Zod validation. Files: <code>src/app/api/game/[id]/route.ts</code>, <code>src/lib/persistence.ts</code>, <code>src/lib/kv.ts</code>, <code>src/lib/schemas.ts</code>.</li>
       <li data-date="2026-06-07">Health and version endpoints shipped pre-migration. <code>/api/health</code> returns a status/timestamp payload; <code>/api/version</code> returns the build version from <code>NEXT_PUBLIC_APP_VERSION</code>. Files: <code>src/app/api/health/route.ts</code>, <code>src/app/api/version/route.ts</code>.</li>

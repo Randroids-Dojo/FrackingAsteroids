@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Cargo, Upgrades } from '@/lib/schemas'
+import type { Cargo, Travel, Upgrades } from '@/lib/schemas'
 import type { MiningTool } from '@/game/types'
 
 interface HUDProps {
   scrap: number
   cargo: Cargo
+  travel: Travel
   upgrades: Upgrades
   playerHp: number
   playerMaxHp: number
@@ -14,6 +15,7 @@ interface HUDProps {
   activeTool: MiningTool
   hasLazer: boolean
   onPause: () => void
+  onOpenGalaxyMap: () => void
 }
 
 function SilverIcon({ size = 16 }: { size?: number }) {
@@ -94,6 +96,7 @@ function MiningToolLabel({ activeTool, hasLazer }: { activeTool: MiningTool; has
 export function HUD({
   scrap,
   cargo,
+  travel,
   upgrades,
   playerHp,
   playerMaxHp,
@@ -101,6 +104,7 @@ export function HUD({
   activeTool,
   hasLazer,
   onPause,
+  onOpenGalaxyMap,
 }: HUDProps) {
   const cargoPercent = cargo.capacity > 0 ? Math.round((cargo.fragments / cargo.capacity) * 100) : 0
   const hpPercent = playerMaxHp > 0 ? Math.round((playerHp / playerMaxHp) * 100) : 100
@@ -116,6 +120,9 @@ export function HUD({
           <div className="text-hud-amber font-mono font-bold truncate">SCRAP: {scrap}</div>
           <div className="text-hud-blue font-mono truncate">
             CARGO: {cargo.fragments}/{cargo.capacity} ({cargoPercent}%)
+          </div>
+          <div className="text-hud-green font-mono truncate">
+            FUEL: {travel.fuel}/{travel.maxFuel}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 font-mono text-[clamp(0.5rem,1.5vw,0.8125rem)]">
             <span className="flex items-center gap-1" style={{ color: '#c0c0c0' }}>
@@ -156,6 +163,13 @@ export function HUD({
             <div className="text-hud-green">COLLECTOR Mk{upgrades.collector}</div>
             <div className="text-hud-blue">STORAGE Mk{upgrades.storage}</div>
           </div>
+          <button
+            onClick={onOpenGalaxyMap}
+            className="pointer-events-auto relative z-[60] px-2 py-1.5 sm:px-3 sm:py-2 bg-space-800/80 border border-hud-blue/30 rounded text-hud-blue text-xs sm:text-sm hover:bg-space-700/80 active:scale-95 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Open galaxy map"
+          >
+            MAP
+          </button>
           <button
             onClick={onPause}
             className="pointer-events-auto relative z-[60] px-2 py-1.5 sm:px-3 sm:py-2 bg-space-800/80 border border-hud-green/30 rounded text-hud-green text-xs sm:text-sm hover:bg-space-700/80 active:scale-95 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"

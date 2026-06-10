@@ -31,6 +31,19 @@
 
 <main id="entries">
 
+  <article data-slice="galaxy-jump-fuel" data-date="2026-06-10">
+    <h3>Galaxy Map, System Jumps, and Fuel</h3>
+    <dl>
+      <dt>Branch</dt><dd><code>feature/galaxy-jump-fuel</code></dd>
+      <dt>PR</dt><dd>TBD</dd>
+      <dt>Changed</dt><dd>Added a persisted travel model with four solar systems, deterministic map-distance jump costs, 100 max fuel, and station fuel packs. The HUD now shows fuel and opens a galaxy map overlay; the map lists reachable systems and spends fuel on jump. Successful jumps move the station and ship to the target system, clear transient combat and collection objects, snap the camera, and spawn a fresh asteroid field around the moved station. Hardened <code>PUT /api/game/[id]</code> so malformed save bodies return 400 instead of throwing during JSON parsing.</dd>
+      <dt>Verification</dt><dd><code>npm run type-check</code>, <code>npm run lint</code>, <code>npm run format:check</code>, <code>npm run test:unit</code> (574/574), <code>npm run test:integration</code> (28/28), <code>npm run test:coverage</code> (95.24% lines, 90.62% branches, 95.79% functions), <code>npm run build</code>, <code>npm run test:smoke</code> (3/3 against <code>npm start</code>), <code>npm run test:e2e</code> (24/24), <code>git diff --check</code>, and <code>rg -n '\x{2014}|\x{2013}' . -g '!node_modules/**' -g '!.git/**' -g '!.next/**'</code> passed. Dependency gate returned <code>v0.2.0</code>, matching the ledger.</dd>
+      <dt>Assumptions</dt><dd>Recommended default: fuel is a simple scrap sink at the gas station, with 20 scrap buying up to 25 fuel, and route costs based on map distance with an 8 fuel minimum for non-local jumps.</dd>
+      <dt>GDD coverage</dt><dd>Added <code>Docs/gdd/24-galaxy-travel.html</code> with a build log. Added <code>REQ-158</code>, <code>REQ-159</code>, and <code>REQ-160</code> to <code>Docs/GDD_COVERAGE.json</code>. Appended a build log to <code>Docs/gdd/16-api-routes.html</code> and added <code>tests/unit/game-api-route.test.ts</code> to <code>REQ-102</code>.</dd>
+      <dt>Followups</dt><dd>none.</dd>
+    </dl>
+  </article>
+
   <article data-slice="audio-vibekit-audit" data-date="2026-06-08">
     <h3>Audit audio.ts for VibeKit contribution</h3>
     <dl>

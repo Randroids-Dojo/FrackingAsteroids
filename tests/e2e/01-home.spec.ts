@@ -50,4 +50,26 @@ test.describe('Game HUD', () => {
     await pauseBtn.click()
     await expect(page.getByLabel('Send feedback')).toBeVisible()
   })
+
+  test('galaxy map jumps to another system and spends fuel', async ({ page }) => {
+    await page.goto('/')
+    await page.evaluate(() => {
+      localStorage.setItem(
+        'fracking-asteroids-slot-summaries',
+        JSON.stringify([{ slotId: 'save-1', timestamp: Date.now() }]),
+      )
+    })
+    await page.goto('/')
+    await page.locator('button', { hasText: 'LOAD GAME' }).click()
+    await page.locator('button', { hasText: 'SLOT 1' }).click()
+
+    await expect(page.getByText('FUEL: 100/100')).toBeVisible()
+    await page.getByLabel('Open galaxy map').click()
+    const galaxyMap = page.getByRole('region', { name: 'Galaxy map' })
+    await expect(galaxyMap).toBeVisible()
+    await page.getByRole('button', { name: 'Cinder Belt, fuel cost 8' }).click()
+
+    await expect(galaxyMap).not.toBeVisible()
+    await expect(page.getByText('FUEL: 92/100')).toBeVisible()
+  })
 })

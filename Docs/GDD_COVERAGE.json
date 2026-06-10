@@ -1,7 +1,7 @@
 {
   "_comment_1": "ATOMIC GRANULARITY. One row per requirement. Status sampled from src/ on 2026-06-07.",
   "_comment_2": "spiral-html scaffold: GDD lives as an HTML tree under Docs/gdd/; gddRef points at Docs/gdd/<file>#<anchor>.",
-  "updatedAt": "2026-06-07",
+  "updatedAt": "2026-06-10",
   "rows": [
     {
       "id": "REQ-001",
@@ -1388,7 +1388,9 @@
         "src/app/api/game/[id]/route.ts",
         "src/lib/persistence.ts"
       ],
-      "testRefs": [],
+      "testRefs": [
+        "tests/unit/game-api-route.test.ts"
+      ],
       "followupRefs": []
     },
     {
@@ -2114,6 +2116,54 @@
       ],
       "testRefs": [
         "tests/integration/flows/prologue-flow.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-158",
+      "requirement": "Galaxy map shows known solar systems, current system, fuel costs, danger, and resource focus",
+      "gddRef": "Docs/gdd/24-galaxy-travel.html#galaxy-map",
+      "status": "done",
+      "implementationRefs": [
+        "src/components/GalaxyMap.tsx",
+        "src/components/HUD.tsx",
+        "src/game/galaxy.ts"
+      ],
+      "testRefs": [
+        "tests/unit/galaxy.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-159",
+      "requirement": "Solar system jumps deduct fuel, update current system, move the station and ship, and spawn a fresh asteroid field",
+      "gddRef": "Docs/gdd/24-galaxy-travel.html#solar-system-jumps",
+      "status": "done",
+      "implementationRefs": [
+        "src/app/page.tsx",
+        "src/components/GameCanvas.tsx",
+        "src/game/scene.ts",
+        "src/game/galaxy.ts"
+      ],
+      "testRefs": [
+        "tests/unit/galaxy.test.ts"
+      ],
+      "followupRefs": []
+    },
+    {
+      "id": "REQ-160",
+      "requirement": "Fuel starts full, route costs are deterministic, station fuel packs add fuel for scrap, and travel state persists",
+      "gddRef": "Docs/gdd/24-galaxy-travel.html#fuel-mechanics",
+      "status": "done",
+      "implementationRefs": [
+        "src/lib/schemas.ts",
+        "src/hooks/useGameState.ts",
+        "src/components/TradeMenu.tsx",
+        "src/game/galaxy.ts"
+      ],
+      "testRefs": [
+        "tests/unit/galaxy.test.ts",
+        "tests/unit/schemas.test.ts"
       ],
       "followupRefs": []
     }

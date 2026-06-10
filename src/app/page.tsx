@@ -10,12 +10,15 @@ import { StartScreen } from '@/components/StartScreen'
 import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { PrologueOverlay } from '@/components/PrologueOverlay'
 import { TradeMenu, LAZER_COST } from '@/components/TradeMenu'
+import { GalaxyMap } from '@/components/GalaxyMap'
 import { LazerTutorialPopup } from '@/components/LazerTutorialPopup'
 import { ShopFab } from '@/components/ShopFab'
 import { useGameState } from '@/hooks/useGameState'
 import { useGamePersistence } from '@/hooks/useGamePersistence'
 import { useTutorial } from '@/hooks/useTutorial'
 import type { MiningTool } from '@/game/types'
+import { getJumpDestination } from '@/game/galaxy'
+import type { JumpResult, SolarSystemId } from '@/game/galaxy'
 import type { Upgrades, SaveSlotId } from '@/lib/schemas'
 
 type Screen = 'start' | 'game'
@@ -27,6 +30,7 @@ export default function Home() {
   const [activeSlot, setActiveSlot] = useState<SaveSlotId | null>(null)
   const [isNewGame, setIsNewGame] = useState(false)
   const [tradeMenuOpen, setTradeMenuOpen] = useState(false)
+  const [galaxyMapOpen, setGalaxyMapOpen] = useState(false)
   const [inStationRange, setInStationRange] = useState(false)
   const [activeTool, setActiveTool] = useState<MiningTool>('blaster')
   const [hasLazer, setHasLazer] = useState(false)
@@ -36,6 +40,7 @@ export default function Home() {
     paused,
     scrap,
     cargo,
+    travel,
     upgrades,
     playerHp,
     playerMaxHp,
@@ -46,6 +51,8 @@ export default function Home() {
     sellMaterials,
     buyUpgrade,
     spendScrap,
+    jumpToSystem,
+    buyFuel,
   } = useGameState()
   const { save } = useGamePersistence(activeSlot)
   const tutorial = useTutorial(isNewGame && screen === 'game')
@@ -66,6 +73,7 @@ export default function Home() {
       ship: { x: 0, y: 0, rotation: 0, velocityX: 0, velocityY: 0 },
       upgrades,
       cargo: { ...cargo, scrap },
+      travel,
       hp: playerHp,
       timestamp: Date.now(),
     })
@@ -112,8 +120,10 @@ export default function Home() {
       if (
         !inRange &&
         !(tutorialActive && (tutorialStep === 'trade-sell' || tutorialStep === 'trade-buy'))
-      )
+      ) {
         setTradeMenuOpen(false)
+        setGalaxyMapOpen(false)
+      }
     },
     [tutorialActive, tutorialStep],
   )
@@ -156,6 +166,31 @@ export default function Home() {
     }
   }, [hasLazer, spendScrap, requestSave])
 
+  const handleBuyFuel = useCallback(() => {
+    const result = buyFuel()
+    if (result.ok) requestSave()
+  }, [buyFuel, requestSave])
+
+  const handleOpenGalaxyMap = useCallback(() => {
+    setGalaxyMapOpen(true)
+  }, [])
+
+  const handleCloseGalaxyMap = useCallback(() => {
+    setGalaxyMapOpen(false)
+  }, [])
+
+  const handleGalaxyJump = useCallback(
+    (targetId: SolarSystemId): JumpResult => {
+      const result = jumpToSystem(targetId)
+      if (result.ok) {
+        gameCanvasRef.current?.jumpToSystem(getJumpDestination(result.target))
+        requestSave()
+      }
+      return result
+    },
+    [jumpToSystem, requestSave],
+  )
+
   const handleCloseTradeMenu = useCallback(() => {
     // Prevent closing during tutorial trade steps - player must complete sell/buy
     if (tutorialActive && (tutorialStep === 'trade-sell' || tutorialStep === 'trade-buy')) return
@@ -194,6 +229,7 @@ export default function Home() {
     const wasInPrologue = tutorial.step.startsWith('prologue-')
     tutorial.skip()
     setTradeMenuOpen(false)
+    setGalaxyMapOpen(false)
     setPrologueFade('none')
     if (wasInPrologue) {
       gameCanvasRef.current?.resetShipToStation()
@@ -291,7 +327,7 @@ export default function Home() {
     <main className="relative w-screen h-dvh overflow-hidden bg-space-900">
       <GameCanvas
         ref={gameCanvasRef}
-        paused={paused || tradeMenuOpen || lazerPopupVisible}
+        paused={paused || tradeMenuOpen || lazerPopupVisible || galaxyMapOpen}
         frozen={tutorial.frozen || shopTutorialFreeze}
         skipPrologue={!isNewGame}
         tutorialStep={tutorial.step}
@@ -318,6 +354,7 @@ export default function Home() {
       <HUD
         scrap={scrap}
         cargo={cargo}
+        travel={travel}
         upgrades={upgrades}
         playerHp={playerHp}
         playerMaxHp={playerMaxHp}
@@ -325,6 +362,7 @@ export default function Home() {
         activeTool={activeTool}
         hasLazer={hasLazer}
         onPause={togglePause}
+        onOpenGalaxyMap={handleOpenGalaxyMap}
       />
       {tutorial.active && inPrologue && (
         <PrologueOverlay
@@ -351,15 +389,20 @@ export default function Home() {
       {tradeMenuOpen && (
         <TradeMenu
           cargo={cargo}
+          travel={travel}
           scrap={scrap}
           upgrades={upgrades}
           tutorialStep={tutorial.step}
           hasLazer={hasLazer}
           onSell={handleSell}
           onBuy={handleBuy}
+          onBuyFuel={handleBuyFuel}
           onBuyLazer={handleBuyLazer}
           onClose={handleCloseTradeMenu}
         />
+      )}
+      {galaxyMapOpen && (
+        <GalaxyMap travel={travel} onJump={handleGalaxyJump} onClose={handleCloseGalaxyMap} />
       )}
       <LazerTutorialPopup visible={lazerPopupVisible} onDismiss={handleDismissLazerPopup} />
       {paused && (
